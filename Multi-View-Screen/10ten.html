@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#058C4A" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="description" content="Uber Eats Merge - match food items, level up your order, and reach the Uber Eats Bag to win." />
+<title>Uber Eats · Merge</title>
+<!-- Brand font: Uber Move (proprietary — used when installed/self-hosted). Manrope = closest free fallback. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  /* ============================================================
+     UBER EATS MERGE — single-file mobile puzzle game
+     Reskin of the 10TEN engine. Merge same food to level up;
+     reach the Uber Delivery Box (level 10) to win.
+     Theme: Uber Eats dark green / black / green.
+     ============================================================ */
+  /* Uber Move — Uber's brand font, self-hosted (Medium + Bold). Manrope is the
+     final fallback only if the files fail to load. */
+  @font-face {
+    font-family: "Uber Move";
+    src: local("Uber Move Medium"), local("UberMove-Medium"),
+         url("assets/fonts/UberMoveMedium.otf") format("opentype");
+    font-weight: 100 500; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: "Uber Move";
+    src: local("Uber Move Bold"), local("UberMove-Bold"),
+         url("assets/fonts/UberMoveBold.otf") format("opentype");
+    font-weight: 600 900; font-style: normal; font-display: swap;
+  }
+
+  :root {
+    --font: "Uber Move", "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --bg-1: #0c3b22;
+    --bg-2: #04130b;
+    --bg-500: #67BE6B;      /* main background — Uber Eats green (from "uber eats green") */
+    --panel: #0a1f15;
+    --pill: #06150d;
+    --line: rgba(6, 193, 103, 0.22);
+    --line-soft: rgba(6, 193, 103, 0.12);
+    --green: #06C167;       /* Green 400 — main Uber Eats green: numbers, labels, accents */
+    --green-deep: #05A656;  /* deeper Uber green — button depth, borders */
+    --green-hi: #2FD35F;    /* brighter green — highlights, pop */
+    --text: #eafff1;
+    --muted: #7fab90;
+    --danger: #ff5a5a;
+    --shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  button, input, textarea, select { font-family: inherit; }   /* force Uber Move on form controls too */
+
+  html, body { margin: 0; height: 100%; overscroll-behavior: none; }
+
+  body {
+    min-height: 100dvh;
+    overflow: hidden;
+    font-family: var(--font);
+    color: var(--text);
+    background: #000;                 /* letterbox: black sides on desktop */
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* mobile-width column, centered on black; never expands to desktop width */
+  .app {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow: hidden;
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgba(255, 255, 255, 0.07), transparent 52%),
+      var(--bg-500);
+  }
+
+  /* ---------- header ---------- */
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .scorebox {
+    display: flex;
+    background: rgba(255, 255, 255, 0.85);   /* light grey pill (match Stack The Bag) */
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .scorebox .seg { padding: 10px 22px 11px; text-align: center; min-width: 76px; }
+  .scorebox .seg + .seg { border-left: 1px solid rgba(0, 0, 0, 0.1); }
+  .scorebox .seg .label { color: rgba(0, 0, 0, 0.45); }   /* grey labels on the light pill */
+  .scorebox .seg .value { color: #0b1a10; }                /* dark numbers (were white) */
+  .seg .label {
+    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    color: var(--green); text-transform: uppercase;
+  }
+  .seg .value {
+    font-size: 26px; font-weight: 900; line-height: 1.1; color: #fff;
+    font-variant-numeric: tabular-nums;
+  }
+  .seg .value.pulse { animation: pulse 0.3s ease; }
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.18); color: var(--green-hi); }
+    100% { transform: scale(1); }
+  }
+
+  /* ---------- toolbar ---------- */
+  .toolbar { display: flex; gap: 12px; align-items: center; }
+
+  .icon-btn {
+    display: grid; place-items: center;
+    width: 86px; height: 62px;
+    border: 1.5px solid rgba(255, 255, 255, 0.22);
+    border-radius: 18px;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.10);
+    cursor: pointer;
+    font-size: 22px;
+    transition: transform 0.08s ease, background 0.15s ease, opacity 0.15s ease;
+  }
+  .icon-btn:hover { background: rgba(255, 255, 255, 0.16); }
+  .icon-btn:active { transform: translateY(1px) scale(0.97); }
+  .icon-btn:disabled { opacity: 0.32; cursor: default; }
+  .icon-btn svg { width: 28px; height: 28px; fill: currentColor; }
+  .icon-btn.snd { margin-left: auto; width: 62px; }
+
+  /* ---------- board ---------- */
+  .board-wrap { position: relative; }
+
+  .board {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    touch-action: none;
+  }
+
+  .cells {
+    position: absolute; inset: 0;
+    padding: var(--gap);
+    display: grid;
+    gap: var(--gap);
+  }
+  .cell {
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+  }
+
+  .tiles { position: absolute; inset: 0; }
+
+  .tile {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    border-radius: 20px;
+    transition: left 0.13s ease, top 0.13s ease;
+    will-change: left, top, transform;
+  }
+  .tile .food {
+    width: 84%; height: 84%;
+    object-fit: contain;
+    pointer-events: none;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45));
+  }
+  .tile .emoji {
+    font-size: clamp(30px, 13vw, 60px);
+    line-height: 1;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45));
+  }
+  .tile .lvl {
+    position: absolute;
+    right: 8%; bottom: 6%;
+    color: var(--green);
+    font-weight: 900;
+    font-size: clamp(17px, 7vw, 28px);
+    -webkit-text-stroke: 2px rgba(0, 0, 0, 0.82);
+    paint-order: stroke fill;
+    text-shadow: 0 2px 3px rgba(0, 0, 0, 0.7);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tile.win-tile {
+    background: radial-gradient(60% 60% at 50% 45%, rgba(6, 193, 103, 0.28), transparent 70%);
+    animation: glow 1.4s ease-in-out infinite;
+  }
+  @keyframes glow {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.22); }
+  }
+
+  .tile.spawn { animation: spawn 0.17s ease; }
+  @keyframes spawn {
+    0% { transform: scale(0.1); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .tile.pop { animation: pop 0.2s ease; }
+  @keyframes pop {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.18); }
+    100% { transform: scale(1); }
+  }
+
+  /* floating "+score" */
+  .floater {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    font-weight: 900; font-size: 18px;
+    color: var(--green-hi);
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+    pointer-events: none;
+    animation: floatUp 0.7s ease forwards;
+  }
+  @keyframes floatUp {
+    0% { opacity: 0; transform: translate(-50%, -30%) scale(0.8); }
+    25% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -160%) scale(1.05); }
+  }
+
+  .hint {
+    text-align: center; color: rgba(11, 26, 16, 0.6);
+    font-size: 13px; font-weight: 600; min-height: 18px;
+    transition: opacity 0.4s ease;
+  }
+
+  /* persistent brand line under the board */
+  .tagline {
+    text-align: center;
+    margin-top: 2px;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 0.2px;
+    color: #0b1a10;
+  }
+  /* ---------- overlays (full-screen) ---------- */
+  .overlay {
+    position: fixed; inset: 0;
+    display: grid; place-items: center;
+    background: rgba(4, 16, 9, 0.9);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+    z-index: 50; overflow: hidden;
+  }
+  .overlay.show { opacity: 1; visibility: visible; }
+  /* keep full-screen overlays inside the mobile column (black letterbox on desktop) */
+  #tutorial, #overlay {
+    left: 50%; right: auto;
+    width: 100%; max-width: 480px;
+    transform: translateX(-50%);
+  }
+
+  .card { text-align: center; padding: 26px 22px; width: 100%; max-width: 420px; margin: 0 auto; position: relative; z-index: 2; }
+
+  /* Uber Eats rider, pinned bottom-left of start + end screens */
+  /* rider size + placement matched to Stack The Bag (UberStacker .riderImg) */
+  .rider {
+    position: absolute;
+    left: 0; bottom: 0;
+    width: min(16vw, 90px);
+    height: auto;
+    z-index: 1;
+    pointer-events: none;
+    filter: drop-shadow(0 5px 12px rgba(0, 0, 0, 0.55));
+  }
+  .card h2 { margin: 6px 0 6px; font-size: 30px; font-weight: 900; color: #fff; }
+  .card h2.green { color: var(--green); }
+  .card h2.danger { color: var(--danger); }
+  .card p { margin: 0 0 18px; color: var(--text); font-weight: 600; opacity: 0.9; }
+  .swipes-line { margin: 0 0 14px !important; font-weight: 800; opacity: 1 !important; }
+  .swipes-line b { color: #fff; font-size: 1.25em; }
+
+  .win-box {
+    position: relative;
+    width: 130px; height: 130px;
+    margin: 6px auto 16px;
+    display: grid; place-items: center;
+    animation: floatBox 2.4s ease-in-out infinite;
+  }
+  /* soft backlight glow behind the parcel */
+  .win-box::before {
+    content: "";
+    position: absolute;
+    inset: -22%;
+    z-index: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.5) 0%, rgba(255, 214, 120, 0.32) 40%, rgba(255, 214, 120, 0) 70%);
+    filter: blur(6px);
+    pointer-events: none;
+  }
+  .win-box img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: contain; }
+  .win-box .emoji { position: relative; z-index: 1; font-size: 90px; }
+  @keyframes floatBox {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .mini-scores {
+    display: flex; justify-content: center; gap: 0;
+    background: var(--pill); border: 1px solid var(--line);
+    border-radius: 14px; overflow: hidden; margin: 0 auto 18px;
+    width: max-content;
+  }
+  .mini-scores .seg { padding: 10px 22px; }
+  .mini-scores .label { color: #fff; }
+
+  .btn-row { display: flex; flex-direction: column; gap: 10px; }
+  .btn {
+    border: none; cursor: pointer;
+    padding: 14px 20px; border-radius: 13px;
+    font-weight: 800; font-size: 15px;
+    color: #fff;
+    background: #377E22;   /* secondary Uber green (from "green 500 secondary uber") */
+    box-shadow: 0 8px 20px rgba(6, 193, 103, 0.35);
+    transition: transform 0.08s ease;
+  }
+  .btn.secondary {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--line);
+    box-shadow: none;
+  }
+  .btn.outline {
+    color: var(--green);
+    background: transparent;
+    border: 1px solid var(--green-deep);
+    box-shadow: none;
+  }
+  .btn:active { transform: translateY(1px) scale(0.98); }
+
+  /* confetti */
+  .confetti {
+    position: absolute; top: -24px;
+    width: 9px; height: 15px; border-radius: 2px;
+    opacity: 0.95; z-index: 1;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    to { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* tutorial swipe demo */
+  .swipe-demo {
+    position: relative;
+    width: 190px; height: 96px;
+    margin: 6px auto 14px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.02);
+    overflow: hidden;
+  }
+  .swipe-demo .dt {
+    position: absolute; top: 26px;
+    width: 44px; height: 44px; border-radius: 11px;
+    display: grid; place-items: center; font-size: 26px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--line-soft);
+  }
+  .swipe-demo .dt.a { left: 18px; animation: slideMerge 2.2s ease-in-out infinite; }
+  .swipe-demo .dt.b { left: 128px; }
+  @keyframes slideMerge {
+    0%, 15% { left: 18px; opacity: 1; }
+    55%, 100% { left: 128px; opacity: 0; }
+  }
+  .swipe-demo .hand {
+    position: absolute; top: 40px; font-size: 30px;
+    animation: handSwipe 2.2s ease-in-out infinite;
+  }
+  @keyframes handSwipe {
+    0%, 15% { left: 130px; }
+    55%, 100% { left: 40px; }
+  }
+  .dots { display: flex; gap: 7px; justify-content: center; margin: 6px 0 16px; }
+  .dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.2); }
+  .dots i.on { background: var(--green); width: 18px; border-radius: 4px; }
+
+  /* combo flash */
+  .combo-flash {
+    position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%);
+    font-weight: 900; font-size: clamp(28px, 11vw, 52px); color: var(--green-hi);
+    -webkit-text-stroke: 2px rgba(0, 0, 0, 0.7); paint-order: stroke fill;
+    text-shadow: 0 4px 16px rgba(6, 193, 103, 0.6);
+    pointer-events: none; opacity: 0; z-index: 6; white-space: nowrap;
+  }
+  .combo-flash.go { animation: comboPop 0.8s ease forwards; }
+  @keyframes comboPop {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    25%  { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+    70%  { opacity: 1; transform: translate(-50%, -60%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -82%) scale(1); }
+  }
+
+  /* tutorial: animated swipe-merge demo */
+  .demo-grid { position: relative; width: min(62vw, 224px); aspect-ratio: 1 / 1; margin: 10px auto 4px; }
+  .demo-cells { position: absolute; inset: 0; padding: var(--gap); display: grid; gap: var(--gap); }
+  .demo-cells .dc { border-radius: 11px; background: rgba(255,255,255,0.03); border: 1px solid rgba(6, 193, 103,0.14); }
+  .demo-tiles { position: absolute; inset: 0; }
+  .dgt { position: absolute; display: grid; place-items: center; transition: left 0.46s ease, top 0.46s ease, opacity 0.3s ease; }
+  .dgt img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4)); }
+  .dgt .dn { position: absolute; right: 4%; bottom: 1%; color: var(--green); font-weight: 900;
+    font-size: clamp(11px, 4.5vw, 16px); -webkit-text-stroke: 1.4px rgba(0,0,0,0.75); paint-order: stroke fill; }
+  .dgt.pop { animation: pop 0.32s ease; }
+  .demo-hand { position: absolute; width: 30px; height: 30px; transform: translate(-50%, -50%);
+    fill: #fff; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.65)); pointer-events: none; opacity: 0;
+    z-index: 3; transition: left 0.46s ease, opacity 0.3s ease; }
+  .demo-eq { text-align: center; font-weight: 800; color: var(--muted); font-size: 15px; min-height: 18px; }
+  .demo-eq b { color: var(--green); font-size: 1.15em; }
+  /* tutorial lines */
+  .tut-lines { text-align: left; margin: 12px 0 16px; display: flex; flex-direction: column; gap: 10px; }
+  .tut-lines p { margin: 0; display: flex; gap: 11px; align-items: flex-start; font-weight: 600; color: var(--muted); font-size: 14.5px; line-height: 1.3; }
+  .tut-lines .n { flex: none; width: 22px; height: 22px; border-radius: 50%; background: rgba(6, 193, 103,0.18); color: var(--green); font-weight: 900; font-size: 13px; display: grid; place-items: center; }
+  .tut-lines b { color: #fff; font-weight: 800; }
+
+  /* tutorial overlay sits on the same green as the game itself; green accents
+     swap to black/white-translucent for contrast (green-on-green is invisible) */
+  #tutorial {
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgba(255, 255, 255, 0.07), transparent 52%),
+      var(--bg-500);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  #tutorial h2.green { color: #000; font-size: 43px; margin-top: -16px; }
+  #tutorial .tut-lines p { color: #000; }
+  #tutorial .tut-lines b { color: #000; }
+  #tutorial .tut-lines .n { background: rgba(255, 255, 255, 0.85); color: #000; }
+  #tutorial .demo-eq { color: rgba(255, 255, 255, 0.88); }
+  #tutorial .demo-eq b { color: #fff; }
+  #tutorial .demo-cells .dc { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.14); }
+  #tutorial .btn { border: 1px solid rgba(255, 255, 255, 0.35); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25); width: 50%; color: #fff; }
+  #tutorial .btn-row { align-items: center; }
+
+  /* end screen (win / game-over) sits on the same green as the game;
+     dark scrim -> green, white text -> black, pill + ghost buttons go light */
+  #overlay {
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgba(255, 255, 255, 0.07), transparent 52%),
+      var(--bg-500);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  #overlay .card h2 { color: #000; }
+  #overlay .card h2.danger { color: var(--danger); }
+  #overlay .card p { color: #000; opacity: 1; }
+  #overlay .swipes-line b { color: #000; }
+  #overlay .mini-scores { background: rgba(255, 255, 255, 0.85); border-color: rgba(0, 0, 0, 0.12); }
+  #overlay .mini-scores .label { color: #000; }
+  #overlay .mini-scores .value { color: #000; }
+  #overlay .btn.secondary,
+  #overlay .btn.outline { color: #000; background: rgba(255, 255, 255, 0.18); border-color: rgba(0, 0, 0, 0.18); }
+  /* end-screen buttons hug their text + centered, matched to the other games' length */
+  #overlay .btn-row { align-items: center; }
+  #overlay .btn { width: auto; min-width: 200px; font-size: 18px; padding: 15px 40px; }
+</style>
+</head>
+<body>
+  <div class="app">
+    <!-- header: score/best -->
+    <div class="header">
+      <div class="scorebox">
+        <div class="seg"><div class="label">Swipes</div><div class="value" id="score">0</div></div>
+        <div class="seg"><div class="label">Best</div><div class="value" id="best">0</div></div>
+      </div>
+    </div>
+
+    <!-- toolbar: undo / restart / sound -->
+    <div class="toolbar">
+      <button class="icon-btn" id="undo-btn" title="Undo" aria-label="Undo last move">
+        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z"/></svg>
+      </button>
+      <button class="icon-btn" id="restart-btn" title="Restart" aria-label="Restart game">
+        <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
+      </button>
+      <button class="icon-btn snd" id="sound-btn" title="Sound on/off" aria-label="Toggle sound">🔊</button>
+    </div>
+
+    <!-- board -->
+    <div class="board-wrap">
+      <div class="board" id="board">
+        <div class="cells" id="cells"></div>
+        <div class="tiles" id="tiles"></div>
+        <div class="combo-flash" id="combo"></div>
+
+        <!-- win / game-over overlay (content built in JS) -->
+        <div class="overlay" id="overlay"><div class="card" id="ov-card"></div><img class="rider" src="assets/uber/rider.png" alt="" /></div>
+
+        <!-- tutorial overlay -->
+        <div class="overlay" id="tutorial">
+          <div class="card">
+            <h2 class="green">Combo Creator</h2>
+            <div class="demo-grid" id="demoGrid">
+              <div class="demo-cells" id="demoCells"></div>
+              <div class="demo-tiles" id="demoTiles"></div>
+              <svg class="demo-hand" id="demoHand" viewBox="0 0 24 24"><path d="M9 11.24V7.5C9 6.12 10.12 5 11.5 5S14 6.12 14 7.5v3.74c1.21-.81 2-2.18 2-3.74C16 5.01 13.99 3 11.5 3S7 5.01 7 7.5c0 1.56.79 2.93 2 3.74zm9.84 4.63l-4.54-2.26c-.17-.07-.35-.11-.54-.11H13v-6C13 6.67 12.33 6 11.5 6S10 6.67 10 7.5v10.74l-3.43-.72c-.08-.01-.15-.03-.24-.03-.31 0-.59.13-.79.33l-.79.8 4.94 4.94c.27.27.65.44 1.06.44h6.79c.75 0 1.33-.55 1.44-1.28l.75-5.27c.01-.07.02-.14.02-.2 0-.62-.38-1.16-.92-1.39z"/></svg>
+            </div>
+            <div class="demo-eq" id="demoEq"></div>
+            <div class="tut-lines">
+              <p><span class="n">1</span><span><b>Swipe</b> any direction — all items slide that way.</span></p>
+              <p><span class="n">2</span><span>Two of the <b>same item merge</b> into the next one.</span></p>
+              <p><span class="n">3</span><span>Reach the <b>Uber Eats Bag</b> to <b>win</b> — in as few swipes as you can!</span></p>
+            </div>
+            <div class="btn-row"><button class="btn" id="tut-got">Play ▶</button></div>
+          </div>
+          <img class="rider" src="assets/uber/rider.png" alt="" />
+        </div>
+      </div>
+    </div>
+
+    <div class="tagline">Side quest when you want stuff</div>
+    <div class="hint" id="hint">Swipe to move items · match two to level up your order</div>
+  </div>
+
+<script>
+"use strict";
+/* ============================================================
+   CONFIG — change board size, target, spawn rates, scoring,
+   and the food items (with their image paths) here.
+   ============================================================ */
+const CONFIG = {
+  boardSize: 4,           // grid is N x N
+  target: 6,              // level that wins (Uber Delivery Box)
+  startTiles: 2,
+  spawn: [ { value: 1, weight: 85 }, { value: 2, weight: 15 } ], // mostly Flowers, sometimes Coffee
+  maxScore: 150,          // best possible score (also clamps a stored best)
+  // efficiency tiers: win within `maxSwipes` -> that score. Fewer swipes = higher. Edit freely.
+  scoreTiers: [
+    { maxSwipes: 25,       score: 150 },
+    { maxSwipes: 29,       score: 140 },
+    { maxSwipes: 34,       score: 120 },
+    { maxSwipes: 39,       score: 100 },
+    { maxSwipes: 44,       score: 80 },
+    { maxSwipes: 49,       score: 60 },
+    { maxSwipes: 54,       score: 40 },
+    { maxSwipes: Infinity, score: 20 }
+  ],
+  animMs: 130,
+  autoRestartMs: 4000,    // after finishing, auto-start a fresh game this many ms later
+  swipeThreshold: 22,
+  maxUndo: 50,
+  storageKey: "ubereats.merge.v1",
+  tutorialKey: "ubereats.merge.tut",
+  // image path per level — drop your renders into assets/uber/<level>.png
+  itemImg: (v) => `assets/uber/${v}.png?v=6`,
+  numbersInImage: false,  // images have NO baked numbers — the game draws them (uniform size)
+  // name + emoji fallback (shown until the PNG exists)
+  items: {
+    1: { name: "Flowers",       emoji: "💐" },
+    2: { name: "Coffee",        emoji: "☕" },
+    3: { name: "Noodles",       emoji: "🍜" },
+    4: { name: "Smoothie",      emoji: "🥤" },
+    5: { name: "Green Bag",     emoji: "🛍️" },
+    6: { name: "Uber Eats Bag", emoji: "🛍️" }
+  }
+};
+
+/* ============================================================
+   PURE GAME LOGIC — no DOM access in this section
+   ============================================================ */
+const N = CONFIG.boardSize;
+let nextId = 1;
+
+function emptyGrid() {
+  return Array.from({ length: N }, () => Array(N).fill(null));
+}
+
+function randomSpawnValue() {
+  const total = CONFIG.spawn.reduce((s, o) => s + o.weight, 0);
+  let r = Math.random() * total;
+  for (const o of CONFIG.spawn) { if ((r -= o.weight) < 0) return o.value; }
+  return CONFIG.spawn[0].value;
+}
+
+// Ordered cell coords per line, from the edge a swipe pushes toward, inward.
+function lineCells(dir) {
+  const lines = [];
+  if (dir === "left" || dir === "right") {
+    for (let r = 0; r < N; r++) {
+      const line = [];
+      for (let i = 0; i < N; i++) line.push({ r, c: dir === "left" ? i : N - 1 - i });
+      lines.push(line);
+    }
+  } else {
+    for (let c = 0; c < N; c++) {
+      const line = [];
+      for (let i = 0; i < N; i++) line.push({ r: dir === "up" ? i : N - 1 - i, c });
+      lines.push(line);
+    }
+  }
+  return lines;
+}
+
+// Compute the result of a swipe (pure). Cascades: a freshly-merged item can
+// merge again within the same line (e.g. 1,1,2 -> 3).
+function computeMove(tiles, grid, dir) {
+  const movements = [];
+  const merges = [];
+  const survivors = [];
+  const newGrid = emptyGrid();
+  let moved = false;
+
+  for (const line of lineCells(dir)) {
+    const present = [];
+    for (const { r, c } of line) {
+      const id = grid[r][c];
+      if (id != null) present.push(tiles.get(id));
+    }
+
+    const slots = [];
+    for (const t of present) {
+      slots.push({ value: t.value, ids: [t.id], merged: false });
+      while (
+        slots.length >= 2 &&
+        slots[slots.length - 1].value === slots[slots.length - 2].value &&
+        slots[slots.length - 1].value < CONFIG.target
+      ) {
+        const a = slots.pop();
+        const b = slots.pop();
+        const nv = b.value + 1;
+        slots.push({ value: nv, ids: [...b.ids, ...a.ids], merged: true });
+      }
+    }
+
+    slots.forEach((slot, idx) => {
+      const cell = line[idx];
+      const survivorId = slot.ids[0];
+      newGrid[cell.r][cell.c] = survivorId;
+      survivors.push({ id: survivorId, value: slot.value, r: cell.r, c: cell.c });
+
+      for (const id of slot.ids) {
+        movements.push({ id, r: cell.r, c: cell.c });
+        const t = tiles.get(id);
+        if (t.r !== cell.r || t.c !== cell.c) moved = true;
+      }
+      if (slot.merged) {
+        moved = true;
+        merges.push({ survivorId, newValue: slot.value, removedIds: slot.ids.slice(1), r: cell.r, c: cell.c });
+      }
+    });
+  }
+
+  const newTiles = new Map();
+  for (const s of survivors) newTiles.set(s.id, { id: s.id, value: s.value, r: s.r, c: s.c });
+
+  return { moved, movements, merges, newGrid, newTiles };
+}
+
+function anyMovePossible(tiles, grid) {
+  if (grid.some(row => row.some(v => v == null))) return true;
+  return ["left", "right", "up", "down"].some(d => computeMove(tiles, grid, d).moved);
+}
+
+/* ============================================================
+   GAME STATE
+   ============================================================ */
+const state = {
+  tiles: new Map(),
+  grid: emptyGrid(),
+  score: 0,
+  best: 0,
+  moves: 0,
+  won: false,
+  over: false,
+  muted: false,
+  busy: false,
+  history: []
+};
+
+/* ============================================================
+   DOM + GEOMETRY
+   ============================================================ */
+const el = {
+  board: document.getElementById("board"),
+  cells: document.getElementById("cells"),
+  tiles: document.getElementById("tiles"),
+  score: document.getElementById("score"),
+  best: document.getElementById("best"),
+  undo: document.getElementById("undo-btn"),
+  restart: document.getElementById("restart-btn"),
+  sound: document.getElementById("sound-btn"),
+  overlay: document.getElementById("overlay"),
+  ovCard: document.getElementById("ov-card"),
+  tutorial: document.getElementById("tutorial"),
+  tutGot: document.getElementById("tut-got"),
+  combo: document.getElementById("combo"),
+  demoGrid: document.getElementById("demoGrid"),
+  demoCells: document.getElementById("demoCells"),
+  demoTiles: document.getElementById("demoTiles"),
+  demoHand: document.getElementById("demoHand"),
+  demoEq: document.getElementById("demoEq"),
+  hint: document.getElementById("hint")
+};
+
+const tileEls = new Map();
+
+const GAP = 3;
+const CELL = (100 - (N + 1) * GAP) / N;
+function pos(i) { return GAP + i * (CELL + GAP); }
+
+function buildCells() {
+  el.board.style.setProperty("--gap", GAP + "%");
+  el.cells.style.gridTemplateColumns = `repeat(${N}, 1fr)`;
+  el.cells.innerHTML = "";
+  for (let i = 0; i < N * N; i++) {
+    const c = document.createElement("div");
+    c.className = "cell";
+    el.cells.appendChild(c);
+  }
+}
+
+/* ============================================================
+   RENDERING
+   ============================================================ */
+function applyTileVisual(elm, value) {
+  const item = CONFIG.items[value] || CONFIG.items[CONFIG.target];
+  elm.classList.toggle("win-tile", value >= CONFIG.target);
+  elm.innerHTML = "";
+
+  const img = document.createElement("img");
+  img.className = "food";
+  img.src = CONFIG.itemImg(value);
+  img.alt = item.name;
+  const emo = document.createElement("span");
+  emo.className = "emoji";
+  emo.textContent = item.emoji;
+  emo.style.display = "none";
+
+  const lvl = document.createElement("span");
+  lvl.className = "lvl";
+  lvl.textContent = value;
+  // when the render already has its number baked in, don't double it up
+  if (CONFIG.numbersInImage) lvl.style.display = "none";
+
+  // fall back to emoji (and re-show the number) if the render isn't present yet
+  img.addEventListener("error", () => {
+    img.style.display = "none";
+    emo.style.display = "";
+    lvl.style.display = "";
+  }, { once: true });
+
+  elm.append(img, emo, lvl);
+}
+
+function placeTileEl(elm, r, c) {
+  elm.style.left = pos(c) + "%";
+  elm.style.top = pos(r) + "%";
+}
+
+function createTileEl(tile, spawn) {
+  const elm = document.createElement("div");
+  elm.className = "tile" + (spawn ? " spawn" : "");
+  elm.style.width = CELL + "%";
+  elm.style.height = CELL + "%";
+  placeTileEl(elm, tile.r, tile.c);
+  applyTileVisual(elm, tile.value);
+  el.tiles.appendChild(elm);
+  tileEls.set(tile.id, elm);
+  if (spawn) elm.addEventListener("animationend", () => elm.classList.remove("spawn"), { once: true });
+  return elm;
+}
+
+function renderAll() {
+  el.tiles.innerHTML = "";
+  tileEls.clear();
+  for (const tile of state.tiles.values()) createTileEl(tile, false);
+  updateScores();
+  updateUndoBtn();
+}
+
+function updateScores() {
+  el.score.textContent = state.moves;   // left pill = live swipe count (fewer is better)
+  el.best.textContent = state.best;      // best efficiency score (0..maxScore)
+}
+function bumpScore() {
+  el.score.classList.remove("pulse");
+  void el.score.offsetWidth;
+  el.score.classList.add("pulse");
+}
+function updateUndoBtn() { el.undo.disabled = state.history.length === 0; }
+
+// haptic feedback (Android; no-op where unsupported, e.g. iOS Safari)
+function haptic(pattern) {
+  if (navigator.vibrate) { try { navigator.vibrate(pattern); } catch (e) {} }
+}
+// "COMBO!" flash for chain cascades / multi-merges in one swipe
+function comboFlash(n) {
+  el.combo.textContent = n >= 3 ? `Combo ×${n}!` : "Combo!";
+  el.combo.classList.remove("go");
+  void el.combo.offsetWidth;
+  el.combo.classList.add("go");
+}
+
+// Efficiency score: fewer swipes = higher. Returns the score for the first tier the count fits.
+function scoreFromMoves(m) {
+  for (const t of CONFIG.scoreTiers) { if (m <= t.maxSwipes) return t.score; }
+  return 0;
+}
+
+/* ============================================================
+   SOUND (synth, no asset files)
+   ============================================================ */
+let actx = null;
+function audioCtx() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  return actx;
+}
+function blip(freq, dur, type, gain) {
+  if (state.muted) return;
+  const a = audioCtx();
+  const o = a.createOscillator();
+  const g = a.createGain();
+  o.type = type; o.frequency.value = freq;
+  o.connect(g); g.connect(a.destination);
+  const t = a.currentTime;
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(gain, t + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.start(t); o.stop(t + dur);
+}
+function playMerge(value) { blip(170 * Math.pow(1.09, value), 0.15, "triangle", 0.2); }
+function playSpawn() { blip(220, 0.07, "sine", 0.07); }
+function playWin() { [0, 4, 7, 12, 16].forEach((s, i) => setTimeout(() => blip(330 * Math.pow(2, s / 12), 0.28, "sine", 0.22), i * 110)); }
+function playOver() { [0, -3, -7].forEach((s, i) => setTimeout(() => blip(220 * Math.pow(2, s / 12), 0.3, "sawtooth", 0.12), i * 120)); }
+
+/* ============================================================
+   PERSISTENCE
+   ============================================================ */
+function save() {
+  try {
+    localStorage.setItem(CONFIG.storageKey, JSON.stringify({
+      best: state.best, score: state.score, won: state.won, muted: state.muted, moves: state.moves,
+      tiles: [...state.tiles.values()].map(t => ({ v: t.value, r: t.r, c: t.c }))
+    }));
+  } catch (e) {}
+}
+function loadSaved() {
+  try { return JSON.parse(localStorage.getItem(CONFIG.storageKey)); } catch (e) { return null; }
+}
+
+/* ============================================================
+   ACTIONS
+   ============================================================ */
+function addTile(value, r, c) {
+  const tile = { id: nextId++, value, r, c };
+  state.tiles.set(tile.id, tile);
+  state.grid[r][c] = tile.id;
+  return tile;
+}
+function spawnRandom() {
+  const empties = [];
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (state.grid[r][c] == null) empties.push({ r, c });
+  if (!empties.length) return null;
+  const { r, c } = empties[Math.floor(Math.random() * empties.length)];
+  return addTile(randomSpawnValue(), r, c);
+}
+
+function snapshot() {
+  return {
+    score: state.score, won: state.won, moves: state.moves,
+    tiles: [...state.tiles.values()].map(t => ({ id: t.id, value: t.value, r: t.r, c: t.c }))
+  };
+}
+function pushHistory() {
+  state.history.push(snapshot());
+  if (state.history.length > CONFIG.maxUndo) state.history.shift();
+  updateUndoBtn();
+}
+function loadSnapshot(snap) {
+  state.tiles = new Map();
+  state.grid = emptyGrid();
+  for (const t of snap.tiles) {
+    state.tiles.set(t.id, { id: t.id, value: t.value, r: t.r, c: t.c });
+    state.grid[t.r][t.c] = t.id;
+    nextId = Math.max(nextId, t.id + 1);
+  }
+  state.score = snap.score;
+  state.won = snap.won;
+  state.moves = snap.moves || 0;
+  state.over = false;
+}
+
+function newGame() {
+  state.tiles = new Map();
+  state.grid = emptyGrid();
+  state.score = 0;
+  state.moves = 0;
+  state.won = false;
+  state.over = false;
+  state.history = [];
+  for (let i = 0; i < CONFIG.startTiles; i++) spawnRandom();
+  hideOverlay();
+  renderAll();
+  showHint();
+  save();
+}
+
+function undo() {
+  if (state.busy || !state.history.length) return;
+  loadSnapshot(state.history.pop());
+  hideOverlay();
+  renderAll();
+  updateScores();
+  save();
+}
+
+function move(dir) {
+  if (state.busy || state.over) return;
+  const res = computeMove(state.tiles, state.grid, dir);
+  if (!res.moved) return;
+
+  ensureAudio();
+  pushHistory();
+  state.moves++;
+  hideHint();
+  state.busy = true;
+
+  for (const m of res.movements) {
+    const elm = tileEls.get(m.id);
+    if (elm) placeTileEl(elm, m.r, m.c);
+  }
+
+  state.tiles = res.newTiles;
+  state.grid = res.newGrid;
+
+  setTimeout(() => {
+    for (const mg of res.merges) {
+      for (const id of mg.removedIds) {
+        const e = tileEls.get(id);
+        if (e) e.remove();
+        tileEls.delete(id);
+      }
+    }
+    let maxNew = 0;
+    for (const mg of res.merges) {
+      const e = tileEls.get(mg.survivorId);
+      if (e) {
+        applyTileVisual(e, mg.newValue);
+        e.classList.remove("pop");
+        void e.offsetWidth;
+        e.classList.add("pop");
+      }
+      maxNew = Math.max(maxNew, mg.newValue);
+    }
+
+    updateScores();   // live swipe count
+    bumpScore();
+    if (maxNew > 0) playMerge(maxNew);
+
+    // combo = a chain cascade (1+1->2->3) or 2+ merges in one swipe
+    const combos = res.merges.reduce((s, mg) => s + mg.removedIds.length, 0);
+    if (combos >= 2) { comboFlash(combos); haptic([0, 22, 30, 28]); }
+    else if (res.merges.length) { haptic(14); }
+
+    const sp = spawnRandom();
+    if (sp) { createTileEl(sp, true); playSpawn(); }
+
+    save();
+
+    if (!state.won && maxNew >= CONFIG.target) {
+      state.won = true;
+      state.score = scoreFromMoves(state.moves);     // efficiency score, locked in at the win
+      if (state.score > state.best) state.best = state.score;
+      // Credit the gig score to the Unity wallet (parent listens for {type:'gigScore'}).
+      try { window.parent.postMessage({ type: 'gigScore', score: state.score }, '*'); } catch (e) {}
+      updateScores();
+      playWin();
+      haptic([0, 40, 40, 40, 40, 90]);
+      showOverlay("win");
+    } else if (!anyMovePossible(state.tiles, state.grid)) {
+      state.over = true;
+      playOver();
+      showOverlay("over");
+    }
+
+    state.busy = false;
+  }, CONFIG.animMs);
+}
+
+/* ============================================================
+   OVERLAY (win / game over) + confetti
+   ============================================================ */
+let autoRestartTimer = null;
+
+function miniScores() {
+  return `<div class="mini-scores">
+    <div class="seg"><div class="label">Score</div><div class="value">${state.score}</div></div>
+    <div class="seg"><div class="label">Best</div><div class="value">${state.best}</div></div>
+  </div>`;
+}
+
+function showOverlay(kind) {
+  if (kind === "win") {
+    el.ovCard.innerHTML = `
+      <h2>You did it!</h2>
+      <p>You created the Uber Eats Bag!</p>
+      <div class="win-box">
+        <img src="${CONFIG.itemImg(CONFIG.target)}" alt="${CONFIG.items[CONFIG.target].name}"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <span class="emoji" style="display:none">${CONFIG.items[CONFIG.target].emoji}</span>
+      </div>
+      <p class="swipes-line">Delivered in <b>${state.moves}</b> swipe${state.moves === 1 ? "" : "s"}</p>
+      ${miniScores()}
+      <div class="btn-row">
+        <button class="btn" data-act="again">Play again</button>
+        <button class="btn secondary" data-act="home">Back To Town</button>
+      </div>`;
+    spawnConfetti();
+  } else {
+    el.ovCard.innerHTML = `
+      <h2 class="danger">Game over</h2>
+      <p>No more moves left!</p>
+      <p class="swipes-line">Used <b>${state.moves}</b> swipe${state.moves === 1 ? "" : "s"} — no delivery</p>
+      <div class="mini-scores"><div class="seg"><div class="label">Best</div><div class="value">${state.best}</div></div></div>
+      <div class="btn-row">
+        <button class="btn outline" data-act="again">Try again</button>
+        <button class="btn secondary" data-act="home">Back To Town</button>
+      </div>`;
+  }
+  el.ovCard.querySelectorAll("[data-act]").forEach(b => {
+    b.addEventListener("click", () => {
+      if (b.dataset.act === "home") { backToTown(); }
+      else newGame();
+    });
+  });
+  el.overlay.classList.add("show");
+  // auto-start a fresh game shortly after finishing — the finished board is gone for good
+  clearTimeout(autoRestartTimer);
+  autoRestartTimer = setTimeout(() => { autoRestartTimer = null; newGame(); }, CONFIG.autoRestartMs);
+}
+function hideOverlay() {
+  clearTimeout(autoRestartTimer);
+  autoRestartTimer = null;
+  el.overlay.classList.remove("show");
+  el.overlay.querySelectorAll(".confetti").forEach(c => c.remove());
+}
+
+function spawnConfetti() {
+  const colors = ["#06c167", "#2fd35f", "#ffffff", "#9be7b3", "#0a8f4d", "#18e070"];
+  for (let i = 0; i < 40; i++) {
+    const c = document.createElement("div");
+    c.className = "confetti";
+    c.style.left = Math.random() * 100 + "%";
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.animationDuration = (1.2 + Math.random() * 1.4) + "s";
+    c.style.animationDelay = (Math.random() * 0.5) + "s";
+    el.overlay.appendChild(c);
+    c.addEventListener("animationend", () => c.remove(), { once: true });
+  }
+}
+
+/* ============================================================
+   TUTORIAL
+   ============================================================ */
+// A real auto-playing game on the tutorial grid: starts with two burgers,
+// each swipe slides + merges the whole board, then a fresh burger spawns
+// in an empty cell — exactly like real play. Loops on win or when stuck.
+let demoTimers = [], demoBuilt = false;
+let dBoard, dTiles, dNextId, dMoves;
+function buildDemoGrid() {
+  if (demoBuilt) return;
+  el.demoGrid.style.setProperty("--gap", GAP + "%");
+  el.demoCells.style.gridTemplateColumns = `repeat(${N}, 1fr)`;
+  for (let i = 0; i < N * N; i++) {
+    const d = document.createElement("div");
+    d.className = "dc";
+    el.demoCells.appendChild(d);
+  }
+  demoBuilt = true;
+}
+function setHand(c, r, vis) {
+  el.demoHand.style.left = (pos(c) + CELL / 2) + "%";
+  el.demoHand.style.top = (pos(r) + CELL / 2) + "%";
+  el.demoHand.style.opacity = vis ? "1" : "0";
+}
+function stopDemo() { demoTimers.forEach(clearTimeout); demoTimers = []; }
+// place a tile of value v at (r,c); pop it in
+function dPlace(v, r, c, pop) {
+  const id = dNextId++;
+  const node = document.createElement("div");
+  node.className = "dgt";
+  node.style.left = pos(c) + "%"; node.style.top = pos(r) + "%";
+  node.style.width = CELL + "%"; node.style.height = CELL + "%";
+  node.innerHTML = `<img src="${CONFIG.itemImg(v)}" alt=""><span class="dn">${v}</span>`;
+  if (pop) node.style.opacity = "0";
+  el.demoTiles.appendChild(node);
+  dBoard[r][c] = id;
+  dTiles[id] = { v, el: node, r, c };
+  if (pop) requestAnimationFrame(() => {
+    node.style.opacity = "1"; node.classList.add("pop");
+    demoTimers.push(setTimeout(() => node.classList.remove("pop"), 360));
+  });
+  return id;
+}
+function dReset() {
+  el.demoTiles.innerHTML = "";
+  dBoard = Array.from({ length: N }, () => Array(N).fill(0));
+  dTiles = {}; dNextId = 1; dMoves = 0;
+  el.demoEq.textContent = "";
+  el.demoHand.style.opacity = "0";
+  dPlace(1, 1, 0, true);   // start with two burgers, a gap apart so the slide reads clearly
+  dPlace(1, 1, 2, true);
+}
+// cells of line k (front -> back) for a swipe direction
+function dLine(dir, k) {
+  const a = [];
+  for (let i = 0; i < N; i++) {
+    if (dir === "left") a.push([k, i]);
+    else if (dir === "right") a.push([k, N - 1 - i]);
+    else if (dir === "up") a.push([i, k]);
+    else a.push([N - 1 - i, k]);
+  }
+  return a;
+}
+// plan a swipe: list of tile movements (+ merges), how many merges, whether anything moved
+function dPlan(dir) {
+  const moves = []; let merges = 0, moved = false;
+  for (let k = 0; k < N; k++) {
+    const cells = dLine(dir, k);
+    const ids = cells.map(([r, c]) => dBoard[r][c]).filter(Boolean);
+    let out = 0, i = 0;
+    while (i < ids.length) {
+      const id = ids[i];
+      if (i + 1 < ids.length && dTiles[ids[i + 1]].v === dTiles[id].v) {
+        const [tr, tc] = cells[out];
+        moves.push({ id, toR: tr, toC: tc, survive: true, becomes: dTiles[id].v + 1 });
+        moves.push({ id: ids[i + 1], toR: tr, toC: tc, survive: false });
+        merges++; moved = true; out++; i += 2;
+      } else {
+        const [tr, tc] = cells[out];
+        moves.push({ id, toR: tr, toC: tc, survive: true });
+        if (tr !== dTiles[id].r || tc !== dTiles[id].c) moved = true;
+        out++; i += 1;
+      }
+    }
+  }
+  return { moves, merges, moved };
+}
+// pick a direction: only straight, simple swipes — RIGHT (left->right) or DOWN (top->bottom).
+// prefer the one that merges the most so the chain keeps climbing; tiles settle bottom-right.
+function dChoose() {
+  const order = (dMoves % 2 === 0) ? ["down", "right"] : ["right", "down"];
+  let best = null;
+  for (const d of order) {
+    const p = dPlan(d);
+    if (p.moved && (!best || p.merges > best.p.merges)) best = { d, p };
+  }
+  return best;
+}
+function dHandSwipe(dir) {
+  const mid = Math.round((N - 1) / 2);
+  let sc, sr, ec, er;
+  if (dir === "right") { sr = er = mid; sc = 0; ec = N - 1; }   // straight: left -> right
+  else                 { sc = ec = mid; sr = 0; er = N - 1; }   // straight: top -> bottom (down)
+  // snap to the start while invisible (transition off) so it never glides diagonally between moves
+  el.demoHand.style.transition = "none";
+  setHand(sc, sr, false);
+  // two frames later (after the snap paints), fade in and glide slowly + straight to the end
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    el.demoHand.style.transition = "left 0.95s ease, top 0.95s ease, opacity 0.3s ease";
+    setHand(sc, sr, true);
+    demoTimers.push(setTimeout(() => setHand(ec, er, true), 170));
+    demoTimers.push(setTimeout(() => { el.demoHand.style.opacity = "0"; }, 1250));
+  }));
+}
+function dApply(p) {
+  // slide every tile to its new spot
+  p.moves.forEach(m => {
+    const t = dTiles[m.id];
+    t.el.style.left = pos(m.toC) + "%"; t.el.style.top = pos(m.toR) + "%";
+    t.r = m.toR; t.c = m.toC;
+  });
+  // after the slide: resolve merges, rebuild the board
+  demoTimers.push(setTimeout(() => {
+    dBoard = Array.from({ length: N }, () => Array(N).fill(0));
+    p.moves.forEach(m => {
+      const t = dTiles[m.id];
+      if (!m.survive) { t.el.style.opacity = "0"; demoTimers.push(setTimeout(() => t.el.remove(), 200)); delete dTiles[m.id]; return; }
+      if (m.becomes) {
+        t.v = m.becomes;
+        t.el.querySelector("img").src = CONFIG.itemImg(m.becomes);
+        t.el.querySelector(".dn").textContent = m.becomes;
+        t.el.classList.remove("pop"); void t.el.offsetWidth; t.el.classList.add("pop");
+        t.el.style.zIndex = "2";
+      }
+      dBoard[m.toR][m.toC] = m.id;
+    });
+    dMoves++;
+    // win? show the bag moment, then restart from two burgers
+    if (Object.values(dTiles).some(t => t.v >= CONFIG.target)) {
+      el.demoEq.textContent = "You built the Uber Eats Bag — you win! 🛍️";
+      demoTimers.push(setTimeout(() => { dReset(); demoTimers.push(setTimeout(demoTick, 650)); }, 1700));
+      return;
+    }
+    if (dMoves > 22) {                          // keep the loop short so the 2-burger start is shown often
+      demoTimers.push(setTimeout(() => { dReset(); demoTimers.push(setTimeout(demoTick, 700)); }, 600));
+      return;
+    }
+    dSpawn();                                   // a new burger drops in every move
+    demoTimers.push(setTimeout(demoTick, 1150));
+  }, 480));
+}
+function dSpawn() {
+  const empties = [];
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (!dBoard[r][c]) empties.push([r, c]);
+  if (!empties.length) return;
+  const [r, c] = empties[Math.floor(Math.random() * empties.length)];
+  dPlace(1, r, c, true);
+}
+function demoTick() {
+  stopDemo();
+  const choice = dChoose();
+  if (!choice) { dReset(); demoTimers.push(setTimeout(demoTick, 650)); return; }
+  dHandSwipe(choice.d);
+  demoTimers.push(setTimeout(() => dApply(choice.p), 850));
+}
+function startDemo() { buildDemoGrid(); dReset(); demoTimers.push(setTimeout(demoTick, 800)); }
+
+function showTutorial() { el.tutorial.classList.add("show"); startDemo(); }
+function hideTutorial() {
+  el.tutorial.classList.remove("show");
+  stopDemo();
+  try { localStorage.setItem(CONFIG.tutorialKey, "1"); } catch (e) {}
+}
+
+/* ---------- hint ---------- */
+function showHint() { el.hint.style.opacity = "1"; }
+function hideHint() { el.hint.style.opacity = "0"; }
+
+/* ============================================================
+   INPUT
+   ============================================================ */
+let ptr = null;
+el.board.addEventListener("pointerdown", (e) => {
+  if (state.busy) return;
+  ptr = { x: e.clientX, y: e.clientY };
+});
+el.board.addEventListener("pointerup", (e) => {
+  if (!ptr) return;
+  const dx = e.clientX - ptr.x, dy = e.clientY - ptr.y;
+  ptr = null;
+  const ax = Math.abs(dx), ay = Math.abs(dy);
+  if (Math.max(ax, ay) < CONFIG.swipeThreshold) return;
+  move(ax > ay ? (dx > 0 ? "right" : "left") : (dy > 0 ? "down" : "up"));
+});
+el.board.addEventListener("pointercancel", () => { ptr = null; });
+
+const KEYS = {
+  ArrowLeft: "left", ArrowRight: "right", ArrowUp: "up", ArrowDown: "down",
+  a: "left", d: "right", w: "up", s: "down"
+};
+window.addEventListener("keydown", (e) => {
+  const dir = KEYS[e.key];
+  if (!dir) return;
+  e.preventDefault();
+  move(dir);
+});
+
+function ensureAudio() {
+  try { const a = audioCtx(); if (a.state === "suspended") a.resume(); } catch (e) {}
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+el.undo.addEventListener("click", undo);
+el.restart.addEventListener("click", newGame);
+el.sound.addEventListener("click", () => {
+  state.muted = !state.muted;
+  el.sound.textContent = state.muted ? "🔇" : "🔊";
+  if (!state.muted) ensureAudio();
+  save();
+});
+el.tutGot.addEventListener("click", hideTutorial);
+
+/* ============================================================
+   INIT
+   ============================================================ */
+function init() {
+  buildCells();
+  const saved = loadSaved();
+  state.best = Math.min(saved && saved.best ? saved.best : 0, CONFIG.maxScore);
+  state.muted = !!(saved && saved.muted);
+  el.sound.textContent = state.muted ? "🔇" : "🔊";
+
+  if (saved && saved.tiles && saved.tiles.length) {
+    state.score = Math.min(saved.score || 0, CONFIG.maxScore);
+    state.moves = saved.moves || 0;
+    state.won = !!saved.won;
+    for (const t of saved.tiles) addTile(t.v, t.r, t.c);
+    state.over = !anyMovePossible(state.tiles, state.grid);
+    renderAll();
+    hideHint();
+    if (state.over) showOverlay("over");
+  } else {
+    newGame();
+  }
+  updateScores();
+
+  // show the how-to-play tutorial at the start of every session
+  showTutorial();
+}
+
+init();
+
+/* Back To Town: return to the map by asking the Unity host (parent window) to close the gig
+   overlay. The game runs in a cross-origin iframe, so postMessage is the only way to reach the
+   parent; the Unity page closes the overlay on a {type:'close'} message. */
+function backToTown(){
+  try { window.parent.postMessage({ type: 'close' }, '*'); } catch (e) {}
+  try { if (window.parent !== window && window.parent.closeWebsite) window.parent.closeWebsite(); } catch (e) {}
+}
+</script>
+</body>
+</html>

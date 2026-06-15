@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Interactive Video Game</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: -apple-system, system-ui, sans-serif; }
+  #stage { position: fixed; inset: 0; }
+
+  /* Background video / hold-frame layer */
+  .bg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    background: #000;
+  }
+  video.hidden { display: none; }
+
+  /* Foreground game layer */
+  #fg { position: absolute; inset: 0; pointer-events: none; }
+
+  /* HUD */
+  #hud {
+    position: absolute; top: 0; left: 0; right: 0;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 22px;
+    color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,.8);
+    pointer-events: none;
+  }
+  #hud .title { font-weight: 700; font-size: 18px; letter-spacing: .5px; }
+
+  /* Click zones (styled name boxes, ref image) */
+  .zone {
+    position: absolute; bottom: 20%;
+    width: 30%; max-width: 460px;
+    pointer-events: auto; cursor: pointer;
+    transition: transform .15s, filter .15s;
+  }
+  .zone.left  { left: 4%; }
+  .zone.right { right: 4%; }
+  .zone:hover { transform: translateY(-6px); filter: brightness(1.06); }
+  .zone:active { transform: translateY(-2px) scale(.99); }
+
+  /* white panel holds centered name + count */
+  .zone .panel {
+    position: relative;
+    width: 100%; height: 22vh; max-height: 200px;
+    background: #f4f1ee; border-radius: 22px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.5), inset 0 0 0 2px rgba(255,255,255,.6);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 6px;
+  }
+  .zone.left  .panel { outline: 5px solid #7b3ff2; }
+  .zone.right .panel { outline: 5px solid #ff2f86; }
+
+  /* name centered in box */
+  .zone .name {
+    font-weight: 800; font-size: clamp(20px, 2.6vw, 34px);
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  .zone.left  .name { color: #5a23c8; }
+  .zone.right .name { color: #d81f6a; }
+
+  /* click count */
+  .zone .count {
+    font-weight: 900; font-size: clamp(28px, 4vw, 56px);
+    line-height: 1; color: #111;
+  }
+
+  /* cooldown: silently lock box (no countdown shown) */
+  .zone.cooldown { cursor: not-allowed; pointer-events: none; }
+
+  /* locked while a video plays: stays visible (totals shown), just not clickable */
+  .zone.locked { pointer-events: none; cursor: default; }
+
+  /* live = choosing: glow + invite the click */
+  @keyframes glowL { 0%,100%{box-shadow:0 10px 30px rgba(0,0,0,.5)} 50%{box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 30px 8px rgba(123,63,242,.75)} }
+  @keyframes glowR { 0%,100%{box-shadow:0 10px 30px rgba(0,0,0,.5)} 50%{box-shadow:0 10px 30px rgba(0,0,0,.5),0 0 30px 8px rgba(255,47,134,.75)} }
+  .zone.left.live  .panel { animation: glowL 1.2s ease-in-out infinite; }
+  .zone.right.live .panel { animation: glowR 1.2s ease-in-out infinite; }
+  .zone.live { cursor: pointer; }
+
+  /* "PICK ONE" prompt */
+  #prompt {
+    position: absolute; top: 14%; left: 50%; transform: translateX(-50%);
+    color: #fff; font-weight: 900; font-size: clamp(20px, 3vw, 40px); letter-spacing: 2px;
+    background: rgba(0,0,0,.45); padding: 10px 26px; border-radius: 999px;
+    pointer-events: none; opacity: 0; transition: opacity .3s;
+    text-shadow: 0 2px 8px rgba(0,0,0,.8);
+  }
+  #prompt.show { opacity: 1; animation: bob 1.2s ease-in-out infinite; }
+  @keyframes bob { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-7px)} }
+  /* gone: fully hidden (used on the final video) */
+  .zone.gone { opacity: 0; pointer-events: none; }
+  .zone { transition: transform .15s, filter .15s, opacity .3s; }
+
+  /* Upload / controls */
+  #controls {
+    position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 10px; align-items: center;
+    pointer-events: auto;
+    background: rgba(0,0,0,.5); padding: 8px 12px; border-radius: 12px;
+    backdrop-filter: blur(6px); color: #fff; font-size: 13px;
+    border: 1px solid rgba(255,255,255,.2);
+  }
+  #controls label { cursor: pointer; }
+  #controls .btn {
+    background: #fff; color: #111; border: none; border-radius: 8px;
+    padding: 6px 12px; font-weight: 600; cursor: pointer; font-size: 13px;
+  }
+  #controls .btn:hover { background: #ddd; }
+
+  /* Start overlay (needed for autoplay/audio unlock) */
+  #start {
+    position: absolute; inset: 0; z-index: 50;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 18px; background: rgba(0,0,0,.85); color: #fff; text-align: center;
+    pointer-events: auto;
+  }
+  #start h1 { font-size: 30px; }
+  #start p { opacity: .8; max-width: 460px; line-height: 1.5; }
+  #start .btn { font-size: 18px; padding: 14px 34px; }
+
+  /* "Playing clip" badge */
+  #clipBadge {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    color: #fff; font-size: 22px; font-weight: 700;
+    background: rgba(0,0,0,.55); padding: 14px 26px; border-radius: 14px;
+    pointer-events: none; opacity: 0; transition: opacity .3s;
+    text-shadow: 0 2px 6px rgba(0,0,0,.8);
+  }
+  #clipBadge.show { opacity: 1; }
+
+  /* hold canvas: shows last frame while next video buffers (no black flash) */
+  #hold { z-index: 1; }
+  video.bg { z-index: 0; }
+  #fg { z-index: 2; }
+
+  /* click count pop */
+  @keyframes pop { 0%{transform:scale(1)} 40%{transform:scale(1.45)} 100%{transform:scale(1)} }
+  .zone .count.pop { animation: pop .3s ease; }
+
+  /* progress dots */
+  #dots {
+    display: flex; gap: 8px; align-items: center;
+    color: #fff; font-weight: 700; font-size: 14px;
+    text-shadow: 0 2px 6px rgba(0,0,0,.8); pointer-events: none;
+  }
+  #dots .label { margin-right: 6px; opacity: .9; letter-spacing: .5px; }
+  #dots .dot { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,.35); transition: transform .2s, background .2s; }
+  #dots .dot.on { background: #fff; transform: scale(1.3); }
+  #dots .dot.done { background: #7b3ff2; }
+
+  /* winner screen */
+  #winner {
+    position: absolute; inset: 0; z-index: 60;
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; background: rgba(0,0,0,.88); color: #fff; text-align: center;
+    pointer-events: auto;
+  }
+  #winner h1 { font-size: 44px; }
+  #winner .totals { font-size: 24px; opacity: .92; }
+  #winner .totals b.l { color: #b18cff; }
+  #winner .totals b.r { color: #ff7ab0; }
+  #winner .btn {
+    font-size: 18px; padding: 14px 34px; margin-top: 8px;
+    background: #fff; color: #111; border: none; border-radius: 8px; font-weight: 700; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <!-- Two video elements: swap which is visible to avoid reload flashes -->
+  <video id="vMain" class="bg" loop playsinline preload="auto"></video>
+  <video id="vClip" class="bg hidden" playsinline preload="auto"></video>
+  <canvas id="hold" class="bg" style="display:none"></canvas>
+
+  <div id="fg">
+    <div id="hud">
+      <div style="display:flex;align-items:center;gap:14px;pointer-events:auto;">
+        <button id="restartBtn" style="background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:10px;padding:8px 14px;font-weight:700;font-size:15px;cursor:pointer;">↺ Restart</button>
+        <div class="title">Interactive Video Game</div>
+      </div>
+      <div id="dots"></div>
+      <div style="display:flex;align-items:center;gap:16px;pointer-events:auto;">
+        <button id="muteBtn" style="background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:10px;padding:8px 14px;font-weight:700;font-size:15px;cursor:pointer;">🔊 Sound</button>
+      </div>
+    </div>
+
+    <div id="clipBadge"></div>
+    <div id="prompt">👉 PICK ONE 👈</div>
+
+    <div class="zone left"  id="zoneL">
+      <div class="panel">
+        <div class="name">Tropzilla</div>
+        <div class="count" id="countL">0</div>
+      </div>
+    </div>
+    <div class="zone right" id="zoneR">
+      <div class="panel">
+        <div class="name">Legend</div>
+        <div class="count" id="countR">0</div>
+      </div>
+    </div>
+
+    <div id="controls">
+      <label>Background video:
+        <input type="file" id="upload" accept="video/*" />
+      </label>
+      <button class="btn" id="useDefault">Use default</button>
+    </div>
+  </div>
+
+  <div id="winner">
+    <h1 id="winnerText">Winner!</h1>
+    <div class="totals" id="winTotals"></div>
+    <button class="btn" id="winRestart">↺ Play again</button>
+  </div>
+
+  <div id="start">
+    <h1>🎮 Interactive Video Game</h1>
+    <p>A video plays, then pick a side. <b>Tropzilla</b> (bottom-left) or <b>Legend</b> (bottom-right). Each pick branches to the next video. Totals are kept.</p>
+    <button class="btn" id="startBtn">Start</button>
+  </div>
+</div>
+
+<script>
+// ---- Video sources (local, faststart + compressed, served by GitHub Pages CDN) ----
+const SRC = {
+  v1:  "videos/v1.mp4",
+  v11: "videos/v11.mp4",
+  v12: "videos/v12.mp4",
+  v2:  "videos/v2.mp4",
+  v21: "videos/v21.mp4",
+  v22: "videos/v22.mp4",
+  v3:  "videos/v3.mp4"
+};
+
+// Stages: each = background video + the clip each box plays.
+// Clicking a box plays its clip, then the NEXT stage's background loads.
+// Add more stages here for videos 3-5.
+const STAGES = [
+  { main: SRC.v1, left: SRC.v11, right: SRC.v12 },
+  { main: SRC.v2, left: SRC.v21, right: SRC.v22 },
+  { main: SRC.v3 } // Video 3: no options yet — boxes stay hidden after it plays
+];
+let stage = 0;
+
+const vMain = document.getElementById('vMain');
+const vClip = document.getElementById('vClip');
+const badge = document.getElementById('clipBadge');
+const fg = document.getElementById('fg');
+
+// ---- Poster / no-flash: hold the last frame while the next video buffers ----
+const hold = document.getElementById('hold');
+const hctx = hold.getContext('2d');
+function visibleVideo() { return vClip.classList.contains('hidden') ? vMain : vClip; }
+function captureHold() {
+  const v = visibleVideo();
+  if (!v || !v.videoWidth) return;
+  hold.width = v.videoWidth; hold.height = v.videoHeight;
+  try { hctx.drawImage(v, 0, 0, hold.width, hold.height); hold.style.display = 'block'; } catch (e) {}
+}
+function hideHold() { hold.style.display = 'none'; }
+vMain.addEventListener('playing', hideHold);
+vClip.addEventListener('playing', hideHold);
+
+// ---- Sound ding on click ----
+let actx;
+function ding() {
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = 'triangle'; o.frequency.value = 660;
+    g.gain.setValueAtTime(0.0001, actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.3, actx.currentTime + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.18);
+    o.connect(g).connect(actx.destination);
+    o.start(); o.stop(actx.currentTime + 0.2);
+  } catch (e) {}
+}
+
+let clipPlaying = false;
+let muted = false;
+let choosing = false; // boxes only active when true (after a video ends)
+
+// ---- Preloading: warm the browser cache for upcoming videos ----
+const preloaded = new Map(); // url -> hidden <video> kept alive so buffering persists
+function preload(url) {
+  if (!url || preloaded.has(url)) return;
+  const v = document.createElement('video');
+  v.preload = 'auto';
+  v.muted = true;
+  v.src = url;
+  v.load();
+  preloaded.set(url, v);
+}
+function preloadStage(i) {
+  const s = STAGES[i];
+  if (!s) return;
+  preload(s.main); preload(s.left); preload(s.right);
+}
+
+const muteBtn = document.getElementById('muteBtn');
+function applyMute() {
+  vMain.muted = muted;
+  vClip.muted = muted;
+  muteBtn.textContent = muted ? '🔇 Muted' : '🔊 Sound';
+}
+muteBtn.addEventListener('click', () => { muted = !muted; applyMute(); });
+
+function showMain() {
+  vClip.pause();
+  vClip.classList.add('hidden');
+  vMain.classList.remove('hidden');
+  if (vMain.paused) vMain.play().catch(()=>{});
+}
+
+// toggle clickability (boxes stay visible either way)
+const promptEl = document.getElementById('prompt');
+function setChoosing(on) {
+  choosing = on;
+  zoneL.classList.toggle('locked', !on);
+  zoneR.classList.toggle('locked', !on);
+  zoneL.classList.toggle('live', on);
+  zoneR.classList.toggle('live', on);
+  promptEl.classList.toggle('show', on);
+}
+// fully show/hide the boxes (hidden only on the final video)
+function showBoxes(on) {
+  zoneL.classList.toggle('gone', !on);
+  zoneR.classList.toggle('gone', !on);
+}
+
+// load a background video and show it (plays once, no loop)
+function setBg(url) {
+  captureHold();        // freeze current frame so the swap isn't black
+  renderDots();
+  vMain.src = url;
+  vMain.loop = false;
+  vMain.muted = muted;
+  const hasOpts = !!(STAGES[stage].left && STAGES[stage].right);
+  showBoxes(hasOpts);   // boxes stay up every stage except the final video
+  setChoosing(false);   // visible but not clickable until the video ends
+  showMain();
+  // warm the choices for this stage + the next stage's background
+  preload(STAGES[stage].left);
+  preload(STAGES[stage].right);
+  preloadStage(stage + 1);
+}
+
+// background video finished → choose, or (on the final video) show the winner
+vMain.addEventListener('ended', () => {
+  if (clipPlaying) return;
+  captureHold(); // hold the final frame instead of going black
+  if (STAGES[stage].left && STAGES[stage].right) setChoosing(true);
+  else showWinner();
+});
+
+function playClip(url, name) {
+  clipPlaying = true;
+  setChoosing(false);
+  captureHold();        // freeze current frame so the swap isn't black
+  vClip.src = url;
+  vClip.loop = false;
+  vClip.muted = muted;
+  vClip.classList.remove('hidden');
+  vMain.classList.add('hidden');
+  vMain.pause();
+  vClip.currentTime = 0;
+  vClip.play().catch(()=>{});
+  flashBadge(name);
+}
+vClip.addEventListener('ended', () => {
+  clipPlaying = false;
+  if (stage < STAGES.length - 1) stage++;   // advance to next video
+  setBg(STAGES[stage].main);
+});
+
+function flashBadge(text) {
+  badge.textContent = '▶ ' + text;
+  badge.classList.add('show');
+  setTimeout(() => badge.classList.remove('show'), 1400);
+}
+
+// ---- Click zones (count clicks, 15s cooldown per box) ----
+const COOLDOWN_MS = 15000;
+const counts = { L: 0, R: 0 };
+const lockUntil = { L: 0, R: 0 };
+const zoneL = document.getElementById('zoneL');
+const zoneR = document.getElementById('zoneR');
+const els = {
+  L: { zone: zoneL, count: document.getElementById('countL') },
+  R: { zone: zoneR, count: document.getElementById('countR') }
+};
+
+function handleZone(side) {
+  const now = Date.now();
+  if (!choosing) return;               // boxes only active after the video ends
+  if (clipPlaying) return;             // one click per video — no clicking mid-clip
+  if (now < lockUntil[side]) return;   // still cooling down
+
+  const url = side === 'L' ? STAGES[stage].left : STAGES[stage].right;
+  const name = 'Video ' + (stage + 1) + '.' + (side === 'L' ? 1 : 2);
+  counts[side]++;
+  els[side].count.textContent = counts[side];
+  popCount(side);
+  ding();
+  saveCounts();
+  playClip(url, name);
+  startCooldown(side);
+}
+
+function popCount(side) {
+  const c = els[side].count;
+  c.classList.remove('pop'); void c.offsetWidth; c.classList.add('pop');
+}
+
+// ---- Persist totals across refresh ----
+const STORE = 'ivg_counts';
+function loadCounts() {
+  try { const o = JSON.parse(localStorage.getItem(STORE)); if (o) { counts.L = o.L | 0; counts.R = o.R | 0; } } catch (e) {}
+  els.L.count.textContent = counts.L;
+  els.R.count.textContent = counts.R;
+}
+function saveCounts() {
+  try { localStorage.setItem(STORE, JSON.stringify({ L: counts.L, R: counts.R })); } catch (e) {}
+}
+
+// ---- Progress dots ----
+const dots = document.getElementById('dots');
+function renderDots() {
+  dots.innerHTML = '';
+  const label = document.createElement('span');
+  label.className = 'label';
+  label.textContent = 'Round ' + (stage + 1) + ' / ' + STAGES.length;
+  dots.appendChild(label);
+  STAGES.forEach((s, i) => {
+    const d = document.createElement('span');
+    d.className = 'dot' + (i === stage ? ' on' : '') + (i < stage ? ' done' : '');
+    dots.appendChild(d);
+  });
+}
+
+// ---- Winner screen ----
+const winner = document.getElementById('winner');
+function showWinner() {
+  const L = counts.L, R = counts.R;
+  document.getElementById('winnerText').textContent =
+    L > R ? '🏆 Tropzilla wins!' : R > L ? '🏆 Legend wins!' : "🤝 It's a tie!";
+  document.getElementById('winTotals').innerHTML =
+    '<b class="l">Tropzilla ' + L + '</b> &nbsp;—&nbsp; <b class="r">Legend ' + R + '</b>';
+  winner.style.display = 'flex';
+}
+
+function startCooldown(side) {
+  lockUntil[side] = Date.now() + COOLDOWN_MS;
+  const zone = els[side].zone;
+  zone.classList.add('cooldown');
+  setTimeout(() => zone.classList.remove('cooldown'), COOLDOWN_MS);
+}
+
+zoneL.addEventListener('click', () => handleZone('L'));
+zoneR.addEventListener('click', () => handleZone('R'));
+
+// ---- Restart ----
+function resetGame() {
+  stage = 0;
+  clipPlaying = false;
+  counts.L = 0; counts.R = 0;
+  els.L.count.textContent = '0';
+  els.R.count.textContent = '0';
+  saveCounts();
+  lockUntil.L = 0; lockUntil.R = 0;
+  zoneL.classList.remove('cooldown');
+  zoneR.classList.remove('cooldown');
+  winner.style.display = 'none';
+  setBg(STAGES[0].main);
+}
+document.getElementById('restartBtn').addEventListener('click', resetGame);
+document.getElementById('winRestart').addEventListener('click', resetGame);
+
+// ---- Background upload ----
+document.getElementById('upload').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  vMain.src = URL.createObjectURL(file);
+  vMain.loop = true; vMain.muted = muted;
+  showMain();
+});
+document.getElementById('useDefault').addEventListener('click', () => {
+  setBg(STAGES[stage].main);
+});
+
+// ---- Start ----
+document.getElementById('startBtn').addEventListener('click', () => {
+  document.getElementById('start').remove();
+  stage = 0;
+  preloadStage(0); preloadStage(1); // warm first videos up front
+  setBg(STAGES[0].main); // Start click = user gesture, allows autoplay with sound
+});
+
+// ---- Init ----
+loadCounts();
+renderDots();
+</script>
+</body>
+</html>

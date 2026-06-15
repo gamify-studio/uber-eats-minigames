@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<title>Pack the Bag — Uber Eats</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Uber Move is proprietary; Inter is the standard open stand-in and is used as the fallback. -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* Uber Move brand font (bundled) — used for ALL game text */
+  @font-face { font-family: "Uber Move"; src: url("assets/UberMoveMedium.otf") format("opentype"); font-weight: 300 600; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Uber Move"; src: url("assets/UberMoveBold.otf") format("opentype"); font-weight: 601 900; font-style: normal; font-display: swap; }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  :root {
+    --green: #06C167;
+    --green-dark: #04903e;
+    --bag: #c98a4a;
+    --bag-dark: #a56c34;
+    --ink: #142328;
+  }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: #000;
+    font-family: "Uber Move", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    color: #fff;
+    touch-action: none;
+  }
+  #app {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    max-width: 480px; margin: 0 auto;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+    background: radial-gradient(120% 80% at 50% 0%, #16110b 0%, #000 70%);
+  }
+
+  /* ---------- HUD ---------- */
+  #hud {
+    flex: 0 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; padding: 10px 14px 8px;
+  }
+  .brand { display: flex; align-items: center; gap: 7px; }
+  .brand { flex-direction: column; align-items: flex-start; gap: 1px; flex-shrink: 0; }
+  .brand .logo { font-weight: 800; font-size: 19px; letter-spacing: -.4px; line-height: 1; }
+  .brand .logo .u { color: #fff; }
+  .brand .logo .e { color: var(--green); }
+  .brand .sub { font-size: 10px; opacity: .55; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; white-space: nowrap; }
+  .stats { display: flex; gap: 9px; align-items: center; }
+  .stat { text-align: center; line-height: 1.05; }
+  .stat .k { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; opacity: .55; font-weight: 700; }
+  .stat .v { font-size: 17px; font-weight: 800; }
+  .stat .v.green { color: var(--green); }
+  #nextWrap { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  #nextWrap .k { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; opacity: .55; font-weight: 700; }
+  #next { background: rgba(255,255,255,.05); border-radius: 8px; }
+  #muteBtn, #musicBtn {
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18);
+    color: #fff; border-radius: 9px; width: 38px; height: 38px; font-size: 17px; cursor: pointer;
+  }
+  #musicBtn.off { opacity: .4; }
+
+  /* ---------- Playfield ---------- */
+  #playfield {
+    flex: 1 1 auto; position: relative;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 0; padding: 4px 0;
+  }
+  #board {
+    border-radius: 14px;
+    box-shadow: 0 12px 34px rgba(0,0,0,.6), inset 0 0 0 3px var(--bag-dark);
+    background: var(--bag);
+  }
+  .toast {
+    position: absolute; top: 12%; left: 50%; transform: translateX(-50%) translateY(-6px);
+    background: var(--green); color: #000; font-weight: 900; font-size: 15px;
+    padding: 7px 16px; border-radius: 999px; opacity: 0; pointer-events: none;
+    box-shadow: 0 6px 18px rgba(0,0,0,.5); white-space: nowrap;
+    transition: opacity .18s, transform .18s;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ---------- Touch pad ---------- */
+  #pad {
+    flex: 0 0 auto;
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+    padding: 10px 12px 16px;
+  }
+  .btn {
+    -webkit-appearance: none; appearance: none;
+    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16);
+    color: #fff; border-radius: 14px; height: 58px; font-size: 23px; font-weight: 800;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background .08s, transform .08s;
+  }
+  .btn:active { background: var(--green); color: #000; transform: scale(.95); }
+  .btn svg { width: 26px; height: 26px; display: block; pointer-events: none; }
+  .btn.drop { border-color: var(--green); color: var(--green); box-shadow: 0 0 14px rgba(6,193,103,.55); }
+  .btn.drop:active { background: var(--green); color: #000; box-shadow: 0 0 18px rgba(6,193,103,.8); }
+
+  /* ---------- Overlays ---------- */
+  .overlay {
+    position: absolute; inset: 0; z-index: 30;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; text-align: center; padding: 28px;
+    background: rgba(0,0,0,.86); backdrop-filter: blur(4px);
+  }
+  .overlay.hidden { display: none; }
+  .overlay h1 { font-size: 30px; font-weight: 900; line-height: 1.1; }
+  .overlay h1 .e { color: var(--green); }
+  .overlay p { font-size: 14px; opacity: .8; line-height: 1.55; max-width: 320px; }
+  .overlay .cta {
+    margin-top: 6px; background: var(--green); color: #000; border: none;
+    border-radius: 12px; padding: 15px 40px; font-size: 18px; font-weight: 900; cursor: pointer;
+    box-shadow: 0 8px 22px rgba(6,193,103,.4);
+  }
+  .overlay .cta:disabled { opacity: .5; cursor: default; box-shadow: none; }
+  .overlay .cta:active:not(:disabled) { transform: scale(.97); }
+  .keys { font-size: 12px; opacity: .55; line-height: 1.8; }
+  .keys b { color: #fff; opacity: .9; }
+  #stars { font-size: 46px; letter-spacing: 6px; }
+  .grade { font-size: 16px; font-weight: 800; }
+  .winrows { display: flex; gap: 26px; }
+  .winrows .col .k { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: .55; font-weight: 700; }
+  .winrows .col .v { font-size: 28px; font-weight: 900; }
+  .winrows .col .v.green { color: var(--green); }
+  .best { font-size: 12px; opacity: .6; }
+  .lb { width: 100%; max-width: 320px; }
+  /* title splash (start screen) */
+  #startOv { padding: 0; background: #000; cursor: pointer; overflow: hidden; }
+  #titleImg { width: 100%; height: 100%; object-fit: cover; display: block; }
+  #startOv.ready #titleImg { animation: splashPulse 1.9s ease-in-out infinite; }
+  @keyframes splashPulse { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.09); } }
+  #startVeil {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,.72); color: #fff; font-weight: 800; font-size: 17px; letter-spacing: 1.5px;
+  }
+  #startOv.ready #startVeil { display: none; }
+  /* start-screen tutorial card */
+  #startTut {
+    position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%);
+    width: min(88%, 360px); text-align: center; color: #fff;
+    background: rgba(0,0,0,.66); border: 1.5px solid var(--green); border-radius: 14px;
+    padding: 13px 16px 12px; box-shadow: 0 8px 26px rgba(0,0,0,.45); backdrop-filter: blur(3px);
+  }
+  #startTut .tHead { color: var(--green); font-weight: 900; font-size: 15px; letter-spacing: .3px; margin-bottom: 5px; }
+  #startTut .tBody { font-size: 13.5px; line-height: 1.45; }
+  #startTut .tBody b { color: var(--green); }
+  #startTut .tTap { margin-top: 10px; font-size: 12px; font-weight: 800; letter-spacing: 2px; color: var(--green); animation: tapBlink 1.4s ease-in-out infinite; }
+  @keyframes tapBlink { 0%,100% { opacity: .4; } 50% { opacity: 1; } }
+  #startOv:not(.ready) #startTut { display: none; }
+  #howBtn {
+    margin-top: 11px; background: var(--green); color: #000; border: none;
+    border-radius: 10px; padding: 9px 20px; font-size: 13px; font-weight: 900; letter-spacing: .4px; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(6,193,103,.4);
+  }
+  #howBtn:active { transform: scale(.96); }
+  /* How-to-play intro (auto-playing demo) */
+  #howOv { gap: 12px; z-index: 40; padding-top: 22px; }
+  #howOv .htIntro {
+    margin: 0; max-width: 320px; font-size: 14px; font-weight: 800; line-height: 1.45; color: #fff;
+  }
+  #howOv .htIntro b { color: var(--green); }
+  #howOv .htTitle { font-size: 22px; font-weight: 900; letter-spacing: .5px; }
+  #howOv .htTitle .e { color: var(--green); }
+  #demoWrap { position: relative; border-radius: 14px; overflow: hidden; border: 2px solid rgba(6,193,103,.5); box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+  #demoCv { display: block; width: 184px; height: 276px; background: #0AA354; }
+  #demoCap {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 8px 8px;
+    background: linear-gradient(transparent, rgba(0,0,0,.8)); color: #fff;
+    font-size: 13px; font-weight: 800; text-align: center;
+  }
+  .htLegend { display: flex; gap: 16px; align-items: flex-start; justify-content: center; }
+  .htLegend .it { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .htLegend .ic {
+    width: 42px; height: 42px; border-radius: 11px; background: #1c1c1f; border: 1px solid rgba(255,255,255,.14);
+    display: flex; align-items: center; justify-content: center; color: #fff;
+  }
+  .htLegend .ic.drop { border-color: var(--green); color: var(--green); box-shadow: 0 0 12px rgba(6,193,103,.45); }
+  .htLegend .ic svg { width: 23px; height: 23px; }
+  .htLegend .lb { font-size: 11px; font-weight: 700; opacity: .8; letter-spacing: .3px; }
+  #howOv .htHint { margin: 0; font-size: 13px; opacity: .9; line-height: 1.5; max-width: 300px; }
+  #howOv .htHint b { color: var(--green); opacity: 1; }
+  #howOv .htActions { display: flex; gap: 12px; align-items: center; margin-top: 2px; }
+  #howClose {
+    background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.3);
+    border-radius: 12px; padding: 14px 22px; font-size: 15px; font-weight: 800; cursor: pointer;
+  }
+  #howClose:active { transform: scale(.97); }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="hud">
+    <div class="brand">
+      <span class="logo">Pack the Bag</span>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="k">Score</div><div class="v" id="score">000000</div></div>
+      <div class="stat"><div class="k">Lvl</div><div class="v green" id="level">1</div></div>
+      <div class="stat"><div class="k">Lines</div><div class="v" id="lines">0</div></div>
+      <div id="nextWrap"><div class="k">Next</div><canvas id="next" width="60" height="60"></canvas></div>
+      <button id="musicBtn" title="Music on/off">🎵</button>
+      <button id="muteBtn" title="Sound effects">🔊</button>
+    </div>
+  </div>
+
+  <div id="playfield">
+    <canvas id="board"></canvas>
+    <div class="toast" id="toast">Bag packed!</div>
+  </div>
+
+  <div id="pad">
+    <button class="btn" id="bLeft" aria-label="Left">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 5 L15 19 L6 12 Z"/></svg>
+    </button>
+    <button class="btn" id="bRight" aria-label="Right">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 5 L9 19 L18 12 Z"/></svg>
+    </button>
+    <button class="btn" id="bSoft" aria-label="Soft drop">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4 L12 18 M6 13 L12 19 L18 13"/></svg>
+    </button>
+    <button class="btn" id="bRot" aria-label="Rotate">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 5 22 11 16 11"/><polyline points="2 19 2 13 8 13"/><path d="M4.2 9.2A8 8 0 0 1 18 6.5L22 11 M2 13l4 4.5A8 8 0 0 0 19.8 14.8"/></svg>
+    </button>
+    <button class="btn drop" id="bDrop" aria-label="Fast drop">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 8 L11 8 L7 15 Z"/><path d="M13 8 L21 8 L17 15 Z"/></svg>
+    </button>
+  </div>
+
+  <!-- Loading screen (then the How-to-Play screen takes over) -->
+  <div class="overlay" id="startOv">
+    <div id="startVeil">Loading…</div>
+  </div>
+
+  <!-- How to play (auto-playing demo) -->
+  <div class="overlay hidden" id="howOv">
+    <p class="htIntro">Stack the perfect <b>Uber Eats</b> delivery bag to earn points! The more items you stack, the more points you earn!</p>
+    <div class="htTitle">How to <span class="e">play</span></div>
+    <div id="demoWrap">
+      <canvas id="demoCv" width="216" height="324"></canvas>
+      <div id="demoCap">Drop food into the bag</div>
+    </div>
+    <div class="htLegend">
+      <div class="it"><div class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 6 L11 18 L4 12 Z"/><path d="M13 6 L13 18 L20 12 Z"/></svg></div><div class="lb">Move</div></div>
+      <div class="it"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 5 22 11 16 11"/><polyline points="2 19 2 13 8 13"/><path d="M4.2 9.2A8 8 0 0 1 18 6.5L22 11 M2 13l4 4.5A8 8 0 0 0 19.8 14.8"/></svg></div><div class="lb">Rotate</div></div>
+      <div class="it"><div class="ic drop"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 8 L11 8 L7 15 Z"/><path d="M13 8 L21 8 L17 15 Z"/></svg></div><div class="lb">Drop</div></div>
+    </div>
+    <p class="htHint">Slide &amp; rotate each item, then drop it. Pack <b>tight with no gaps</b> — the fuller the bag, the more points.</p>
+    <div class="htActions">
+      <button class="cta" id="howPlay" style="margin-top:0">Play ▶</button>
+    </div>
+  </div>
+
+  <!-- Win -->
+  <div class="overlay hidden" id="winOv">
+    <h1>Order <span class="e">delivered!</span></h1>
+    <div id="stars">★★★</div>
+    <div class="grade" id="grade">Perfect pack</div>
+    <div class="winrows">
+      <div class="col"><div class="k">Score</div><div class="v green" id="wScore">0</div></div>
+      <div class="col"><div class="k">Pack</div><div class="v" id="wEff">0%</div></div>
+      <div class="col"><div class="k">Lines</div><div class="v" id="wBags">0</div></div>
+    </div>
+    <button class="cta" id="againBtn">Pack another</button>
+  </div>
+
+  <!-- Pause -->
+  <div class="overlay hidden" id="pauseOv">
+    <h1>Paused</h1>
+    <button class="cta" id="resumeBtn">Resume</button>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+(function () {
+  const COLS = 11, ROWS = 22;
+  const FALL_BASE = 750; // level 1 fall interval (ms); speeds up each level
+
+  // ---------- Pieces: tetromino-style food shapes wired to the sliced sprite art ----------
+  // matrix = collision silhouette; the whole sprite image is drawn over the piece bbox.
+  const PIECES = {
+    I:  { sprite: "sub",       cells: [[1,1,1,1]] },
+    O:  { sprite: "ubereats",  cells: [[1,1],[1,1]] },        // green Uber Eats bag
+    L:  { sprite: "banana",    cells: [[1,1],[1,0],[1,0]] },  // combo meal (corner top)
+    S:  { sprite: "eggs",      cells: [[1,0],[1,1],[0,1]] },  // eggs + milk
+    T:  { sprite: "groceries", cells: [[1,1,1],[0,1,0]] },    // takeout
+    BN: { sprite: "nana",      cells: [[1,0],[1,0],[1,1]] },  // banana
+    AV: { sprite: "produce",   cells: [[1,1,1],[0,1,0]] },    // fresh produce (T)
+    TR: { sprite: "toilet",    cells: [[1]] },                // toilet roll (1 cell)
+    SH: { sprite: "shampoo",   cells: [[1],[1]] },            // shampoo (1 wide x 2 tall)
+    BB: { sprite: "parcel",    cells: [[1,1,1],[1,1,1]] }     // Uber Parcel (3 wide x 2 tall, 6 cells, once per game)
+  };
+  const KEYS = ["I", "O", "L", "S", "T", "AV", "TR", "SH"];  // common shuffle bag (BN banana + BB parcel removed for now)
+  const SPRITE_SRC = {
+    sub: "assets/sub.png?v=10",
+    ubereats: "assets/ubereats.png?v=13",
+    banana: "assets/banana.png?v=9",
+    eggs: "assets/eggs.png?v=9",
+    groceries: "assets/groceries.png?v=9",
+    nana: "assets/nana.png",
+    produce: "assets/produce.png?v=9",
+    toilet: "assets/toilet.png?v=9",
+    shampoo: "assets/shampoo.png?v=9",
+    parcel: "assets/parcel.png"
+  };
+  const SPRITES = {}; // key -> { rots: [canvas x4] }  (rots[r] = image rotated r*90° CW)
+
+  function loadImage(src) {
+    return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(src); i.src = src; });
+  }
+  function makeRotations(img) {
+    const rots = [];
+    for (let r = 0; r < 4; r++) {
+      const swap = (r % 2) === 1;
+      const cw = swap ? img.height : img.width;
+      const ch = swap ? img.width : img.height;
+      const c = document.createElement("canvas");
+      c.width = cw; c.height = ch;
+      const x = c.getContext("2d");
+      x.translate(cw / 2, ch / 2);
+      x.rotate(r * Math.PI / 2);
+      x.drawImage(img, -img.width / 2, -img.height / 2);
+      rots.push(c);
+    }
+    return rots;
+  }
+  async function loadSprites() {
+    for (const key in SPRITE_SRC) {
+      const img = await loadImage(SPRITE_SRC[key]);
+      SPRITES[key] = { rots: makeRotations(img) };
+    }
+  }
+
+  function rotateMatrix(m) { // 90° clockwise
+    const h = m.length, w = m[0].length;
+    const out = Array.from({ length: w }, () => new Array(h).fill(0));
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++)
+        out[x][h - 1 - y] = m[y][x];
+    return out;
+  }
+
+  // ---------- Board ----------
+  let grid;        // grid[y][x] = pieceKey or null (collision + row logic)
+  let placed = []; // locked pieces, drawn as whole sprites: {key, cells, x, y, rot}
+  function newGrid() { return Array.from({ length: ROWS }, () => new Array(COLS).fill(null)); }
+
+  function collides(cells, px, py) {
+    for (let y = 0; y < cells.length; y++)
+      for (let x = 0; x < cells[y].length; x++) {
+        if (!cells[y][x]) continue;
+        const gx = px + x, gy = py + y;
+        if (gx < 0 || gx >= COLS || gy >= ROWS) return true;
+        if (gy >= 0 && grid[gy][gx]) return true;
+      }
+    return false;
+  }
+  function isRowFull(y) { return grid[y].every(c => c); }
+  function stackTopRow() {
+    for (let y = 0; y < ROWS; y++)
+      for (let x = 0; x < COLS; x++)
+        if (grid[y][x]) return y;
+    return ROWS;
+  }
+  function countHoles() {
+    let holes = 0;
+    for (let x = 0; x < COLS; x++) {
+      let seen = false;
+      for (let y = 0; y < ROWS; y++) {
+        if (grid[y][x]) seen = true;
+        else if (seen) holes++;
+      }
+    }
+    return holes;
+  }
+
+  // ---------- Game state ----------
+  let cur, curX, curY, curRot, nextKey;
+  let score = 0, bags = 0, level = 1, fallMs = 750;
+  let state = "start"; // start | playing | paused | won
+  // juice
+  const particles = [], popups = [];
+  let shakeMag = 0, lockSquash = null, lastT = 0;
+  const packedRows = new Set();
+
+  function makePiece(key) {
+    return { key: key, sprite: PIECES[key].sprite, cells: PIECES[key].cells.map(r => r.slice()) };
+  }
+  let queue = [];
+  let pullCount = 0, bigBagUsed = false, bigBagAt = 12; // BB injected once at this pull (randomised per game)
+  function shuffledBag() {
+    const a = KEYS.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function pullKey() {
+    pullCount++;
+    // BB Uber Parcel disabled for now: if (!bigBagUsed && pullCount >= bigBagAt) { bigBagUsed = true; return "BB"; }
+    if (queue.length === 0) queue = shuffledBag();
+    return queue.shift();
+  }
+
+  function spawn() {
+    cur = makePiece(nextKey || pullKey());
+    curRot = 0;
+    nextKey = pullKey();
+    curX = Math.floor((COLS - cur.cells[0].length) / 2);
+    curY = 0;
+    drawNext();
+    if (collides(cur.cells, curX, curY)) { endRound(); return false; } // topped out
+    return true;
+  }
+
+  function move(dx) {
+    if (state !== "playing") return;
+    if (!collides(cur.cells, curX + dx, curY)) { curX += dx; sfx("move"); }
+  }
+  function rotate() {
+    if (state !== "playing") return;
+    const r = rotateMatrix(cur.cells);
+    for (const kick of [0, -1, 1, -2, 2]) {
+      if (!collides(r, curX + kick, curY)) { cur.cells = r; curX += kick; curRot = (curRot + 1) % 4; sfx("rot"); return; }
+    }
+  }
+  function softDrop() {
+    if (state !== "playing") return;
+    if (!collides(cur.cells, curX, curY + 1)) { curY++; lastFall = perfNow(); }
+    else lock();
+  }
+  function hardDrop() {
+    if (state !== "playing") return;
+    let d = 0;
+    while (!collides(cur.cells, curX, curY + 1)) { curY++; d++; }
+    addShake(3 + Math.min(8, d * 0.7));
+    buzz(18);
+    lock();
+  }
+
+  function lock() {
+    // record for rendering (whole sprite)
+    placed.push({ key: cur.key, cells: cur.cells.map(r => r.slice()), x: curX, y: curY, rot: curRot });
+    lockSquash = { idx: placed.length - 1, t0: perfNow() };
+    // mark grid for collision + rows
+    for (let y = 0; y < cur.cells.length; y++)
+      for (let x = 0; x < cur.cells[y].length; x++)
+        if (cur.cells[y][x]) {
+          const gy = curY + y, gx = curX + x;
+          if (gy >= 0) grid[gy][gx] = cur.key;
+        }
+    sfx("lock");
+    buzz(12);
+
+    // newly completed rows glow — rows DO NOT clear
+    let newRows = 0;
+    const newRowYs = [];
+    for (let y = 0; y < ROWS; y++)
+      if (isRowFull(y) && !packedRows.has(y)) { packedRows.add(y); newRows++; newRowYs.push(y); }
+    updateLevel();
+    if (newRows > 0) {
+      bags += newRows;
+      flashToast(newRows > 1 ? newRows + " bags packed!" : "Bag packed!");
+      sfx("row");
+      buzz([0, 25, 35, 25]);
+      addShake(7 + newRows * 2);
+      newRowYs.forEach(y => spawnBurst(y));
+      const topY = Math.min.apply(null, newRowYs);
+      popups.push({ text: newRows > 1 ? newRows + " BAGS!" : "BAG!", x: COLS * cell / 2, y: topY * cell + cell / 2 - cell * 0.3, life: 950, maxLife: 950 });
+    }
+    score = computeScore();
+    updateHud();
+
+    // win: food reaches the top of the bag
+    let topReached = false;
+    for (let x = 0; x < COLS; x++) if (grid[0][x] || grid[1][x]) topReached = true;
+    if (topReached) { endRound(); return; }
+
+    spawn();
+  }
+
+  // Packing density: of the space your stack occupies (full width × its height),
+  // how much is actually food. A no-skill spike wastes most of the width → ~0%.
+  // A solidly packed bag with no gaps → ~100%. PACK_FLOOR maps the worst real
+  // dumps to 0 so the 0–100 range tracks skill, not just raw fill.
+  const PACK_FLOOR = 0.25;
+  function efficiency() {
+    const top = stackTopRow();
+    const band = (ROWS - top) * COLS;     // width × height of the occupied region
+    if (band <= 0) return 0;
+    let filled = 0;
+    for (let y = top; y < ROWS; y++)
+      for (let x = 0; x < COLS; x++)
+        if (grid[y][x]) filled++;
+    const density = filled / band;        // 1.0 = packed solid, low = wasted space
+    const norm = (density - PACK_FLOOR) / (1 - PACK_FLOOR);  // 0..1 over the skill band
+    // saturate: a 90% pack already counts as a perfect 100% (norm 0.9 -> 100, clamped)
+    return Math.max(0, Math.min(100, Math.round(norm / 0.9 * 100)));
+  }
+  // Score is the delivery grade, capped at 120: a perfect pack (100% efficiency) = 120,
+  // a no-skill tower = 0. Tracks skill, not game length.
+  const SCORE_MAX = 150;
+  // pack grade -> score: 70% packing => 120, 100% => 150 (linear: pack% + 50, capped 150)
+  function computeScore() { return Math.min(SCORE_MAX, Math.round(efficiency() + 50)); }
+  function updateLevel() {
+    const lv = 1 + Math.floor(placed.length / 8);   // +1 level every 8 pieces
+    if (lv !== level) { level = lv; fallMs = Math.max(110, Math.round(FALL_BASE * Math.pow(0.86, level - 1))); }
+  }
+  function gradeFor(eff) {
+    if (eff >= 85) return { stars: 3, label: "Perfect pack" };
+    if (eff >= 65) return { stars: 2, label: "Tidy delivery" };
+    if (eff >= 40) return { stars: 1, label: "Good enough" };
+    return { stars: 0, label: "Messy pack — try again" };
+  }
+
+  // ---------- Rendering ----------
+  const board = document.getElementById("board");
+  const bctx = board.getContext("2d");
+  let cell = 24, dpr = 1;
+
+  function fit() {
+    const pf = document.getElementById("playfield");
+    const availW = pf.clientWidth - 4;
+    const availH = pf.clientHeight - 8;
+    cell = Math.max(14, Math.floor(Math.min(availW / COLS, availH / ROWS)));
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    board.width = COLS * cell * dpr;
+    board.height = ROWS * cell * dpr;
+    board.style.width = (COLS * cell) + "px";
+    board.style.height = (ROWS * cell) + "px";
+    bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    bctx.imageSmoothingQuality = "high";
+  }
+
+  // ---------- Tile backing colours ----------
+  // Each solid cell is a uniform square. Behind the art we paint that cell's own average opaque
+  // colour, so the food's transparent corners / baked-in background never let the field-green show
+  // through between items (= no gaps). Computed once per piece per rotation after sprites load.
+  function cellColors(canvas, cols, rows) {
+    const W = canvas.width, H = canvas.height;
+    const ix = canvas.getContext("2d").getImageData(0, 0, W, H).data;
+    const out = [];
+    for (let cy = 0; cy < rows; cy++) {
+      const row = [];
+      for (let cx = 0; cx < cols; cx++) {
+        const x0 = Math.floor(cx * W / cols), x1 = Math.floor((cx + 1) * W / cols);
+        const y0 = Math.floor(cy * H / rows), y1 = Math.floor((cy + 1) * H / rows);
+        let r = 0, g = 0, b = 0, n = 0;
+        for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) {
+          const i = (y * W + x) * 4;
+          if (ix[i + 3] > 40) { r += ix[i]; g += ix[i + 1]; b += ix[i + 2]; n++; }
+        }
+        row.push(n ? `rgb(${Math.round(r / n)},${Math.round(g / n)},${Math.round(b / n)})` : null);
+      }
+      out.push(row);
+    }
+    return out;
+  }
+  function buildTileData() {
+    for (const key in PIECES) {
+      const p = PIECES[key], spr = SPRITES[p.sprite];
+      if (!spr) continue;
+      p._bg = [];
+      let m = p.cells;
+      for (let r = 0; r < 4; r++) { p._bg[r] = cellColors(spr.rots[r], m[0].length, m.length); m = rotateMatrix(m); }
+    }
+  }
+
+  // draw a piece as uniform square tiles: art sliced per cell (no bleed into empty cells), each
+  // solid cell backed by the food's own colour (no field-green gaps), no handle overhang.
+  const HANDLE_FRAC = { ubereats: 0.136 };   // bag handle overhangs above its 2x2 body
+  const OUTLINE = u => Math.max(2, u * 0.075);   // outer outline width (internal divisions = 1/3 of this)
+  function outlineCells(ctx, cells, ox, oy, unit) {   // thin internal cell divisions, full-weight outer silhouette
+    const rows = cells.length, cols = cells[0].length;
+    const solid = (yy, xx) => yy >= 0 && yy < rows && xx >= 0 && xx < cols && cells[yy][xx];
+    const W = OUTLINE(unit);
+    ctx.strokeStyle = "#000"; ctx.lineJoin = "miter"; ctx.lineCap = "butt";
+    // internal divisions: every solid-cell edge, 1/3 weight
+    ctx.lineWidth = Math.max(1, W / 3);
+    for (let yy = 0; yy < rows; yy++) for (let xx = 0; xx < cols; xx++)
+      if (cells[yy][xx]) ctx.strokeRect(ox + xx * unit, oy + yy * unit, unit, unit);
+    // outer silhouette: edges touching empty/outside, full weight
+    ctx.lineWidth = W; ctx.beginPath();
+    for (let yy = 0; yy < rows; yy++) for (let xx = 0; xx < cols; xx++) {
+      if (!cells[yy][xx]) continue;
+      const x0 = ox + xx * unit, y0 = oy + yy * unit, x1 = x0 + unit, y1 = y0 + unit;
+      if (!solid(yy - 1, xx)) { ctx.moveTo(x0, y0); ctx.lineTo(x1, y0); }
+      if (!solid(yy + 1, xx)) { ctx.moveTo(x0, y1); ctx.lineTo(x1, y1); }
+      if (!solid(yy, xx - 1)) { ctx.moveTo(x0, y0); ctx.lineTo(x0, y1); }
+      if (!solid(yy, xx + 1)) { ctx.moveTo(x1, y0); ctx.lineTo(x1, y1); }
+    }
+    ctx.stroke();
+  }
+  function drawSprite(ctx, key, cells, gx, gy, rot, alpha, squashP) {
+    const spr = SPRITES[PIECES[key].sprite];
+    if (!spr) return;
+    const cols = cells[0].length, rows = cells.length;
+    const x = gx * cell, y = gy * cell, w = cols * cell, h = rows * cell;
+    const hf = HANDLE_FRAC[PIECES[key].sprite];
+    if (hf) {   // bag: draw whole sprite; body fills the footprint, handle pokes above (covered when a piece stacks on it)
+      const dh = h / (1 - hf), dy2 = y - (dh - h);
+      ctx.save();
+      if (alpha != null) ctx.globalAlpha = alpha;
+      if (squashP) { const e = Math.sin(squashP * Math.PI), sy = 1 - 0.16*e, sx = 1 + 0.16*e; ctx.translate(x + w/2, y + h); ctx.scale(sx, sy); ctx.translate(-(x + w/2), -(y + h)); }
+      ctx.drawImage(spr.rots[0], x, dy2, w, dh);   // bag keeps its own baked outline (no added grid lines)
+      ctx.restore();
+      return;
+    }
+    const img = spr.rots[rot];
+    const sw = img.width / cols, sh = img.height / rows;
+    const bg = PIECES[key]._bg && PIECES[key]._bg[rot];
+    ctx.save();
+    if (alpha != null) ctx.globalAlpha = alpha;
+    if (squashP) {
+      const e = Math.sin(squashP * Math.PI);   // 0 → 1 → 0 over the anim
+      const sy = 1 - 0.16 * e, sx = 1 + 0.16 * e;
+      ctx.translate(x + w / 2, y + h);          // anchor at bottom-centre
+      ctx.scale(sx, sy);
+      ctx.translate(-(x + w / 2), -(y + h));
+    }
+    for (let yy = 0; yy < rows; yy++) for (let xx = 0; xx < cols; xx++) {
+      if (!cells[yy][xx]) continue;
+      const dx = x + xx * cell, dy = y + yy * cell;
+      if (bg && bg[yy][xx]) { ctx.fillStyle = bg[yy][xx]; ctx.fillRect(dx, dy, cell + 0.5, cell + 0.5); }
+      ctx.drawImage(img, xx * sw, yy * sh, sw, sh, dx, dy, cell + 0.5, cell + 0.5); // +0.5 kills hairline seams
+    }
+    outlineCells(ctx, cells, x, y, cell);
+    ctx.restore();
+  }
+
+  function ghostY() {
+    let y = curY;
+    while (!collides(cur.cells, curX, y + 1)) y++;
+    return y;
+  }
+
+  // ---------- Green Uber-Eats-bag playfield (shared by game board + how-to demo) ----------
+  function drawHandles(ctx, W, cell) {
+    const gy = cell * 1.05, xL = W * 0.32, xR = W * 0.68, r = Math.max(5, cell * 0.30);
+    ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round";
+    function arch(lw, col) {
+      ctx.beginPath(); ctx.moveTo(xL, gy);
+      ctx.bezierCurveTo(xL, -cell * 0.15, xR, -cell * 0.15, xR, gy);
+      ctx.lineWidth = lw; ctx.strokeStyle = col; ctx.stroke();
+    }
+    arch(r * 1.06, "#7d5a2f"); arch(r * 0.74, "#c8a074"); arch(r * 0.24, "rgba(255,243,222,.55)"); // edge / rope / sheen
+    function grommet(x) {
+      ctx.beginPath(); ctx.arc(x, gy, r * 0.92, 0, Math.PI * 2); ctx.fillStyle = "#39403a"; ctx.fill();
+      ctx.beginPath(); ctx.arc(x, gy, r * 0.5, 0, Math.PI * 2); ctx.fillStyle = "#23281f"; ctx.fill();
+      ctx.lineWidth = Math.max(1, r * 0.12); ctx.strokeStyle = "rgba(255,255,255,.22)";
+      ctx.beginPath(); ctx.arc(x, gy, r * 0.72, Math.PI * 1.05, Math.PI * 1.95); ctx.stroke();
+    }
+    grommet(xL); grommet(xR);
+    ctx.restore();
+  }
+  function drawBagField(ctx, W, H, cell, cols, rows) {
+    ctx.clearRect(0, 0, W, H);
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, "#15BD69"); g.addColorStop(1, "#0AA354");   // Uber Green 400 (#0CB35F) playfield
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const sh = ctx.createLinearGradient(0, 0, 0, H * 0.22);   // soft top sheen
+    sh.addColorStop(0, "rgba(255,255,255,.10)"); sh.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = sh; ctx.fillRect(0, 0, W, H * 0.22);
+    ctx.strokeStyle = "rgba(0,0,0,.06)"; ctx.lineWidth = 1;   // faint grid
+    for (let x = 1; x < cols; x++) { ctx.beginPath(); ctx.moveTo(x*cell, 0); ctx.lineTo(x*cell, H); ctx.stroke(); }
+    for (let y = 1; y < rows; y++) { ctx.beginPath(); ctx.moveTo(0, y*cell); ctx.lineTo(W, y*cell); ctx.stroke(); }
+    const seamY = cell * 1.6;                                  // bag fold seam under handles
+    ctx.strokeStyle = "rgba(0,0,0,.10)"; ctx.lineWidth = Math.max(1, cell * 0.04);
+    ctx.beginPath(); ctx.moveTo(0, seamY); ctx.lineTo(W, seamY); ctx.stroke();
+    ctx.strokeStyle = "rgba(255,255,255,.07)";
+    ctx.beginPath(); ctx.moveTo(0, seamY + ctx.lineWidth); ctx.lineTo(W, seamY + ctx.lineWidth); ctx.stroke();
+    drawHandles(ctx, W, cell);
+  }
+
+  function render() {
+    const W = COLS * cell, H = ROWS * cell;
+    drawBagField(bctx, W, H, cell, COLS, ROWS);   // green bag + handles
+
+    // packed-row glow (rows stay; just highlighted)
+    packedRows.forEach(y => { bctx.fillStyle = "rgba(6,193,103,.20)"; bctx.fillRect(0, y*cell, W, cell); });
+
+    // locked pieces (whole sprites, with land-squash on the newest)
+    for (let i = 0; i < placed.length; i++) {
+      const p = placed[i];
+      let sq = 0;
+      if (lockSquash && lockSquash.idx === i) {
+        const el = lastT - lockSquash.t0;
+        if (el < 170) sq = el / 170; else lockSquash = null;
+      }
+      drawSprite(bctx, p.key, p.cells, p.x, p.y, p.rot, null, sq);
+    }
+
+    if (state === "playing" || state === "paused") {
+      // ghost outline at landing spot
+      const gy = ghostY();
+      bctx.save();
+      for (let y = 0; y < cur.cells.length; y++)
+        for (let x = 0; x < cur.cells[y].length; x++)
+          if (cur.cells[y][x]) {
+            const px = (curX + x) * cell, py = (gy + y) * cell;
+            bctx.fillStyle = "rgba(255,255,255,.14)";
+            bctx.fillRect(px + cell*0.08, py + cell*0.08, cell*0.84, cell*0.84);
+          }
+      bctx.restore();
+      // current piece
+      drawSprite(bctx, cur.key, cur.cells, curX, curY, curRot);
+    }
+    renderJuice();
+  }
+
+  // next preview
+  const nextCv = document.getElementById("next");
+  const nctx = nextCv.getContext("2d");
+  function drawNext() {
+    nctx.clearRect(0, 0, 60, 60);
+    if (!nextKey || !SPRITES[PIECES[nextKey].sprite]) return;
+    const def = PIECES[nextKey];
+    const cells = def.cells, cols = cells[0].length, rows = cells.length;
+    const hfn = HANDLE_FRAC[def.sprite];
+    if (hfn) {   // bag: whole sprite (handle+body) contain-fit into the box
+      const im = SPRITES[def.sprite].rots[0]; const s2 = Math.min(52 / im.width, 56 / im.height);
+      const dw = im.width * s2, dh = im.height * s2; nctx.drawImage(im, (60 - dw) / 2, (60 - dh) / 2, dw, dh); return;
+    }
+    const box = 52, s = Math.min(box / cols, box / rows);
+    const w = cols * s, h = rows * s, ox = (60 - w) / 2, oy = (60 - h) / 2;
+    const img = SPRITES[def.sprite].rots[0], sw = img.width / cols, sh = img.height / rows;
+    const bg = def._bg && def._bg[0];
+    for (let yy = 0; yy < rows; yy++) for (let xx = 0; xx < cols; xx++) {
+      if (!cells[yy][xx]) continue;
+      const dx = ox + xx * s, dy = oy + yy * s;
+      if (bg && bg[yy][xx]) { nctx.fillStyle = bg[yy][xx]; nctx.fillRect(dx, dy, s + 0.5, s + 0.5); }
+      nctx.drawImage(img, xx * sw, yy * sh, sw, sh, dx, dy, s + 0.5, s + 0.5);
+    }
+    outlineCells(nctx, cells, ox, oy, s);
+  }
+
+  // ---------- HUD ----------
+  const elScore = document.getElementById("score");
+  const elLevel = document.getElementById("level");
+  const elLines = document.getElementById("lines");
+  function updateHud() {
+    elScore.textContent = score;
+    elLevel.textContent = level;
+    elLines.textContent = bags;
+  }
+
+  const toastEl = document.getElementById("toast");
+  let toastT = 0;
+  function flashToast(msg) {
+    toastEl.textContent = msg; toastEl.classList.add("show");
+    clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove("show"), 900);
+  }
+
+  // ---------- Sound ----------
+  let actx = null, muted = false;
+  function audio() { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); return actx; }
+  function tone(freq, dur, type, when, vol) {
+    if (muted) return;
+    try {
+      const a = audio(), t = a.currentTime + (when || 0);
+      const o = a.createOscillator(), gn = a.createGain();
+      o.type = type || "triangle"; o.frequency.value = freq;
+      gn.gain.setValueAtTime(0.0001, t);
+      gn.gain.exponentialRampToValueAtTime(vol || 0.25, t + 0.01);
+      gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(gn).connect(a.destination);
+      o.start(t); o.stop(t + dur + 0.02);
+    } catch (e) {}
+  }
+  function sfx(kind) {
+    switch (kind) {
+      case "move": tone(320, 0.05, "square", 0, 0.10); break;
+      case "rot":  tone(680, 0.06, "square", 0, 0.14); break;
+      case "lock": tone(150, 0.12, "sawtooth", 0, 0.20); break;
+      case "row":  [523, 659, 784].forEach((f, i) => tone(f, 0.14, "triangle", i * 0.07, 0.26)); break;
+      case "win":  [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.22, "triangle", i * 0.12, 0.28)); break;
+    }
+  }
+  // ---------- Background music (looping mp3) ----------
+  const MUSIC_VOL = 0.6;
+  let bgm = null, musicOn = false, musicOff = false;
+  function startMusic() {
+    if (musicOn || musicOff) return;
+    try {
+      bgm = new Audio("assets/music.mp3");
+      bgm.loop = true;
+      bgm.volume = MUSIC_VOL;
+      bgm.muted = muted || musicOff;
+      bgm.play().catch(function () {});
+      musicOn = true;
+    } catch (e) {}
+  }
+
+  const muteBtn = document.getElementById("muteBtn");
+  muteBtn.addEventListener("click", () => {
+    muted = !muted; muteBtn.textContent = muted ? "🔇" : "🔊";
+    if (bgm) bgm.muted = muted || musicOff;
+    try { localStorage.setItem("ptb_muted", muted ? "1" : "0"); } catch (e) {}
+  });
+
+  // music-only toggle (top-right 🎵)
+  const musicBtn = document.getElementById("musicBtn");
+  function renderMusicBtn() { musicBtn.classList.toggle("off", musicOff); musicBtn.title = musicOff ? "Music: off" : "Music: on"; }
+  musicBtn.addEventListener("click", () => {
+    musicOff = !musicOff;
+    renderMusicBtn();
+    if (musicOff) { if (bgm) bgm.muted = true; }
+    else if (bgm) bgm.muted = muted;
+    else startMusic();
+    try { localStorage.setItem("ptb_music_off", musicOff ? "1" : "0"); } catch (e) {}
+  });
+
+  // ---------- Round end ----------
+  function endRound() {
+    state = "won";
+    const eff = efficiency();
+    score = computeScore();   // final pack grade (max 150)
+    const g = gradeFor(eff);
+    document.getElementById("stars").textContent = g.stars > 0 ? "★".repeat(g.stars) + "☆".repeat(3 - g.stars) : "☆☆☆";
+    document.getElementById("grade").textContent = g.label;
+    document.getElementById("wEff").textContent = eff + "%";
+    document.getElementById("wBags").textContent = bags;
+    document.getElementById("wScore").textContent = score;
+    document.getElementById("winOv").classList.remove("hidden");
+    sfx("win");
+    buzz([0, 40, 60, 40, 60, 80]);
+  }
+
+  // ---------- Juice (shake / particles / popups / haptics) ----------
+  function buzz(p) { try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
+  function addShake(m) { shakeMag = Math.min(16, Math.max(shakeMag, m)); }
+  function spawnBurst(rowY) {
+    const cy = rowY * cell + cell / 2;
+    const colors = ["#06C167", "#ffd23f", "#ffffff", "#ff5e5b"];
+    for (let i = 0; i < 24; i++) {
+      const ang = Math.random() * Math.PI * 2;
+      const spd = 2 + Math.random() * 5;
+      particles.push({
+        x: Math.random() * COLS * cell, y: cy,
+        vx: Math.cos(ang) * spd, vy: -Math.abs(Math.sin(ang) * spd) - 2,
+        life: 650, maxLife: 650,
+        size: cell * 0.12 + Math.random() * cell * 0.12,
+        color: colors[i % colors.length], rot: Math.random() * Math.PI
+      });
+    }
+  }
+  function updateJuice(dt) {
+    const f = dt / 16;
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx * f; p.y += p.vy * f; p.vy += 0.55 * f; p.rot += 0.15 * f;
+      p.life -= dt;
+      if (p.life <= 0) particles.splice(i, 1);
+    }
+    for (let i = popups.length - 1; i >= 0; i--) {
+      popups[i].y -= 0.5 * f; popups[i].life -= dt;
+      if (popups[i].life <= 0) popups.splice(i, 1);
+    }
+    if (shakeMag > 0.3) {
+      const dx = (Math.random() * 2 - 1) * shakeMag, dy = (Math.random() * 2 - 1) * shakeMag;
+      board.style.transform = "translate(" + dx.toFixed(1) + "px," + dy.toFixed(1) + "px)";
+      shakeMag *= 0.86;
+    } else if (board.style.transform) {
+      board.style.transform = "";
+      shakeMag = 0;
+    }
+  }
+  function renderJuice() {
+    for (const p of particles) {
+      bctx.save();
+      bctx.globalAlpha = Math.max(0, p.life / p.maxLife);
+      bctx.translate(p.x, p.y); bctx.rotate(p.rot);
+      bctx.fillStyle = p.color;
+      bctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+      bctx.restore();
+    }
+    for (const u of popups) {
+      bctx.save();
+      bctx.globalAlpha = Math.max(0, Math.min(1, u.life / u.maxLife * 1.4));
+      bctx.font = "900 " + Math.round(cell * 0.95) + "px 'Uber Move','Inter',sans-serif";
+      bctx.textAlign = "center"; bctx.textBaseline = "middle";
+      bctx.lineWidth = Math.max(3, cell * 0.12); bctx.strokeStyle = "rgba(0,0,0,.6)";
+      bctx.strokeText(u.text, u.x, u.y);
+      bctx.fillStyle = "#06C167";
+      bctx.fillText(u.text, u.x, u.y);
+      bctx.restore();
+    }
+  }
+
+  // ---------- Loop ----------
+  let lastFall = 0, raf = 0;
+  function perfNow() { return (window.performance && performance.now) ? performance.now() : 0; }
+  function loop(t) {
+    const dt = lastT ? Math.min(50, t - lastT) : 16;
+    lastT = t;
+    if (state === "playing") {
+      if (t - lastFall >= fallMs) {
+        lastFall = t;
+        if (!collides(cur.cells, curX, curY + 1)) curY++;
+        else lock();
+      }
+    }
+    updateJuice(dt);
+    render();
+    raf = requestAnimationFrame(loop);
+  }
+
+  // ---------- Controls ----------
+  let ready = false;
+  function start() {
+    if (!ready) return;
+    grid = newGrid(); placed = []; queue = []; packedRows.clear();
+    pullCount = 0; bigBagUsed = false; bigBagAt = 9 + Math.floor(Math.random() * 14); // big bag arrives once, pull 9..22
+    score = 0; bags = 0; level = 1; fallMs = FALL_BASE; nextKey = null;
+    particles.length = 0; popups.length = 0; shakeMag = 0; lockSquash = null; board.style.transform = "";
+    updateHud();
+    document.getElementById("startOv").classList.add("hidden");
+    document.getElementById("winOv").classList.add("hidden");
+    document.getElementById("pauseOv").classList.add("hidden");
+    fit();
+    state = "playing";
+    spawn();
+    lastFall = perfNow();
+    try { audio().resume(); } catch (e) {}
+    startMusic();
+  }
+  function togglePause() {
+    if (state === "playing") { state = "paused"; document.getElementById("pauseOv").classList.remove("hidden"); }
+    else if (state === "paused") { state = "playing"; document.getElementById("pauseOv").classList.add("hidden"); lastFall = perfNow(); }
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if ((state === "start" || state === "won") && (e.key === "Enter" || e.key === " ")) { start(); e.preventDefault(); return; }
+    if (e.key === "p" || e.key === "P") { togglePause(); e.preventDefault(); return; }
+    if (state !== "playing") return;
+    switch (e.key) {
+      case "ArrowLeft": move(-1); e.preventDefault(); break;
+      case "ArrowRight": move(1); e.preventDefault(); break;
+      case "ArrowUp": case "x": case "X": rotate(); e.preventDefault(); break;
+      case "ArrowDown": softDrop(); e.preventDefault(); break;
+      case " ": hardDrop(); e.preventDefault(); break;
+    }
+  });
+
+  function holdBtn(id, fn, repeat) {
+    const el = document.getElementById(id);
+    let iv = 0;
+    const down = (e) => { e.preventDefault(); fn(); if (repeat) { clearInterval(iv); iv = setInterval(fn, 110); } };
+    const up = () => clearInterval(iv);
+    el.addEventListener("pointerdown", down);
+    el.addEventListener("pointerup", up);
+    el.addEventListener("pointerleave", up);
+    el.addEventListener("pointercancel", up);
+  }
+  holdBtn("bLeft", () => move(-1), true);
+  holdBtn("bRight", () => move(1), true);
+  holdBtn("bSoft", () => softDrop(), true);
+  holdBtn("bRot", () => rotate(), false);
+  holdBtn("bDrop", () => hardDrop(), false);
+
+  // tap board = rotate, swipe down = hard drop
+  let tsx = 0, tsy = 0, tmoved = false;
+  board.addEventListener("pointerdown", (e) => { tsx = e.clientX; tsy = e.clientY; tmoved = false; });
+  board.addEventListener("pointermove", (e) => { if (Math.abs(e.clientX - tsx) > 18 || Math.abs(e.clientY - tsy) > 18) tmoved = true; });
+  board.addEventListener("pointerup", (e) => {
+    if (state !== "playing") return;
+    const dx = e.clientX - tsx, dy = e.clientY - tsy;
+    if (dy > 40 && Math.abs(dy) > Math.abs(dx)) hardDrop();
+    else if (!tmoved) rotate();
+  });
+
+  document.getElementById("againBtn").addEventListener("click", start);
+  document.getElementById("resumeBtn").addEventListener("click", togglePause);
+  window.addEventListener("resize", fit);
+  window.addEventListener("orientationchange", () => setTimeout(fit, 200));
+  window.addEventListener("blur", () => { if (state === "playing") togglePause(); });
+
+
+  // ---------- Init ----------
+  try { muted = localStorage.getItem("ptb_muted") === "1"; muteBtn.textContent = muted ? "🔇" : "🔊"; } catch (e) {}
+  try { musicOff = localStorage.getItem("ptb_music_off") === "1"; } catch (e) {}
+  renderMusicBtn();
+  grid = newGrid();
+  fit();
+  render();
+  raf = requestAnimationFrame(loop);
+
+  // ---------- How-to-play: auto-playing gameplay demo (this is the start screen) ----------
+  const demoCv = document.getElementById("demoCv");
+  const dctx = demoCv.getContext("2d");
+  const DCOLS = 6, DROWS = 9, DCELL = demoCv.width / DCOLS;
+  // scripted tidy pack (lowest pieces first) — fills the bottom 4 rows with no gaps
+  // scripted tidy pack (lowest pieces first) using a VARIETY of items — fills a tight block
+  const DEMO_SCRIPT = [
+    { key: "O",  x: 0, y: 7 },   // bag (cols 0-1)
+    { key: "O",  x: 2, y: 7 },   // bag (cols 2-3)
+    { key: "O",  x: 4, y: 7 },   // bag (cols 4-5)
+    { key: "SH", x: 5, y: 5 },   // shampoo first (col5 rows5-6) — nothing above to pass through
+    { key: "L",  x: 4, y: 4 },   // combo (corner-top): col4 rows4-6 + burger (5,4), sits beside shampoo
+    { key: "I",  x: 0, y: 6, spawnRot: 3 },   // sub — drops in sideways, ROTATES flat to fit
+    { key: "I",  x: 0, y: 5 },   // subs (cols 0-3)
+    { key: "I",  x: 0, y: 4 },   // subs (cols 0-3)
+  ];
+  function rotN(cells, n) { let m = cells; n = ((n % 4) + 4) % 4; for (let i = 0; i < n; i++) m = rotateMatrix(m); return m; }
+  let demoRAF = null, demoPlaced = [], demoIdx = 0, demoPhase = "fall", demoCurX = 0, demoCurY = -3, demoLastT = 0, demoHold = 0;
+  let demoCurRot = 0, demoTargetRot = 0, demoRotDone = true, demoRotAtY = -99, demoRotPause = 0;
+
+  function demoSpawn() {
+    if (demoIdx >= DEMO_SCRIPT.length) { demoPhase = "done"; demoHold = 0; return; }
+    const s = DEMO_SCRIPT[demoIdx];
+    demoTargetRot = s.rot || 0;
+    demoCurRot = (s.spawnRot != null) ? s.spawnRot : demoTargetRot;
+    demoRotDone = (demoCurRot === demoTargetRot);
+    demoRotAtY = s.y - 6;                                       // rotate well above target so it's visible
+    demoRotPause = 0;
+    const w0 = rotN(PIECES[s.key].cells, demoCurRot)[0].length;
+    demoCurX = (demoIdx % 2 === 0) ? Math.min(DCOLS - w0, s.x + 2) : Math.max(0, s.x - 2); // offset to show sliding
+    demoCurY = -3; demoPhase = "fall";
+  }
+  function demoReset() { demoPlaced = []; demoIdx = 0; demoHold = 0; demoSpawn(); }
+  function demoStep(dt) {
+    if (demoPhase === "done") { demoHold += dt; if (demoHold > 1300) demoReset(); return; }
+    const s = DEMO_SCRIPT[demoIdx];
+    if (demoRotPause > 0) { demoRotPause -= dt; return; }       // freeze a beat after rotating
+    demoCurX += (s.x - demoCurX) * Math.min(1, dt / 90);       // ease toward target column
+    demoCurY += dt / 70;                                       // fall
+    if (!demoRotDone && demoCurY >= demoRotAtY) {              // rotate to the orientation that fits
+      const before = rotN(PIECES[s.key].cells, demoCurRot).length;
+      demoCurRot = demoTargetRot;
+      const after = rotN(PIECES[s.key].cells, demoCurRot).length;
+      demoCurY += (before - after);                            // keep visual bottom continuous through the flip
+      demoRotDone = true; demoRotPause = 260;
+    }
+    if (demoCurY >= s.y) {
+      demoCurX = s.x; demoCurY = s.y;
+      demoPlaced.push({ key: s.key, cells: rotN(PIECES[s.key].cells, demoTargetRot), x: s.x, y: s.y, rot: demoTargetRot });
+      demoIdx++; demoSpawn();
+    }
+  }
+  function demoDrawSprite(key, cells, gx, gy, rot) {
+    const spr = SPRITES[PIECES[key].sprite]; if (!spr) return;
+    rot = rot || 0;
+    const cols = cells[0].length, rows = cells.length;
+    const x = gx * DCELL, y = gy * DCELL, w = cols * DCELL, h = rows * DCELL;
+    const hf = HANDLE_FRAC[PIECES[key].sprite];
+    if (hf) { const dh = h / (1 - hf); dctx.drawImage(spr.rots[0], x, y - (dh - h), w, dh); return; }   // bag: baked outline only
+    const img = spr.rots[rot];
+    const sw = img.width / cols, sh = img.height / rows;
+    const bg = PIECES[key]._bg && PIECES[key]._bg[rot];
+    for (let yy = 0; yy < rows; yy++) for (let xx = 0; xx < cols; xx++) {
+      if (!cells[yy][xx]) continue;
+      const dx = x + xx * DCELL, dy = y + yy * DCELL;
+      if (bg && bg[yy][xx]) { dctx.fillStyle = bg[yy][xx]; dctx.fillRect(dx, dy, DCELL + 0.5, DCELL + 0.5); }
+      dctx.drawImage(img, xx * sw, yy * sh, sw, sh, dx, dy, DCELL + 0.5, DCELL + 0.5);
+    }
+    outlineCells(dctx, cells, x, y, DCELL);
+  }
+  function demoRender() {
+    const W = demoCv.width, H = demoCv.height;
+    drawBagField(dctx, W, H, DCELL, DCOLS, DROWS);   // green bag + handles
+    for (const p of demoPlaced) demoDrawSprite(p.key, p.cells, p.x, p.y, p.rot);
+    if (demoPhase !== "done" && demoIdx < DEMO_SCRIPT.length) {
+      const s = DEMO_SCRIPT[demoIdx];
+      demoDrawSprite(s.key, rotN(PIECES[s.key].cells, demoCurRot), demoCurX, demoCurY, demoCurRot);
+    }
+    const cur = (demoIdx < DEMO_SCRIPT.length) ? DEMO_SCRIPT[demoIdx] : null;
+    let cap;
+    if (demoPhase === "done") cap = "Fill it up = more points!";
+    else if (cur && cur.spawnRot != null && cur.spawnRot !== (cur.rot || 0)) cap = "Rotate so it fits ↻";
+    else cap = ["Drop food into the bag", "Pack tight — no gaps", "Fill it up = more points!"][Math.min(2, Math.floor(demoIdx / 2))];
+    const el = document.getElementById("demoCap"); if (el.textContent !== cap) el.textContent = cap;
+  }
+  function demoLoop(t) {
+    if (!demoRAF) return;
+    const raw = Math.min(50, t - (demoLastT || t)); demoLastT = t;
+    const dt = raw * 0.7;                                       // 30% slower demo
+    demoStep(dt); demoRender();
+    demoRAF = requestAnimationFrame(demoLoop);
+  }
+  function showHowto() {
+    document.getElementById("howOv").classList.remove("hidden");
+    demoReset(); demoLastT = 0;
+    if (!demoRAF) demoRAF = requestAnimationFrame(demoLoop);
+  }
+  function hideHowto() {
+    document.getElementById("howOv").classList.add("hidden");
+    if (demoRAF) { cancelAnimationFrame(demoRAF); demoRAF = null; }
+  }
+  document.getElementById("howPlay").addEventListener("click", () => { hideHowto(); start(); });
+
+  loadSprites().then(() => {
+    ready = true;
+    buildTileData();                                            // per-cell backing colours
+    drawNext();
+    document.getElementById("startOv").classList.add("hidden"); // drop the loading screen
+    showHowto();                                                // How-to-Play is the start screen
+  }).catch((src) => {
+    document.getElementById("startVeil").textContent = "Failed to load art";
+    console.error("sprite load failed:", src);
+  });
+})();
+</script>
+</body>
+</html>

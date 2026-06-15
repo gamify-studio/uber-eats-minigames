@@ -1,0 +1,5 @@
+.DS_Store
+node_modules/
+*.log
+assets/_debug.png
+assets/_holecheck.png
