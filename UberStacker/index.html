@@ -109,6 +109,9 @@
   }
   .overlay.hidden { display: none; }
   .overlay .riderImg { position: absolute; left: 14px; bottom: 14px; width: min(16vw, 90px); height: auto; pointer-events: none; z-index: 1; filter: drop-shadow(0 5px 12px rgba(0,0,0,.55)); }
+  /* Win screen: the rider sits in-flow above the "Order Packed!" title, centred and sized to
+     the column so it fits nicely on any phone (caps on large screens, shrinks on small ones). */
+  #winOv .riderImg { position: static; left: auto; bottom: auto; width: clamp(96px, 30vw, 150px); margin: 0 auto 2px; }
   .overlay h1 { font-size: 30px; font-weight: 900; line-height: 1.1; }
   .overlay h1 .e { color: var(--green); }
   .overlay p { font-size: 14px; opacity: .8; line-height: 1.55; max-width: 320px; }
@@ -262,6 +265,7 @@
 
   <!-- Win -->
   <div class="overlay hidden" id="winOv">
+    <img class="riderImg" src="assets/rider.png?v=1" alt="Uber Eats delivery rider" />
     <h1>Order Packed!</h1>
     <div id="stars">★★★</div>
     <div class="grade" id="grade">Perfect pack</div>
@@ -272,7 +276,6 @@
     </div>
     <button class="cta" id="againBtn">Pack Another</button>
     <button class="cta ghost" id="townBtn" type="button">Back To Town</button>
-    <img class="riderImg" src="assets/rider.png?v=1" alt="Uber Eats delivery rider" />
   </div>
 
   <!-- Pause -->

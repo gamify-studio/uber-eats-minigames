@@ -423,6 +423,8 @@
   .tut-lines { text-align: left; margin: 12px 0 16px; display: flex; flex-direction: column; gap: 10px; }
   .tut-lines p { margin: 0; display: flex; gap: 11px; align-items: flex-start; font-weight: 600; color: var(--muted); font-size: 14.5px; line-height: 1.3; }
   .tut-lines .n { flex: none; width: 22px; height: 22px; border-radius: 50%; background: rgba(6, 193, 103,0.18); color: var(--green); font-weight: 900; font-size: 13px; display: grid; place-items: center; }
+  /* let the instruction text wrap inside the flex row instead of overflowing on narrow phones */
+  .tut-lines p > span:last-child { flex: 1; min-width: 0; }
   .tut-lines b { color: #fff; font-weight: 800; }
 
   /* tutorial overlay sits on the same green as the game itself; green accents
@@ -434,7 +436,7 @@
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
-  #tutorial h2.green { color: #000; font-size: 43px; margin-top: -16px; }
+  #tutorial h2.green { color: #000; font-size: clamp(29px, 9vw, 41px); margin-top: -16px; }
   #tutorial .tut-lines p { color: #000; }
   #tutorial .tut-lines b { color: #000; }
   #tutorial .tut-lines .n { background: rgba(255, 255, 255, 0.85); color: #000; }
@@ -1036,9 +1038,10 @@ function showOverlay(kind) {
     });
   });
   el.overlay.classList.add("show");
-  // auto-start a fresh game shortly after finishing — the finished board is gone for good
+  // No auto-restart: the end screen stays until the player chooses "Play again" (keeps their
+  // best score) or "Back To Town". Auto-restarting wiped the screen before they could decide.
   clearTimeout(autoRestartTimer);
-  autoRestartTimer = setTimeout(() => { autoRestartTimer = null; newGame(); }, CONFIG.autoRestartMs);
+  autoRestartTimer = null;
 }
 function hideOverlay() {
   clearTimeout(autoRestartTimer);
