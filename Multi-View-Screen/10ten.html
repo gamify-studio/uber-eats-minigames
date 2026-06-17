@@ -534,7 +534,7 @@ const CONFIG = {
   boardSize: 4,           // grid is N x N
   target: 6,              // level that wins (Uber Delivery Box)
   startTiles: 2,
-  spawn: [ { value: 1, weight: 85 }, { value: 2, weight: 15 } ], // mostly Flowers, sometimes Coffee
+  spawn: [ { value: 1, weight: 100 } ], // every spawn is a 1 (Flower) - start tiles and every swipe
   maxScore: 150,          // best possible score (also clamps a stored best)
   // efficiency tiers: win within `maxSwipes` -> that score. Fewer swipes = higher. Edit freely.
   scoreTiers: [
@@ -1295,15 +1295,20 @@ function init() {
   state.muted = !!(saved && saved.muted);
   el.sound.textContent = state.muted ? "🔇" : "🔊";
 
-  if (saved && saved.tiles && saved.tiles.length) {
+  // Resume only a genuinely in-progress game. A finished game (won, or no moves left) starts
+  // fresh next time it's opened, instead of reopening on its end state.
+  if (saved && saved.tiles && saved.tiles.length && !saved.won) {
     state.score = Math.min(saved.score || 0, CONFIG.maxScore);
     state.moves = saved.moves || 0;
-    state.won = !!saved.won;
+    state.won = false;
     for (const t of saved.tiles) addTile(t.v, t.r, t.c);
-    state.over = !anyMovePossible(state.tiles, state.grid);
-    renderAll();
-    hideHint();
-    if (state.over) showOverlay("over");
+    if (anyMovePossible(state.tiles, state.grid)) {
+      state.over = false;
+      renderAll();
+      hideHint();
+    } else {
+      newGame(); // saved board was already a game-over -> start fresh
+    }
   } else {
     newGame();
   }
