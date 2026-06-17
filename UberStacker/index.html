@@ -258,7 +258,7 @@
     </div>
     <ol class="htSteps">
       <li><span class="num">1</span><span>Stack the perfect <b>Uber Eats</b> delivery bag to earn points! The more items you stack, the more points you earn!</span></li>
-      <li><span class="num">2</span><span>Slide &amp; rotate each item, then drop it. Pack <b>tight with no gaps</b> — the fuller the bag, the more points.</span></li>
+      <li><span class="num">2</span><span>Slide &amp; rotate each item, then drop it. Pack <b>tight with no gaps</b>, the fuller the bag, the more points.</span></li>
       <li><span class="num">3</span><span>Fill it up = more points!</span></li>
     </ol>
     <div class="htActions">
@@ -533,7 +533,7 @@
     if (eff >= 85) return { stars: 3, label: "Perfect pack" };
     if (eff >= 65) return { stars: 2, label: "Tidy delivery" };
     if (eff >= 40) return { stars: 1, label: "Good enough" };
-    return { stars: 0, label: "Messy pack — try again" };
+    return { stars: 0, label: "Messy pack, try again" };
   }
 
   // ---------- Rendering ----------
@@ -1136,7 +1136,7 @@
     let cap;
     if (demoPhase === "done") cap = "Fill it up = more points!";
     else if (cur && cur.spawnRot != null && cur.spawnRot !== (cur.rot || 0)) cap = "Rotate so it fits ↻";
-    else cap = ["Drop food into the bag", "Pack tight — no gaps", "Fill it up = more points!"][Math.min(2, Math.floor(demoIdx / 2))];
+    else cap = ["Drop food into the bag", "Pack tight, no gaps", "Fill it up = more points!"][Math.min(2, Math.floor(demoIdx / 2))];
     const el = document.getElementById("demoCap"); if (el.textContent !== cap) el.textContent = cap;
   }
   function demoLoop(t) {
