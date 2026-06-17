@@ -68,7 +68,7 @@
 <div id="hud">
   <div id="banner"></div>
   <div id="topbar">
-    <div id="orderInfo" class="chip hidden"><span id="oiEmoji">🍔</span> <span id="oiName">—</span> · <span id="oiTimer">00:00</span></div>
+    <div id="orderInfo" class="chip hidden"><span id="oiEmoji">🍔</span> <span id="oiName">-</span> · <span id="oiTimer">00:00</span></div>
     <div id="money" class="chip">💵 $0</div>
   </div>
 </div>
@@ -304,7 +304,7 @@
         const tgt = this.state === "accepted" ? o.restaurant : o.customer;
         const r = this.state === "accepted" ? PICKUP_R : DROP_R;
         if (Math.hypot(moped.x - tgt.x, moped.y - tgt.y) < r){
-          if (this.state === "accepted"){ this.state = "carrying"; this.flash("Order picked up — deliver it!"); }
+          if (this.state === "accepted"){ this.state = "carrying"; this.flash("Order picked up - deliver it!"); }
           else { this.deliver(); }
         }
       }
@@ -326,7 +326,7 @@
     deliver(){ const earned = this.current.payout + timeBonus(this.current.timeLeft);
                this.money += earned; this.flash("Delivered! +$"+earned);
                this.current=null; this.state="idle"; this.gap=1.6; },
-    fail(){ this.flash("Too slow — order lost"); this.current=null; this.state="idle"; this.gap=1.6; },
+    fail(){ this.flash("Too slow - order lost"); this.current=null; this.state="idle"; this.gap=1.6; },
     flash(msg){ this.lastMsg=msg; this.msgT=2.2; },
     target(){ if(this.state==="accepted")return this.current.restaurant;
               if(this.state==="carrying")return this.current.customer; return null; }

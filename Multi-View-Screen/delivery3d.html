@@ -39,7 +39,7 @@
   #banner { position:fixed; top:150px; left:0; right:0; text-align:center;
     font:800 22px system-ui; text-shadow:0 2px 8px rgba(0,0,0,.7); transition:opacity .3s; opacity:0; }
 
-  /* order offer (non-modal card, bottom-center — keep driving while it's up) */
+  /* order offer (non-modal card, bottom-center - keep driving while it's up) */
   #popup { position:fixed; left:50%; bottom:128px; transform:translateX(-50%); z-index:30; pointer-events:none; }
   #popup.hidden { display:none; }
   .card { width:min(80vw,300px); background:#fff; border-radius:18px; padding:12px 16px 14px; pointer-events:auto;
@@ -135,7 +135,7 @@
 <div id="hud">
   <div id="banner"></div>
   <div id="topbar">
-    <div id="orderInfo" class="chip hidden"><span id="oiEmoji">🍔</span> <span id="oiName">—</span> · <span id="oiTimer">00:00</span></div>
+    <div id="orderInfo" class="chip hidden"><span id="oiEmoji">🍔</span> <span id="oiName">-</span> · <span id="oiTimer">00:00</span></div>
     <div id="money" class="chip">💵 $0</div>
   </div>
 </div>
@@ -317,7 +317,7 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xbfe0f5);
 scene.fog = new THREE.Fog(0xcfe6f2, 900, 2200);
 
-// PBR reflections — neutral studio env makes chrome mirror + clearcoat paint pop
+// PBR reflections - neutral studio env makes chrome mirror + clearcoat paint pop
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 
@@ -574,7 +574,7 @@ function buildMoped(){
   const M=(c,rough,metal)=>new THREE.MeshStandardMaterial({color:c,roughness:rough==null?0.55:rough,metalness:metal||0});
   const RED=0xe23b3b, REDD=0xc62f2f, DARK=0x20262e, CHROME=0xccd3da;
   const chromeMat=new THREE.MeshStandardMaterial({color:CHROME,roughness:0.16,metalness:0.95}); // mirror chrome (env-lit)
-  // wheels: torus tire + spoked chrome rim + brake disc + hub — axle along X so group.rotation.x spins them
+  // wheels: torus tire + spoked chrome rim + brake disc + hub - axle along X so group.rotation.x spins them
   const wheels=[]; g.userData.wheels=wheels;
   const tireGeo=new THREE.TorusGeometry(8.5,3.2,14,28);
   const rimGeo=new THREE.CylinderGeometry(6,6,3.2,20);
@@ -600,7 +600,7 @@ function buildMoped(){
   const shield=new THREE.Mesh(new THREE.SphereGeometry(11,16,14), bodyMat); shield.scale.set(0.55,1.25,0.95); shield.position.set(16,24,0); shield.castShadow=true; g.add(shield);
   // front fender hugging the wheel
   const fender=new THREE.Mesh(new THREE.TorusGeometry(9,2.6,8,16,Math.PI), bodyMat); fender.rotation.set(Math.PI/2,0,Math.PI); fender.position.set(16,11,0); g.add(fender);
-  // telescopic front forks — connect headset down to the front axle
+  // telescopic front forks - connect headset down to the front axle
   const forkGeo=new THREE.CylinderGeometry(1.4,1.4,21,10);
   [-1,1].forEach(s=>{ const fk=new THREE.Mesh(forkGeo, chromeMat); fk.position.set(16.5,18.5,4*s); fk.rotation.z=-0.13; fk.castShadow=true; g.add(fk); });
   // seat (rounded)
@@ -735,7 +735,7 @@ function updateFloats(dt){ for(const f of floatPool){ if(!f.spr.visible) continu
 
 // ===================== exhaust smoke + skid marks =====================
 let smokeT=0, skidT=0;
-const ENABLE_SMOKE=false; // electric bike — no exhaust smoke (flip true to restore)
+const ENABLE_SMOKE=false; // electric bike - no exhaust smoke (flip true to restore)
 const smokePool=[];
 for(let i=0;i<28;i++){ const s=new THREE.Sprite(new THREE.SpriteMaterial({map:cloudTex,transparent:true,opacity:0,depthWrite:false,color:0x8d877e}));
   s.visible=false; scene.add(s); smokePool.push({s,t:0,vx:0,vz:0,dur:1.2}); }
@@ -893,7 +893,7 @@ const Sound = (function(){
       idleSrc=ctx.createBufferSource(); idleSrc.buffer=ib; idleSrc.loop=true; idleSrc.connect(idleG); idleSrc.start();
       accelSrc=ctx.createBufferSource(); accelSrc.buffer=ab; accelSrc.loop=true; accelSrc.connect(accelG); accelSrc.start();
       sampReady=true; engBus.gain.setTargetAtTime(0.95, ctx.currentTime, 0.3);
-      // hand the engine over to the real samples — silence the synth layer
+      // hand the engine over to the real samples - silence the synth layer
       if(eg) eg.gain.setTargetAtTime(0, ctx.currentTime, 0.3);
       if(nGain) nGain.gain.setTargetAtTime(0, ctx.currentTime, 0.3);
     }catch(e){ sampReady=false; } // CDN/offline -> keep synth engine
@@ -902,7 +902,7 @@ const Sound = (function(){
     init, resume,
     engine(sp, gas){
       if(!ready||muted) return; const t=ctx.currentTime; const g=gas||0;
-      // RPM with inertia — revs build fast, fall slower (engine braking feel)
+      // RPM with inertia - revs build fast, fall slower (engine braking feel)
       const revUp = (g>0.5 && sp<0.06) ? 0.5 : 0;            // rev in place when stopped on throttle
       const target = 0.08 + Math.max(Math.max(0,Math.min(1,sp))*0.92, revUp);
       rpm += (target - rpm) * (target>rpm ? 0.11 : 0.05);
@@ -987,7 +987,7 @@ const orders={
     if(!this.offered && this.active.length<this.bagCap){ this.gap-=dt; if(this.gap<=0) this.offer(); }
     // pending offer ticks down + auto-declines if ignored
     if(this.offered){ this.offered.offerT-=dt; if(this.offered.offerT<=0) this.decline(); }
-    // active jobs: timers + arrivals (iterate backwards — we splice)
+    // active jobs: timers + arrivals (iterate backwards - we splice)
     for(let i=this.active.length-1;i>=0;i--){
       const o=this.active[i]; o.timeLeft-=dt;
       if(o.timeLeft<=0){ this.failJob(i); continue; }
@@ -1010,7 +1010,7 @@ const orders={
       payout:Math.round((5+dist/700)*(1+T*0.06)), timeLimit:tl, timeLeft:tl, picked:false, offerT:9 };
   },
   accept(){ if(this.offered && this.active.length<this.bagCap){ this.active.push(this.offered); this.offered=null; this.gap=0.5;
-    this.flash("Accepted — bag "+this.active.length+"/"+this.bagCap); } },
+    this.flash("Accepted - bag "+this.active.length+"/"+this.bagCap); } },
   decline(){ if(this.offered){ this.offered=null; this.gap=0.9; } },
   deliverJob(i){ const o=this.active[i];
     const fast=o.timeLeft>o.timeLimit*0.4; this.streak=fast?this.streak+1:0;
@@ -1021,7 +1021,7 @@ const orders={
     spawnPop(o.customer.x,o.customer.z,0x2faf5a); spawnFloat(o.customer.x,o.customer.z,"+$"+e,0x6cf08a);
     Sound.deliverAt(o.customer.x,o.customer.z); vibe(40); this.active.splice(i,1); },
   failJob(i){ const o=this.active[i]; this.streak=0;
-    this.flash((o.picked?"Spoiled — ":"Lost — ")+o.name); Sound.fail(); vibe([60,40,60]); this.active.splice(i,1); },
+    this.flash((o.picked?"Spoiled - ":"Lost - ")+o.name); Sound.fail(); vibe([60,40,60]); this.active.splice(i,1); },
   flash(m){ this.lastMsg=m; this.msgT=2.2; },
   // nearest active job's current target (for arrow / route / minimap focus)
   nearestTarget(){ let pt=null,bd=1e9,pk=false; for(const o of this.active){ const t=o.picked?o.customer:o.restaurant.door;
@@ -1241,7 +1241,7 @@ function buildRoute(pts){ let si=0;
   for(let i=si;i<routeSegs.length;i++) routeSegs[i].visible=false;
 }
 let routeT=0;
-const ENABLE_ROUTE=false; // green follow-line removed — arrow + beams guide instead (flip true to restore)
+const ENABLE_ROUTE=false; // green follow-line removed - arrow + beams guide instead (flip true to restore)
 function updateRoute(dt){
   if(!ENABLE_ROUTE){ hideRoute(); return; }
   const nt = gstate==="playing" ? orders.nearestTarget() : null;
@@ -1294,7 +1294,7 @@ function renderPaints(){ const c=document.getElementById("paints"); if(!c) retur
   PAINTS.forEach((p,i)=>{ const owned=paintOwned.indexOf(i)>=0, eq=paintEq===i;
     const b=document.createElement("button"); b.className="swatch"+(eq?" eq":"");
     b.style.background="#"+p.c.toString(16).padStart(6,"0");
-    b.title=p.name+(owned?"":" — $"+p.cost); b.textContent = eq?"✓":(owned?"":"$"+p.cost);
+    b.title=p.name+(owned?"":" - $"+p.cost); b.textContent = eq?"✓":(owned?"":"$"+p.cost);
     b.addEventListener("click",()=>{
       if(owned){ paintEq=i; persist("paintEq",paintEq); applyPaint(); renderPaints(); }
       else if(bank>=p.cost){ bank-=p.cost; paintOwned.push(i); paintEq=i; persist("bank",bank); persist("paintOwned",paintOwned); persist("paintEq",paintEq); applyPaint(); Sound.buy(); document.getElementById("sumBank").textContent="$"+bank; renderPaints(); }

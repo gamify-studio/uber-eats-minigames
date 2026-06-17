@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-<title>Pack the Bag — Uber Eats</title>
+<title>Pack the Bag - Uber Eats</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <!-- Uber Move is proprietary; Inter is the standard open stand-in and is used as the fallback. -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-  /* Uber Move brand font (bundled) — used for ALL game text */
+  /* Uber Move brand font (bundled) - used for ALL game text */
   @font-face { font-family: "Uber Move"; src: url("assets/UberMoveMedium.otf") format("opentype"); font-weight: 300 600; font-style: normal; font-display: swap; }
   @font-face { font-family: "Uber Move"; src: url("assets/UberMoveBold.otf") format("opentype"); font-weight: 601 900; font-style: normal; font-display: swap; }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
@@ -247,7 +247,7 @@
       <div class="it"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 5 22 11 16 11"/><polyline points="2 19 2 13 8 13"/><path d="M4.2 9.2A8 8 0 0 1 18 6.5L22 11 M2 13l4 4.5A8 8 0 0 0 19.8 14.8"/></svg></div><div class="lb">Rotate</div></div>
       <div class="it"><div class="ic drop"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 8 L11 8 L7 15 Z"/><path d="M13 8 L21 8 L17 15 Z"/></svg></div><div class="lb">Drop</div></div>
     </div>
-    <p class="htHint">Slide &amp; rotate each item, then drop it. Pack <b>tight with no gaps</b> — the fuller the bag, the more points.</p>
+    <p class="htHint">Slide &amp; rotate each item, then drop it. Pack <b>tight with no gaps</b> - the fuller the bag, the more points.</p>
     <div class="htActions">
       <button class="cta" id="howPlay" style="margin-top:0">Play ▶</button>
     </div>
@@ -457,7 +457,7 @@
     sfx("lock");
     buzz(12);
 
-    // newly completed rows glow — rows DO NOT clear
+    // newly completed rows glow - rows DO NOT clear
     let newRows = 0;
     const newRowYs = [];
     for (let y = 0; y < ROWS; y++)
@@ -487,7 +487,7 @@
   // Packing density: of the space your stack occupies (full width × its height),
   // how much is actually food. A no-skill spike wastes most of the width → ~0%.
   // A solidly packed bag with no gaps → ~100%. PACK_FLOOR maps the worst real
-  // dumps to 0 so the 0–100 range tracks skill, not just raw fill.
+  // dumps to 0 so the 0-100 range tracks skill, not just raw fill.
   const PACK_FLOOR = 0.25;
   function efficiency() {
     const top = stackTopRow();
@@ -515,7 +515,7 @@
     if (eff >= 85) return { stars: 3, label: "Perfect pack" };
     if (eff >= 65) return { stars: 2, label: "Tidy delivery" };
     if (eff >= 40) return { stars: 1, label: "Good enough" };
-    return { stars: 0, label: "Messy pack — try again" };
+    return { stars: 0, label: "Messy pack - try again" };
   }
 
   // ---------- Rendering ----------
@@ -994,15 +994,15 @@
   const demoCv = document.getElementById("demoCv");
   const dctx = demoCv.getContext("2d");
   const DCOLS = 6, DROWS = 9, DCELL = demoCv.width / DCOLS;
-  // scripted tidy pack (lowest pieces first) — fills the bottom 4 rows with no gaps
-  // scripted tidy pack (lowest pieces first) using a VARIETY of items — fills a tight block
+  // scripted tidy pack (lowest pieces first) - fills the bottom 4 rows with no gaps
+  // scripted tidy pack (lowest pieces first) using a VARIETY of items - fills a tight block
   const DEMO_SCRIPT = [
     { key: "O",  x: 0, y: 7 },   // bag (cols 0-1)
     { key: "O",  x: 2, y: 7 },   // bag (cols 2-3)
     { key: "O",  x: 4, y: 7 },   // bag (cols 4-5)
-    { key: "SH", x: 5, y: 5 },   // shampoo first (col5 rows5-6) — nothing above to pass through
+    { key: "SH", x: 5, y: 5 },   // shampoo first (col5 rows5-6) - nothing above to pass through
     { key: "L",  x: 4, y: 4 },   // combo (corner-top): col4 rows4-6 + burger (5,4), sits beside shampoo
-    { key: "I",  x: 0, y: 6, spawnRot: 3 },   // sub — drops in sideways, ROTATES flat to fit
+    { key: "I",  x: 0, y: 6, spawnRot: 3 },   // sub - drops in sideways, ROTATES flat to fit
     { key: "I",  x: 0, y: 5 },   // subs (cols 0-3)
     { key: "I",  x: 0, y: 4 },   // subs (cols 0-3)
   ];
@@ -1072,7 +1072,7 @@
     let cap;
     if (demoPhase === "done") cap = "Fill it up = more points!";
     else if (cur && cur.spawnRot != null && cur.spawnRot !== (cur.rot || 0)) cap = "Rotate so it fits ↻";
-    else cap = ["Drop food into the bag", "Pack tight — no gaps", "Fill it up = more points!"][Math.min(2, Math.floor(demoIdx / 2))];
+    else cap = ["Drop food into the bag", "Pack tight - no gaps", "Fill it up = more points!"][Math.min(2, Math.floor(demoIdx / 2))];
     const el = document.getElementById("demoCap"); if (el.textContent !== cap) el.textContent = cap;
   }
   function demoLoop(t) {

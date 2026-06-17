@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="Uber: Path Picker" />
 <title>Uber: Path Picker</title>
 <style>
-  /* Uber Move — official Uber brand font, self-hosted */
+  /* Uber Move - official Uber brand font, self-hosted */
   @font-face { font-family: 'Uber Move'; src: url('UberMoveMedium.otf') format('opentype'); font-weight: 400 600; font-style: normal; font-display: swap; }
   @font-face { font-family: 'Uber Move'; src: url('UberMoveBold.otf') format('opentype'); font-weight: 700 900; font-style: normal; font-display: swap; }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -190,7 +190,7 @@
     <div id="right"><button id="muteBtn">🔊</button></div>
   </div>
   <div id="timerwrap"><div id="timerfill"></div></div>
-  <div id="prompt">Pick The Smartest Delivery Route<small>smart route planning — spot the shorter route</small></div>
+  <div id="prompt">Pick The Smartest Delivery Route<small>smart route planning - spot the shorter route</small></div>
 
   <button class="choice" id="btnA"><span class="big">A</span><span class="lbl">ROUTE</span></button>
   <button class="choice" id="btnB"><span class="big">B</span><span class="lbl">ROUTE</span></button>
@@ -263,7 +263,7 @@
 <script>
 "use strict";
 /* ======================================================================
-   ROUTE RUSH — pick the shorter of two routes on a procedural city map.
+   ROUTE RUSH - pick the shorter of two routes on a procedural city map.
    Single file, pure canvas. No assets, no libraries.
    ====================================================================== */
 
@@ -470,7 +470,7 @@ function generateCity(S, E){
     if (taken.has(k)) continue; taken.add(k);
     parks.push({ bx, by, seed: Math.random() });
   }
-  // downtown — a cluster of tall towers near a random corner
+  // downtown - a cluster of tall towers near a random corner
   const towers = [];
   const tcx = Math.random() < 0.5 ? 0 : GW-2, tcy = Math.random() < 0.5 ? 0 : GH-2;
   for (let bx = 0; bx < GW-1; bx++) for (let by = 0; by < GH-1; by++){
@@ -485,7 +485,7 @@ function generateCity(S, E){
     const bx = ri(0, GW-2), by = ri(0, GH-2), k = blockKey(bx,by);
     if (taken.has(k)) continue; taken.add(k); field.push({ bx, by }); break;
   }
-  // houses fill the rest — each is a pre-rendered atlas sprite (see buildSprites)
+  // houses fill the rest - each is a pre-rendered atlas sprite (see buildSprites)
   const pal = pickN(COL.roofs, 3 + ri(0,1)), wpal = pickN(WALLS, 3 + ri(0,1));
   const houses = [];
   for (let bx = 0; bx < GW-1; bx++) for (let by = 0; by < GH-1; by++){
@@ -561,7 +561,7 @@ function lShape(a, b, viaX){
   const bend = viaX ? {x:b.x,y:a.y} : {x:a.x,y:b.y};
   return [{x:a.x,y:a.y}, bend, {x:b.x,y:b.y}];
 }
-// clean rectangular detour (⊐): bulge out by m on a roomy perpendicular side — 90° turns only, length = Manhattan + 2m
+// clean rectangular detour (⊐): bulge out by m on a roomy perpendicular side - 90° turns only, length = Manhattan + 2m
 function detourRect(a, b, m){
   const minx=Math.min(a.x,b.x), maxx=Math.max(a.x,b.x), miny=Math.min(a.y,b.y), maxy=Math.max(a.y,b.y);
   const room={ left:minx, right:(GW-1)-maxx, up:miny, down:(GH-1)-maxy };
@@ -575,7 +575,7 @@ function detourRect(a, b, m){
   if (side==='up'){    const y=miny-k; return [{x:a.x,y:a.y},{x:a.x,y},{x:b.x,y},{x:b.x,y:b.y}]; }
   const y=maxy+k;      return [{x:a.x,y:a.y},{x:a.x,y},{x:b.x,y},{x:b.x,y:b.y}];
 }
-// insert one clean square "nub" (+2 length, 90° turns only) on a straight run >=3 — adds wiggle without U-turns
+// insert one clean square "nub" (+2 length, 90° turns only) on a straight run >=3 - adds wiggle without U-turns
 function addNub(corners){
   for (let i = 1; i < corners.length; i++){
     const a = corners[i-1], b = corners[i];
@@ -651,7 +651,7 @@ function buildRoadGraph(){
       for (const o of [0,-band,band,-band*0.5,band*0.5]){ if (isRoad(cx+px*o, cy+py*o)){ onCenter=true; break; } }
       if (!onCenter) continue;
       // a real street is a NARROW strip: a non-road block edge sits within ~half a cell to one side.
-      // (wide gray areas — parking lots, gray rooftops — fail this and are rejected)
+      // (wide gray areas - parking lots, gray rooftops - fail this and are rejected)
       const sideClear = !isRoad(cx+px*far, cy+py*far) || !isRoad(cx-px*far, cy-py*far);
       if (sideClear) hit++;
     }
@@ -809,7 +809,7 @@ function buildStatic(){
     octx.drawImage(bgImg, bx0 + (bw-iw)/2, by0 + (bh-ih)/2, iw, ih);
     octx.fillStyle = 'rgba(8,10,18,.05)'; octx.fillRect(bx0, by0, bw, bh);   // very light scrim (keep image vibrant)
     octx.restore();
-    return;   // the photo IS the city — skip procedural streets/buildings
+    return;   // the photo IS the city - skip procedural streets/buildings
   }
   // VERSION 1: rounded asphalt island with a soft top-down gradient
   const ag = octx.createLinearGradient(0, by0, 0, by0+bh);
@@ -965,7 +965,7 @@ function faceWin(tA, tB, bB, bA, rows, cols, glass){
     sctx.beginPath(); sctx.moveTo(a.x,a.y); sctx.lineTo(b.x,b.y); sctx.lineTo(d.x,d.y); sctx.lineTo(e.x,e.y); sctx.closePath(); sctx.fill();
   }
 }
-// horizontal band across a wall face (v0..v1 in face space) — used for AO/eaves/plinth
+// horizontal band across a wall face (v0..v1 in face space) - used for AO/eaves/plinth
 function faceBand(tA, tB, bB, bA, v0, v1, style){
   sctx.fillStyle = style;
   const a=bil(tA,tB,bB,bA,0,v0), b=bil(tA,tB,bB,bA,1,v0), d=bil(tA,tB,bB,bA,1,v1), e=bil(tA,tB,bB,bA,0,v1);
@@ -1143,7 +1143,7 @@ function drawCars(t){
   }
 }
 
-// offset a polyline by perpendicular distance d (mitered) — used to split A/B into twin lanes
+// offset a polyline by perpendicular distance d (mitered) - used to split A/B into twin lanes
 function offsetPolyline(pts, d){
   if (!d || pts.length < 2) return pts;
   const n = pts.length, seg = [];
@@ -1343,7 +1343,7 @@ function frame(ts){
   }
   ctx.restore();
 
-  // vignette — darken the edges for depth
+  // vignette - darken the edges for depth
   if (vignette){ ctx.fillStyle = vignette; ctx.fillRect(0, 0, cssW, cssH); }
 
   // flash tint
@@ -1445,7 +1445,7 @@ function gameOver(){
   try { window.parent.postMessage({ type: 'gigScore', score: score }, '*'); } catch (e) {}
   document.getElementById('newbest').classList.toggle('show', isBest);
   const acc = stats.answers ? Math.round(stats.correct / stats.answers * 100) : 0;
-  const avgRt = stats.picks ? (stats.rtSum / stats.picks / 1000).toFixed(2) + 's' : '—';
+  const avgRt = stats.picks ? (stats.rtSum / stats.picks / 1000).toFixed(2) + 's' : '-';
   const nStars = acc >= 85 ? 3 : acc >= 60 ? 2 : acc >= 35 ? 1 : 0;   // delivery rating
   let stars = ''; for (let i = 0; i < 3; i++) stars += '<span class="' + (i < nStars ? 'on' : 'off') + '">★</span>';
   document.getElementById('stars').innerHTML = stars;
@@ -1495,7 +1495,7 @@ function routeDist(r, x, y){
     d = Math.min(d, pointSeg(x, y, r.pixels[i-1].x, r.pixels[i-1].y, r.pixels[i].x, r.pixels[i].y));
   return d;
 }
-// tap a route, tap the half of the screen, or swipe left/right — whole screen is a chooser
+// tap a route, tap the half of the screen, or swipe left/right - whole screen is a chooser
 let pdX = 0, pdY = 0, pdOn = false;
 canvas.addEventListener('pointerdown', e => { pdOn = true; pdX = e.clientX; pdY = e.clientY; });
 canvas.addEventListener('pointerup', e => {
@@ -1697,7 +1697,7 @@ if (CONFIG.bg) applyBg(CONFIG.bg);   // load the baked city background
 resize();
 updateHUD();
 requestAnimationFrame(frame);
-startHowtoAnim();   // how-to-play strip is the start screen — animate it on load
+startHowtoAnim();   // how-to-play strip is the start screen - animate it on load
 // redraw once Uber Move finishes loading so the intro/canvas use it (not the fallback)
 try { if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { try { refreshHtDemo(); } catch (e) {} }); } catch (e) {}
 

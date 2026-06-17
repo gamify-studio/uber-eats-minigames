@@ -9,7 +9,7 @@
 <!-- Uber Move is proprietary; Inter is the standard open stand-in and is used as the fallback. -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-  /* Uber Move brand font (bundled) — used for ALL game text */
+  /* Uber Move brand font (bundled) - used for ALL game text */
   @font-face { font-family: "Uber Move"; src: url("assets/UberMoveMedium.otf") format("opentype"); font-weight: 300 600; font-style: normal; font-display: swap; }
   @font-face { font-family: "Uber Move"; src: url("assets/UberMoveBold.otf") format("opentype"); font-weight: 601 900; font-style: normal; font-display: swap; }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
@@ -475,7 +475,7 @@
     sfx("lock");
     buzz(12);
 
-    // newly completed rows glow — rows DO NOT clear
+    // newly completed rows glow - rows DO NOT clear
     let newRows = 0;
     const newRowYs = [];
     for (let y = 0; y < ROWS; y++)
@@ -505,7 +505,7 @@
   // Packing density: of the space your stack occupies (full width × its height),
   // how much is actually food. A no-skill spike wastes most of the width → ~0%.
   // A solidly packed bag with no gaps → ~100%. PACK_FLOOR maps the worst real
-  // dumps to 0 so the 0–100 range tracks skill, not just raw fill.
+  // dumps to 0 so the 0-100 range tracks skill, not just raw fill.
   const PACK_FLOOR = 0.25;
   function efficiency() {
     const top = stackTopRow();
@@ -720,10 +720,10 @@
     for (let y = 1; y < rows; y++) { ctx.strokeStyle = "rgba(0,0,0,.10)"; ctx.beginPath(); ctx.moveTo(0, y*cell); ctx.lineTo(W, y*cell); ctx.stroke(); }
     // 3) beveled 3D edges (trapezoids: light top, dark bottom, lit-left, shaded-right)
     const b = cell * 0.55;
-    quad([0,0, W,0, W-b,b, b,b], "#5AB849");          // top  — lightest
-    quad([0,H, W,H, W-b,H-b, b,H-b], "#214F14");      // bottom — darkest
-    quad([0,0, b,b, b,H-b, 0,H], "#48A838");          // left — lit
-    quad([W,0, W-b,b, W-b,H-b, W,H], "#2B7A1C");      // right — shaded
+    quad([0,0, W,0, W-b,b, b,b], "#5AB849");          // top  - lightest
+    quad([0,H, W,H, W-b,H-b, b,H-b], "#214F14");      // bottom - darkest
+    quad([0,0, b,b, b,H-b, 0,H], "#48A838");          // left - lit
+    quad([W,0, W-b,b, W-b,H-b, W,H], "#2B7A1C");      // right - shaded
     ctx.strokeStyle = "rgba(255,255,255,.12)"; ctx.lineWidth = Math.max(1, cell*0.03);
     ctx.strokeRect(b, b, W - 2*b, H - 2*b);            // inner face highlight edge
     // 4) folded paper corner flaps at the top
@@ -1058,15 +1058,15 @@
   const demoCv = document.getElementById("demoCv");
   const dctx = demoCv.getContext("2d");
   const DCOLS = 6, DROWS = 9, DCELL = demoCv.width / DCOLS;
-  // scripted tidy pack (lowest pieces first) — fills the bottom 4 rows with no gaps
-  // scripted tidy pack (lowest pieces first) using a VARIETY of items — fills a tight block
+  // scripted tidy pack (lowest pieces first) - fills the bottom 4 rows with no gaps
+  // scripted tidy pack (lowest pieces first) using a VARIETY of items - fills a tight block
   const DEMO_SCRIPT = [
     { key: "O",  x: 0, y: 7 },   // bag (cols 0-1)
     { key: "O",  x: 2, y: 7 },   // bag (cols 2-3)
     { key: "O",  x: 4, y: 7 },   // bag (cols 4-5)
-    { key: "SH", x: 5, y: 5 },   // shampoo first (col5 rows5-6) — nothing above to pass through
+    { key: "SH", x: 5, y: 5 },   // shampoo first (col5 rows5-6) - nothing above to pass through
     { key: "L",  x: 4, y: 4 },   // combo (corner-top): col4 rows4-6 + burger (5,4), sits beside shampoo
-    { key: "I",  x: 0, y: 6, spawnRot: 3 },   // sub — drops in sideways, ROTATES flat to fit
+    { key: "I",  x: 0, y: 6, spawnRot: 3 },   // sub - drops in sideways, ROTATES flat to fit
     { key: "I",  x: 0, y: 5 },   // subs (cols 0-3)
     { key: "I",  x: 0, y: 4 },   // subs (cols 0-3)
   ];

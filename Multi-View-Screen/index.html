@@ -244,7 +244,7 @@ const SRC = {
 const STAGES = [
   { main: SRC.v1, left: SRC.v11, right: SRC.v12 },
   { main: SRC.v2, left: SRC.v21, right: SRC.v22 },
-  { main: SRC.v3 } // Video 3: no options yet — boxes stay hidden after it plays
+  { main: SRC.v3 } // Video 3: no options yet - boxes stay hidden after it plays
 ];
 let stage = 0;
 
@@ -399,7 +399,7 @@ const els = {
 function handleZone(side) {
   const now = Date.now();
   if (!choosing) return;               // boxes only active after the video ends
-  if (clipPlaying) return;             // one click per video — no clicking mid-clip
+  if (clipPlaying) return;             // one click per video - no clicking mid-clip
   if (now < lockUntil[side]) return;   // still cooling down
 
   const url = side === 'L' ? STAGES[stage].left : STAGES[stage].right;
@@ -451,7 +451,7 @@ function showWinner() {
   document.getElementById('winnerText').textContent =
     L > R ? '🏆 Tropzilla wins!' : R > L ? '🏆 Legend wins!' : "🤝 It's a tie!";
   document.getElementById('winTotals').innerHTML =
-    '<b class="l">Tropzilla ' + L + '</b> &nbsp;—&nbsp; <b class="r">Legend ' + R + '</b>';
+    '<b class="l">Tropzilla ' + L + '</b> &nbsp;-&nbsp; <b class="r">Legend ' + R + '</b>';
   winner.style.display = 'flex';
 }
 

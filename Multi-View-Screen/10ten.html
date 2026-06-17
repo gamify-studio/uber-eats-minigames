@@ -9,18 +9,18 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="description" content="Uber Eats Merge - match food items, level up your order, and reach the Uber Eats Bag to win." />
 <title>Uber Eats · Merge</title>
-<!-- Brand font: Uber Move (proprietary — used when installed/self-hosted). Manrope = closest free fallback. -->
+<!-- Brand font: Uber Move (proprietary - used when installed/self-hosted). Manrope = closest free fallback. -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
 <style>
   /* ============================================================
-     UBER EATS MERGE — single-file mobile puzzle game
+     UBER EATS MERGE - single-file mobile puzzle game
      Reskin of the 10TEN engine. Merge same food to level up;
      reach the Uber Delivery Box (level 10) to win.
      Theme: Uber Eats dark green / black / green.
      ============================================================ */
-  /* Uber Move — Uber's brand font, self-hosted (Medium + Bold). Manrope is the
+  /* Uber Move - Uber's brand font, self-hosted (Medium + Bold). Manrope is the
      final fallback only if the files fail to load. */
   @font-face {
     font-family: "Uber Move";
@@ -39,14 +39,14 @@
     --font: "Uber Move", "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --bg-1: #0c3b22;
     --bg-2: #04130b;
-    --bg-500: #67BE6B;      /* main background — Uber Eats green (from "uber eats green") */
+    --bg-500: #67BE6B;      /* main background - Uber Eats green (from "uber eats green") */
     --panel: #0a1f15;
     --pill: #06150d;
     --line: rgba(6, 193, 103, 0.22);
     --line-soft: rgba(6, 193, 103, 0.12);
-    --green: #06C167;       /* Green 400 — main Uber Eats green: numbers, labels, accents */
-    --green-deep: #05A656;  /* deeper Uber green — button depth, borders */
-    --green-hi: #2FD35F;    /* brighter green — highlights, pop */
+    --green: #06C167;       /* Green 400 - main Uber Eats green: numbers, labels, accents */
+    --green-deep: #05A656;  /* deeper Uber green - button depth, borders */
+    --green-hi: #2FD35F;    /* brighter green - highlights, pop */
     --text: #eafff1;
     --muted: #7fab90;
     --danger: #ff5a5a;
@@ -515,9 +515,9 @@
             </div>
             <div class="demo-eq" id="demoEq"></div>
             <div class="tut-lines">
-              <p><span class="n">1</span><span><b>Swipe</b> any direction — all items slide that way.</span></p>
+              <p><span class="n">1</span><span><b>Swipe</b> any direction - all items slide that way.</span></p>
               <p><span class="n">2</span><span>Two of the <b>same item merge</b> into the next one.</span></p>
-              <p><span class="n">3</span><span>Reach the <b>Uber Eats Bag</b> to <b>win</b> — in as few swipes as you can!</span></p>
+              <p><span class="n">3</span><span>Reach the <b>Uber Eats Bag</b> to <b>win</b> - in as few swipes as you can!</span></p>
             </div>
             <div class="btn-row"><button class="btn" id="tut-got">Play ▶</button></div>
           </div>
@@ -533,7 +533,7 @@
 <script>
 "use strict";
 /* ============================================================
-   CONFIG — change board size, target, spawn rates, scoring,
+   CONFIG - change board size, target, spawn rates, scoring,
    and the food items (with their image paths) here.
    ============================================================ */
 const CONFIG = {
@@ -559,9 +559,9 @@ const CONFIG = {
   maxUndo: 50,
   storageKey: "ubereats.merge.v1",
   tutorialKey: "ubereats.merge.tut",
-  // image path per level — drop your renders into assets/uber/<level>.png
+  // image path per level - drop your renders into assets/uber/<level>.png
   itemImg: (v) => `assets/uber/${v}.png?v=6`,
-  numbersInImage: false,  // images have NO baked numbers — the game draws them (uniform size)
+  numbersInImage: false,  // images have NO baked numbers - the game draws them (uniform size)
   // name + emoji fallback (shown until the PNG exists)
   items: {
     1: { name: "Flowers",       emoji: "💐" },
@@ -574,7 +574,7 @@ const CONFIG = {
 };
 
 /* ============================================================
-   PURE GAME LOGIC — no DOM access in this section
+   PURE GAME LOGIC - no DOM access in this section
    ============================================================ */
 const N = CONFIG.boardSize;
 let nextId = 1;
@@ -1028,7 +1028,7 @@ function showOverlay(kind) {
     el.ovCard.innerHTML = `
       <h2 class="danger">Game over</h2>
       <p>No more moves left!</p>
-      <p class="swipes-line">Used <b>${state.moves}</b> swipe${state.moves === 1 ? "" : "s"} — no delivery</p>
+      <p class="swipes-line">Used <b>${state.moves}</b> swipe${state.moves === 1 ? "" : "s"} - no delivery</p>
       <div class="mini-scores"><div class="seg"><div class="label">Best</div><div class="value">${state.best}</div></div></div>
       <div class="btn-row">
         <button class="btn outline" data-act="again">Try again</button>
@@ -1073,7 +1073,7 @@ function spawnConfetti() {
    ============================================================ */
 // A real auto-playing game on the tutorial grid: starts with two burgers,
 // each swipe slides + merges the whole board, then a fresh burger spawns
-// in an empty cell — exactly like real play. Loops on win or when stuck.
+// in an empty cell - exactly like real play. Loops on win or when stuck.
 let demoTimers = [], demoBuilt = false;
 let dBoard, dTiles, dNextId, dMoves;
 function buildDemoGrid() {
@@ -1155,7 +1155,7 @@ function dPlan(dir) {
   }
   return { moves, merges, moved };
 }
-// pick a direction: only straight, simple swipes — RIGHT (left->right) or DOWN (top->bottom).
+// pick a direction: only straight, simple swipes - RIGHT (left->right) or DOWN (top->bottom).
 // prefer the one that merges the most so the chain keeps climbing; tiles settle bottom-right.
 function dChoose() {
   const order = (dMoves % 2 === 0) ? ["down", "right"] : ["right", "down"];
@@ -1207,7 +1207,7 @@ function dApply(p) {
     dMoves++;
     // win? show the bag moment, then restart from two burgers
     if (Object.values(dTiles).some(t => t.v >= CONFIG.target)) {
-      el.demoEq.textContent = "You built the Uber Eats Bag — you win! 🛍️";
+      el.demoEq.textContent = "You built the Uber Eats Bag - you win! 🛍️";
       demoTimers.push(setTimeout(() => { dReset(); demoTimers.push(setTimeout(demoTick, 650)); }, 1700));
       return;
     }

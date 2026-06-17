@@ -192,7 +192,7 @@
   <div class="logo">
     <span class="dot"></span>
     Responsive Device Previewer
-    <small>— see one URL across every screen at once</small>
+    <small>- see one URL across every screen at once</small>
   </div>
 
   <div class="controls">
@@ -203,7 +203,7 @@
         </svg>
       </span>
       <input id="url" type="text" spellcheck="false" autocomplete="off" list="recentUrls"
-             placeholder="Enter a website URL — e.g. example.com">
+             placeholder="Enter a website URL - e.g. example.com">
       <button class="btn-primary" id="go">Preview</button>
     </div>
     <datalist id="recentUrls"></datalist>
@@ -248,10 +248,10 @@
   <div class="note">
     <span class="i">!</span>
     <span>Some sites (Google, Facebook, banks, X/Twitter…) send an
-    <code>X-Frame-Options</code> / <code>frame-ancestors</code> header that blocks embedding, so they show blank —
+    <code>X-Frame-Options</code> / <code>frame-ancestors</code> header that blocks embedding, so they show blank -
     that's expected, it's the site, not the previewer. Browsers deliberately hide from the parent page whether a
     cross-origin frame was blocked or just loaded, so no tool can reliably auto-flag it. Instead, every frame has an
-    always-visible <b>↗ Open in new tab</b> and <b>⟳ Reload</b> (top-right) — use ↗ to pop any blank one into a real tab.</span>
+    always-visible <b>↗ Open in new tab</b> and <b>⟳ Reload</b> (top-right) - use ↗ to pop any blank one into a real tab.</span>
   </div>
 </header>
 
@@ -281,21 +281,21 @@
   };
 
   const ROWS = [
-    { id:'iphones', title:'iPhones — last 5', devices:[
+    { id:'iphones', title:'iPhones - last 5', devices:[
       { id:'ip16pm', name:'iPhone 16 Pro Max', w:440, h:956, kind:'iphone'   },
       { id:'ip15pm', name:'iPhone 15 Pro Max', w:430, h:932, kind:'iphone'   },
       { id:'ip16p',  name:'iPhone 16 Pro',     w:402, h:874, kind:'iphone'   },
       { id:'ip15',   name:'iPhone 15 / 16',    w:393, h:852, kind:'iphone'   },
       { id:'ipse',   name:'iPhone SE',         w:375, h:667, kind:'iphonese' },
     ]},
-    { id:'android', title:'Android phones — last 5', devices:[
+    { id:'android', title:'Android phones - last 5', devices:[
       { id:'px8pro', name:'Pixel 8 Pro',       w:448, h:998, kind:'android' },
       { id:'px8',    name:'Pixel 8',           w:412, h:915, kind:'android' },
       { id:'s24u',   name:'Galaxy S24 Ultra',  w:384, h:832, kind:'android' },
       { id:'s24',    name:'Galaxy S24',        w:360, h:780, kind:'android' },
       { id:'op12',   name:'OnePlus 12',        w:360, h:804, kind:'android' },
     ]},
-    { id:'tablets', title:'Tablets — iPad & Android', devices:[
+    { id:'tablets', title:'Tablets - iPad & Android', devices:[
       { id:'ipadpro13', name:'iPad Pro 12.9"', w:1024, h:1366, kind:'tablet' },
       { id:'ipadpro11', name:'iPad Pro 11"',   w:834,  h:1194, kind:'tablet' },
       { id:'ipadair',   name:'iPad Air 11"',   w:820,  h:1180, kind:'tablet' },
@@ -458,7 +458,7 @@
     stage.appendChild(row);
 
     const group = el('div','chip-group');
-    const gl = el('span','g-label'); gl.textContent = def.title.split('—')[0].trim();
+    const gl = el('span','g-label'); gl.textContent = def.title.split('-')[0].trim();
     group.appendChild(gl);
     chipGroups.appendChild(group);
 
