@@ -96,6 +96,8 @@
   .overlay.hidden { display: none; }
   .overlay .rider { position: absolute; left: 14px; bottom: 4px; width: clamp(72px, 19.5vw, 129px);
     height: auto; pointer-events: none; z-index: 2; filter: drop-shadow(0 6px 16px rgba(0,0,0,.55)); }
+  /* On the game-over screen the rider sits in-flow above the title (centred), like Food Stacker. */
+  #over .rider { position: static; left: auto; bottom: auto; width: clamp(88px, 26vw, 140px); margin: 0 auto 2px; }
   .overlay h1 { font-size: clamp(34px, 9vw, 60px); font-weight: 900; letter-spacing: 1px; color: #019147; }
   .overlay p { max-width: 440px; line-height: 1.55; opacity: .9; font-size: 15px; color: #000; }
   .overlay .how { display: flex; flex-direction: column; gap: 8px; max-width: 460px;
@@ -110,7 +112,7 @@
   .overlay .btn:active { transform: scale(.96); }
   .overlay .btn.ghost { background: #6B9456; border: none; box-shadow: 0 6px 20px rgba(0,0,0,.25); }
   .overbtns { display: flex; flex-direction: column; gap: 12px; align-items: stretch; margin-top: 6px; width: 100%; max-width: 320px; }
-  .overlay .btn2 { background: linear-gradient(90deg,#ff3d9a,#ff85bf); color: #fff; box-shadow: 0 8px 30px rgba(255,61,154,.5); }
+  .overlay .btn2 { background: #F2F51B; color: #000; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
   /* Prize-draw entry form */
   .entryForm { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; margin-top: 4px; }
   .entryForm input[type=text], .entryForm input[type=email], .entryForm input[type=tel] {
@@ -211,23 +213,23 @@
   </div>
 
   <div class="overlay hidden" id="over">
+    <img class="rider" src="rider.png?v=2" alt="" aria-hidden="true">
     <h1 class="delivered">Orders Delivered!</h1>
     <div id="stars"></div>
     <div id="newbest">🏆 NEW BEST!</div>
     <div id="overStats"></div>
     <div class="overbtns">
-      <button class="btn btn2" id="enterBtn">Enter competition ▶</button>
+      <button class="btn btn2" id="enterBtn">Save &amp; Enter Competition!</button>
       <button class="btn" id="againBtn">Play Again</button>
       <button class="btn ghost" id="townBtn">Back To Town</button>
     </div>
-    <img class="rider" src="rider.png?v=2" alt="" aria-hidden="true">
   </div>
 
   <!-- Prize-draw entry form: posts the score to the leaderboard + the player's details to the prize DB -->
   <div class="overlay hidden" id="entry">
     <img class="entryLogo" src="sq-logo.png" alt="Uber Eats Side Quest">
-    <h1 class="delivered">Enter the draw</h1>
-    <p>Add your details to lock your score onto the leaderboard and go into the draw to win prizes from Uber.</p>
+    <h1 class="delivered">You're on the leaderboard!</h1>
+    <p>Add your details to secure your spot on the leaderboard - your side quest delivery skills could make you a winner!</p>
     <form id="entryForm" class="entryForm" novalidate>
       <input id="efFirst" type="text" placeholder="First name" autocomplete="given-name" required>
       <input id="efLast" type="text" placeholder="Last name" autocomplete="family-name" required>
