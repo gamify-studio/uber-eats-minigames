@@ -149,7 +149,9 @@
     font-size: 34px; font-weight: 900; letter-spacing: .3px; margin: 4px 0 0; color: #000; text-align: center; line-height: 1.05; }
   .howTitle { font-family: 'Uber Move', 'Uber Move Text', 'Inter', system-ui, sans-serif;
     font-size: 14px; font-weight: 800; letter-spacing: 1px; margin: 0; color: #000; opacity: .65; }
-  #htMap { width: 100%; max-width: 360px; height: 40vh; max-height: 420px; display: block;
+  /* Match the map image's 2:3 portrait aspect so the frame hugs it (no dark bars either side).
+     Height-driven + capped so it stays responsive and doesn't dominate the layout. */
+  #htMap { aspect-ratio: 1024 / 1536; height: 40vh; max-height: 420px; width: auto; max-width: 100%; display: block; margin: 0 auto;
     border-radius: 16px; background: #0e1622; border: 1px solid rgba(255,255,255,.12); box-shadow: 0 10px 40px rgba(0,0,0,.45); }
   #htChoose { display: flex; gap: 12px; width: 100%; max-width: 360px; margin-top: 2px; }
   .htBtn { flex: 1; position: relative; border-radius: 14px; padding: 11px 0 8px; text-align: center;
@@ -194,7 +196,7 @@
   <button class="choice" id="btnB"><span class="big">B</span><span class="lbl">ROUTE</span></button>
 
   <div class="overlay" id="howto">
-    <div class="howBrand">Smartest Delivery Route</div>
+    <div class="howBrand">Path Picker</div>
     <canvas id="htMap"></canvas>
     <div id="htChoose">
       <div class="htBtn" id="htBtnA">A<small>ROUTE</small></div>
@@ -211,13 +213,13 @@
   </div>
 
   <div class="overlay hidden" id="over">
-    <h1 class="delivered">Order's Delivered</h1>
+    <h1 class="delivered">Orders Delivered</h1>
     <div id="stars"></div>
     <div id="newbest">🏆 NEW BEST!</div>
     <div id="overStats"></div>
     <div class="overbtns">
       <button class="btn btn2" id="enterBtn">Enter competition ▶</button>
-      <button class="btn" id="againBtn">Play again</button>
+      <button class="btn" id="againBtn">Play Again</button>
       <button class="btn ghost" id="townBtn">Back To Town</button>
     </div>
     <img class="rider" src="rider.png?v=2" alt="" aria-hidden="true">
@@ -249,7 +251,7 @@
     <h1 class="delivered">You're in the draw! 🎉</h1>
     <p>Your score of <b id="edScore">0</b> is on the leaderboard and your entry is locked in. Good luck!</p>
     <div class="overbtns">
-      <button class="btn" id="edAgain">Play again to beat your best</button>
+      <button class="btn" id="edAgain">Play Again to beat your best</button>
       <button class="btn ghost" id="edTown">Back To Town</button>
     </div>
     <img class="rider" src="rider.png?v=2" alt="" aria-hidden="true">

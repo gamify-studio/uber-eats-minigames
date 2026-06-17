@@ -443,7 +443,7 @@
   #tutorial .demo-eq { color: rgba(255, 255, 255, 0.88); }
   #tutorial .demo-eq b { color: #fff; }
   #tutorial .demo-cells .dc { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.14); }
-  #tutorial .btn { border: 1px solid rgba(255, 255, 255, 0.35); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25); width: 50%; color: #fff; }
+  #tutorial .btn { border: 1px solid rgba(255, 255, 255, 0.35); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25); width: 50%; color: #000; }
   #tutorial .btn-row { align-items: center; }
 
   /* end screen (win / game-over) sits on the same green as the game;
@@ -466,7 +466,7 @@
   #overlay .btn.outline { color: #000; background: rgba(255, 255, 255, 0.18); border-color: rgba(0, 0, 0, 0.18); }
   /* end-screen buttons hug their text + centered, matched to the other games' length */
   #overlay .btn-row { align-items: center; }
-  #overlay .btn { width: auto; min-width: 200px; font-size: 18px; padding: 15px 40px; }
+  #overlay .btn { width: auto; min-width: 200px; font-size: 18px; padding: 15px 40px; color: #000; }
 </style>
 </head>
 <body>
@@ -1006,17 +1006,17 @@ function miniScores() {
 function showOverlay(kind) {
   if (kind === "win") {
     el.ovCard.innerHTML = `
-      <h2>You did it!</h2>
-      <p>You created the Uber Eats Bag!</p>
       <div class="win-box">
         <img src="${CONFIG.itemImg(CONFIG.target)}" alt="${CONFIG.items[CONFIG.target].name}"
              onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
         <span class="emoji" style="display:none">${CONFIG.items[CONFIG.target].emoji}</span>
       </div>
+      <h2>You did it!</h2>
+      <p>You created the Uber Eats Bag!</p>
       <p class="swipes-line">Delivered in <b>${state.moves}</b> swipe${state.moves === 1 ? "" : "s"}</p>
       ${miniScores()}
       <div class="btn-row">
-        <button class="btn" data-act="again">Play again</button>
+        <button class="btn" data-act="again">Play Again</button>
         <button class="btn secondary" data-act="home">Back To Town</button>
       </div>`;
     spawnConfetti();
