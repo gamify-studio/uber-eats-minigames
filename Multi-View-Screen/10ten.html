@@ -1295,23 +1295,9 @@ function init() {
   state.muted = !!(saved && saved.muted);
   el.sound.textContent = state.muted ? "🔇" : "🔊";
 
-  // Resume only a genuinely in-progress game. A finished game (won, or no moves left) starts
-  // fresh next time it's opened, instead of reopening on its end state.
-  if (saved && saved.tiles && saved.tiles.length && !saved.won) {
-    state.score = Math.min(saved.score || 0, CONFIG.maxScore);
-    state.moves = saved.moves || 0;
-    state.won = false;
-    for (const t of saved.tiles) addTile(t.v, t.r, t.c);
-    if (anyMovePossible(state.tiles, state.grid)) {
-      state.over = false;
-      renderAll();
-      hideHint();
-    } else {
-      newGame(); // saved board was already a game-over -> start fresh
-    }
-  } else {
-    newGame();
-  }
+  // The gig always opens on a fresh board (two 1s) - never resume a prior in-progress or finished
+  // game, so each attempt is independent. (best score + sound pref loaded above still persist.)
+  newGame();
   updateScores();
 
   // show the how-to-play tutorial at the start of every session
