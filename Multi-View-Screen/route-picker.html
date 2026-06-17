@@ -111,6 +111,17 @@
   .overlay .btn.ghost { background: #6B9456; border: none; box-shadow: 0 6px 20px rgba(0,0,0,.25); }
   .overbtns { display: flex; flex-direction: column; gap: 12px; align-items: stretch; margin-top: 6px; width: 100%; max-width: 320px; }
   .overlay .btn2 { background: linear-gradient(90deg,#ff3d9a,#ff85bf); color: #fff; box-shadow: 0 8px 30px rgba(255,61,154,.5); }
+  /* Prize-draw entry form */
+  .entryForm { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; margin-top: 4px; }
+  .entryForm input[type=text], .entryForm input[type=email], .entryForm input[type=tel] {
+    width: 100%; padding: 13px 15px; border-radius: 12px; border: 1px solid rgba(0,0,0,.2);
+    font-size: 15px; font-family: inherit; background: #fff; color: #000; box-sizing: border-box; }
+  .entryForm input:focus { outline: none; border-color: #019147; }
+  .efCheck { display: flex; align-items: flex-start; gap: 9px; font-size: 13px; line-height: 1.4; text-align: left; color: #000; cursor: pointer; }
+  .efCheck input { margin: 2px 0 0; width: 18px; height: 18px; flex: none; accent-color: #019147; }
+  .efCheck a { color: #019147; font-weight: 700; }
+  .efError { color: #c30; font-size: 13px; min-height: 16px; font-weight: 700; text-align: center; }
+  #entry .delivered, #entryDone .delivered { color: #000; font-size: clamp(24px, 6.6vw, 40px); }
   .btn2sm { margin-top: 12px; background: rgba(255,255,255,.08); color: #fff; border: 1px solid rgba(255,255,255,.22);
     border-radius: 12px; padding: 10px 18px; font-size: 14px; font-weight: 700; cursor: pointer; }
   #over h1.delivered { color: #000; font-size: clamp(27px, 7.2vw, 48px); }
@@ -191,6 +202,7 @@
       <li><b>1</b><span>Choose the <span class="sgood">shortest</span> route of <span class="sA">A</span> or <span class="sB">B</span></span></li>
       <li><b>2</b><span>Lose a heart each time you choose the longest way</span></li>
       <li><b>3</b><span>Stages get harder the more you complete. Aim to get the highest score!</span></li>
+      <li><b>4</b><span>Submit your score to go into the draw to win <span class="sgood">prizes from Uber</span>.</span></li>
     </ol>
     <button class="btn" id="howtoPlay">Play ▶</button>
     <img class="rider" src="rider.png" alt="" aria-hidden="true">
@@ -202,8 +214,40 @@
     <div id="newbest">🏆 NEW BEST!</div>
     <div id="overStats"></div>
     <div class="overbtns">
+      <button class="btn btn2" id="enterBtn">Enter competition ▶</button>
       <button class="btn" id="againBtn">Play again</button>
       <button class="btn ghost" id="townBtn">Back To Town</button>
+    </div>
+    <img class="rider" src="rider.png" alt="" aria-hidden="true">
+  </div>
+
+  <!-- Prize-draw entry form: posts the score to the leaderboard + the player's details to the prize DB -->
+  <div class="overlay hidden" id="entry">
+    <h1 class="delivered">Enter the draw</h1>
+    <p>Add your details to lock your score onto the leaderboard and go into the draw to win prizes from Uber.</p>
+    <form id="entryForm" class="entryForm" novalidate>
+      <input id="efFirst" type="text" placeholder="First name" autocomplete="given-name" required>
+      <input id="efLast" type="text" placeholder="Last name" autocomplete="family-name" required>
+      <input id="efEmail" type="email" placeholder="Email" autocomplete="email" required>
+      <input id="efPhone" type="tel" placeholder="Phone" autocomplete="tel" required>
+      <input id="efPostcode" type="text" placeholder="Postcode" autocomplete="postal-code" required>
+      <label class="efCheck"><input id="efTerms" type="checkbox"><span>I agree to the <a href="#" target="_blank" rel="noopener">terms &amp; conditions</a></span></label>
+      <label class="efCheck"><input id="efAge" type="checkbox"><span>I'm 18 years or older</span></label>
+      <label class="efCheck"><input id="efMktg" type="checkbox"><span>Keep me updated with news and offers from Uber Eats</span></label>
+      <div class="efError" id="efError"></div>
+      <button class="btn btn2" id="efSubmit" type="submit">Submit &amp; enter</button>
+      <button class="btn ghost" id="efCancel" type="button">Back</button>
+    </form>
+    <img class="rider" src="rider.png" alt="" aria-hidden="true">
+  </div>
+
+  <!-- Confirmation after a successful entry -->
+  <div class="overlay hidden" id="entryDone">
+    <h1 class="delivered">You're in the draw! 🎉</h1>
+    <p>Your score of <b id="edScore">0</b> is on the leaderboard and your entry is locked in. Good luck!</p>
+    <div class="overbtns">
+      <button class="btn" id="edAgain">Play again to beat your best</button>
+      <button class="btn ghost" id="edTown">Back To Town</button>
     </div>
     <img class="rider" src="rider.png" alt="" aria-hidden="true">
   </div>
@@ -1661,6 +1705,77 @@ function backToTown(){
 }
 var _townBtn = document.getElementById('townBtn');
 if (_townBtn) _townBtn.addEventListener('click', backToTown);
+
+/* ===== Prize-draw entry =====================================================================
+   Posts the player's score to the global leaderboard and their details to the prize database.
+   API (uber-eats-leaderboard, AWS): POST /session -> {playerId, token, exp};
+   POST /score {playerId,token,exp,handle,score}; POST /signup {playerId, details, opt-ins}. */
+const LB_API = 'https://9y63ccaste.execute-api.ap-southeast-2.amazonaws.com';
+let lbSession = null;
+
+async function ensureSession(){
+  if (lbSession && lbSession.exp && lbSession.exp * 1000 > Date.now() + 5000) return lbSession;
+  const r = await fetch(LB_API + '/session', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+  if (!r.ok) throw new Error('session ' + r.status);
+  lbSession = await r.json();
+  return lbSession;
+}
+
+function showOnlyOverlay(id){
+  document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
+  const el = document.getElementById(id); if (el) el.classList.remove('hidden');
+}
+
+var _enterBtn = document.getElementById('enterBtn');
+if (_enterBtn) _enterBtn.addEventListener('click', () => { document.getElementById('efError').textContent = ''; showOnlyOverlay('entry'); });
+var _efCancel = document.getElementById('efCancel');
+if (_efCancel) _efCancel.addEventListener('click', () => showOnlyOverlay('over'));
+
+var _entryForm = document.getElementById('entryForm');
+if (_entryForm) _entryForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const val = id => (document.getElementById(id).value || '').trim();
+  const chk = id => document.getElementById(id).checked;
+  const err = document.getElementById('efError');
+  const first = val('efFirst'), last = val('efLast'), email = val('efEmail'), phone = val('efPhone'), postcode = val('efPostcode');
+  if (!first || !last || !email || !phone || !postcode){ err.textContent = 'Please fill in all your details.'; return; }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ err.textContent = 'Please enter a valid email address.'; return; }
+  if (!chk('efTerms')){ err.textContent = 'Please agree to the terms & conditions.'; return; }
+  if (!chk('efAge')){ err.textContent = 'You must be 18 years or older to enter.'; return; }
+
+  const btn = document.getElementById('efSubmit');
+  const label = btn.textContent; btn.disabled = true; btn.textContent = 'Submitting...';
+  try {
+    const s = await ensureSession();
+    const handle = (first + (last ? ' ' + last[0].toUpperCase() : '')).slice(0, 20); // public leaderboard name
+    const post = (path, payload) => fetch(LB_API + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
+
+    const sr = await post('/score', { playerId: s.playerId, token: s.token, exp: s.exp, handle, score });
+    if (!sr.ok) throw new Error('score ' + sr.status);
+    const gr = await post('/signup', { playerId: s.playerId, firstName: first, lastName: last, email, phone, postcode,
+      agreeTerms: true, confirmAge: true, marketingOptIn: chk('efMktg') });
+    if (!gr.ok) throw new Error('signup ' + gr.status);
+
+    // Remember on this device that this player has completed + entered the draw (so a returning
+    // player can be offered a straight replay to beat their best). Best score lives in localStorage too.
+    try { localStorage.setItem('pathpicker_entered', '1'); localStorage.setItem('pathpicker_handle', handle); } catch (e) {}
+
+    document.getElementById('edScore').textContent = score;
+    showOnlyOverlay('entryDone');
+  } catch (ex) {
+    err.textContent = 'Sorry, that didn’t go through. Please check your connection and try again.';
+  } finally {
+    btn.disabled = false; btn.textContent = label;
+  }
+});
+
+var _edAgain = document.getElementById('edAgain');
+if (_edAgain) _edAgain.addEventListener('click', startGame);
+var _edTown = document.getElementById('edTown');
+if (_edTown) _edTown.addEventListener('click', backToTown);
+
+// Warm up a leaderboard session the moment a game starts, so submitting at the end is instant.
+['howtoPlay', 'againBtn'].forEach(id => { const b = document.getElementById(id); if (b) b.addEventListener('click', () => { ensureSession().catch(() => {}); }); });
 </script>
 </body>
 </html>
