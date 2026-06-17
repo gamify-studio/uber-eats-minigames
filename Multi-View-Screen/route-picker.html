@@ -122,6 +122,8 @@
   .efCheck a { color: #019147; font-weight: 700; }
   .efError { color: #c30; font-size: 13px; min-height: 16px; font-weight: 700; text-align: center; }
   #entry .delivered, #entryDone .delivered { color: #000; font-size: clamp(24px, 6.6vw, 40px); }
+  .entryLogo { width: clamp(140px, 44vw, 220px); height: auto; margin: 0 auto 2px; display: block;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,.3)); }
   .btn2sm { margin-top: 12px; background: rgba(255,255,255,.08); color: #fff; border: 1px solid rgba(255,255,255,.22);
     border-radius: 12px; padding: 10px 18px; font-size: 14px; font-weight: 700; cursor: pointer; }
   #over h1.delivered { color: #000; font-size: clamp(27px, 7.2vw, 48px); }
@@ -205,7 +207,7 @@
       <li><b>4</b><span>Submit your score to go into the draw to win <span class="sgood">prizes from Uber</span>.</span></li>
     </ol>
     <button class="btn" id="howtoPlay">Play ▶</button>
-    <img class="rider" src="rider.png" alt="" aria-hidden="true">
+    <img class="rider" src="rider.png?v=2" alt="" aria-hidden="true">
   </div>
 
   <div class="overlay hidden" id="over">
@@ -218,11 +220,12 @@
       <button class="btn" id="againBtn">Play again</button>
       <button class="btn ghost" id="townBtn">Back To Town</button>
     </div>
-    <img class="rider" src="rider.png" alt="" aria-hidden="true">
+    <img class="rider" src="rider.png?v=2" alt="" aria-hidden="true">
   </div>
 
   <!-- Prize-draw entry form: posts the score to the leaderboard + the player's details to the prize DB -->
   <div class="overlay hidden" id="entry">
+    <img class="entryLogo" src="sq-logo.png" alt="Uber Eats Side Quest">
     <h1 class="delivered">Enter the draw</h1>
     <p>Add your details to lock your score onto the leaderboard and go into the draw to win prizes from Uber.</p>
     <form id="entryForm" class="entryForm" novalidate>
@@ -238,7 +241,7 @@
       <button class="btn btn2" id="efSubmit" type="submit">Submit &amp; enter</button>
       <button class="btn ghost" id="efCancel" type="button">Back</button>
     </form>
-    <img class="rider" src="rider.png" alt="" aria-hidden="true">
+    <img class="rider" src="rider.png?v=2" alt="" aria-hidden="true">
   </div>
 
   <!-- Confirmation after a successful entry -->
@@ -249,7 +252,7 @@
       <button class="btn" id="edAgain">Play again to beat your best</button>
       <button class="btn ghost" id="edTown">Back To Town</button>
     </div>
-    <img class="rider" src="rider.png" alt="" aria-hidden="true">
+    <img class="rider" src="rider.png?v=2" alt="" aria-hidden="true">
   </div>
 
   <div id="countdown"></div>
