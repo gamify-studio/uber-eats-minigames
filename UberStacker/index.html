@@ -108,7 +108,7 @@
     background: #67BE6B; color: #000;
   }
   .overlay.hidden { display: none; }
-  .overlay .riderImg { position: absolute; left: 14px; bottom: 14px; width: min(16vw, 90px); height: auto; pointer-events: none; z-index: 1; filter: drop-shadow(0 5px 12px rgba(0,0,0,.55)); }
+  .overlay .riderImg { position: absolute; left: 14px; bottom: 14px; width: min(16vw, 90px); height: auto; pointer-events: none; z-index: 1; }
   /* Win screen: the rider sits in-flow above the "Order Packed!" title, centred and sized to
      the column so it fits nicely on any phone (caps on large screens, shrinks on small ones). */
   #winOv .riderImg { position: static; left: auto; bottom: auto; width: clamp(96px, 30vw, 150px); margin: 0 auto 2px; }
@@ -176,8 +176,7 @@
   #howOv .htTitle { font-size: 43px; font-weight: 900; line-height: 1.05; }
   #howOv .htTitle .e { color: var(--green); }
   /* Uber Eats Side Quest logo above the game name on the start screen */
-  .sqLogo { width: clamp(120px, 40vw, 190px); height: auto; display: block; margin: 0 auto 4px;
-    filter: drop-shadow(0 4px 12px rgba(0,0,0,.3)); }
+  .sqLogo { width: clamp(120px, 40vw, 190px); height: auto; display: block; margin: 0 auto 4px; }
   #demoWrap { position: relative; border-radius: 14px; overflow: hidden; border: 2px solid rgba(6,193,103,.5); box-shadow: 0 10px 30px rgba(0,0,0,.5); }
   #demoCv { display: block; width: 184px; height: 276px; background: #3E8B2C; }
   #demoCap {

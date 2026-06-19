@@ -105,7 +105,7 @@
   #entryDone .rider { position: static; left: auto; bottom: auto; width: clamp(130px, 42vw, 210px); margin: 0 auto 4px; }
   /* start screen: Side Quest logo at the top + the Scooterman tucked in the bottom-left corner.
      #howto's bottom padding reserves his zone so the steps + Play button always sit clear of him. */
-  #howto .sqLogo { width: clamp(124px, 21vh, 208px); height: auto; display: block; margin: 0 auto -2px; filter: drop-shadow(0 4px 12px rgba(0,0,0,.28)); }
+  #howto .sqLogo { width: clamp(124px, 21vh, 208px); height: auto; display: block; margin: 0 auto -2px; }
   #howto .rider { position: absolute; left: 14px; bottom: 14px; width: clamp(82px, 13vh, 128px); height: auto; pointer-events: none; z-index: 1; }
   .overlay h1 { font-size: clamp(34px, 9vw, 60px); font-weight: 900; letter-spacing: 1px; color: #019147; }
   .overlay p { max-width: 440px; line-height: 1.55; opacity: .9; font-size: 15px; color: #000; }
@@ -136,8 +136,7 @@
     text-align: center; margin: 10px auto 0; max-width: 300px; padding: 0; }
   #overError:not(:empty) { padding: 8px 12px; }
   #entry .delivered, #entryDone .delivered { color: #000; font-size: clamp(24px, 6.6vw, 40px); }
-  .entryLogo { width: clamp(112px, 20vh, 200px); height: auto; margin: 0 auto 2px; display: block;
-    filter: drop-shadow(0 4px 12px rgba(0,0,0,.3)); }
+  .entryLogo { width: clamp(112px, 20vh, 200px); height: auto; margin: 0 auto 2px; display: block; }
   /* Entry form is long; tighten the section gaps + copy so it fits the iPhone 16 Pro viewport
      (and safe-center + overflow on .overlay means nothing clips even on the smallest phones). */
   #entry { gap: 8px; padding-top: 18px; padding-bottom: 22px; }
