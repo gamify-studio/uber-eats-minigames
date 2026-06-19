@@ -94,8 +94,11 @@
     pointer-events: auto;
   }
   .overlay.hidden { display: none; }
+  /* No CSS filter: drop-shadow here. The rider PNG carries its own baked soft shadow, and a CSS
+     drop-shadow gets hard-clipped to the box by iOS Safari inside this overflow:auto overlay,
+     which made the shadow look cut off on all sides. */
   .overlay .rider { position: absolute; left: 14px; bottom: 4px; width: clamp(72px, 19.5vw, 129px);
-    height: auto; pointer-events: none; z-index: 2; filter: drop-shadow(0 6px 16px rgba(0,0,0,.55)); }
+    height: auto; pointer-events: none; z-index: 2; }
   /* On the game-over screen the rider sits in-flow above the title (centred), like Food Stacker. */
   #over .rider { position: static; left: auto; bottom: auto; width: clamp(88px, 26vw, 140px); margin: 0 auto 2px; }
   /* entryDone: rider above the title, bigger (client) */
@@ -103,7 +106,7 @@
   /* start screen: Side Quest logo at the top + the Scooterman tucked in the bottom-left corner.
      #howto's bottom padding reserves his zone so the steps + Play button always sit clear of him. */
   #howto .sqLogo { width: clamp(124px, 21vh, 208px); height: auto; display: block; margin: 0 auto -2px; filter: drop-shadow(0 4px 12px rgba(0,0,0,.28)); }
-  #howto .rider { position: absolute; left: 14px; bottom: 14px; width: clamp(82px, 13vh, 128px); height: auto; pointer-events: none; z-index: 1; filter: drop-shadow(0 5px 12px rgba(0,0,0,.55)); }
+  #howto .rider { position: absolute; left: 14px; bottom: 14px; width: clamp(82px, 13vh, 128px); height: auto; pointer-events: none; z-index: 1; }
   .overlay h1 { font-size: clamp(34px, 9vw, 60px); font-weight: 900; letter-spacing: 1px; color: #019147; }
   .overlay p { max-width: 440px; line-height: 1.55; opacity: .9; font-size: 15px; color: #000; }
   .overlay .how { display: flex; flex-direction: column; gap: 8px; max-width: 460px;
