@@ -835,6 +835,23 @@ function blip(freq, dur, type, gain) {
 function playMerge(value) { blip(170 * Math.pow(1.09, value), 0.15, "triangle", 0.2); }
 function playSpawn() { blip(220, 0.07, "sine", 0.07); }
 function playWin() { [0, 4, 7, 12, 16].forEach((s, i) => setTimeout(() => blip(330 * Math.pow(2, s / 12), 0.28, "sine", 0.22), i * 110)); }
+
+// iOS audio unlock: iOS keeps WebAudio suspended unless a sound is *started* inside a user
+// gesture, and the SFX here fire async - so nothing played on iPhone. Prime the context with a
+// silent buffer on the first interaction, which unlocks every blip after it.
+let _audioUnlocked = false;
+function unlockAudio() {
+  if (_audioUnlocked) return;
+  try {
+    const a = audioCtx();
+    if (a.state === "suspended") a.resume();
+    const src = a.createBufferSource();
+    src.buffer = a.createBuffer(1, 1, 22050);
+    src.connect(a.destination); src.start(0);
+    _audioUnlocked = true;
+  } catch (e) {}
+}
+["pointerdown", "touchend", "click", "keydown"].forEach(ev => window.addEventListener(ev, unlockAudio, { passive: true }));
 function playOver() { [0, -3, -7].forEach((s, i) => setTimeout(() => blip(220 * Math.pow(2, s / 12), 0.3, "sawtooth", 0.12), i * 120)); }
 
 /* ============================================================
