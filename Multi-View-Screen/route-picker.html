@@ -71,8 +71,8 @@
   /* ---- choice buttons ---- */
   .choice {
     position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); z-index: 10;
-    width: calc(50% - 22px);                 /* wide thumb targets; ~16px centre gap (timer ring removed) */
-    height: clamp(41px, 6vh, 59px); border-radius: 13px;
+    width: calc(44% - 18px);                 /* smaller A/B (ROUTE label removed) while staying a comfy thumb target */
+    height: clamp(36px, 5vh, 48px); border-radius: 12px;
     border: 3px solid; background: rgba(12,16,24,.82);   /* solid-ish; no backdrop blur (mobile perf) */
     color: #fff; cursor: pointer; pointer-events: auto;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -89,7 +89,7 @@
   /* ---- overlays ---- */
   .overlay {
     position: absolute; inset: 0; z-index: 50; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 16px; text-align: center; padding: 28px;
+    align-items: center; justify-content: safe center; overflow-y: auto; gap: 16px; text-align: center; padding: 28px;
     background: radial-gradient(110% 90% at 50% 18%, #70c674, #5cb060);
     pointer-events: auto;
   }
@@ -100,6 +100,10 @@
   #over .rider { position: static; left: auto; bottom: auto; width: clamp(88px, 26vw, 140px); margin: 0 auto 2px; }
   /* entryDone: rider above the title, bigger (client) */
   #entryDone .rider { position: static; left: auto; bottom: auto; width: clamp(130px, 42vw, 210px); margin: 0 auto 4px; }
+  /* start screen: Side Quest logo at the top + the Scooterman tucked in the bottom-left corner.
+     #howto's bottom padding reserves his zone so the steps + Play button always sit clear of him. */
+  #howto .sqLogo { width: clamp(102px, 30vw, 150px); height: auto; display: block; margin: 0 auto -2px; filter: drop-shadow(0 4px 12px rgba(0,0,0,.28)); }
+  #howto .rider { position: absolute; left: 14px; bottom: 12px; width: min(15vw, 84px); height: auto; pointer-events: none; z-index: 1; filter: drop-shadow(0 5px 12px rgba(0,0,0,.55)); }
   .overlay h1 { font-size: clamp(34px, 9vw, 60px); font-weight: 900; letter-spacing: 1px; color: #019147; }
   .overlay p { max-width: 440px; line-height: 1.55; opacity: .9; font-size: 15px; color: #000; }
   .overlay .how { display: flex; flex-direction: column; gap: 8px; max-width: 460px;
@@ -116,9 +120,9 @@
   .overbtns { display: flex; flex-direction: column; gap: 12px; align-items: stretch; margin-top: 6px; width: 100%; max-width: 320px; }
   .overlay .btn2 { background: #F2F51B; color: #000; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
   /* Prize-draw entry form */
-  .entryForm { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 340px; margin-top: 4px; }
+  .entryForm { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 340px; margin-top: 2px; }
   .entryForm input[type=text], .entryForm input[type=email], .entryForm input[type=tel] {
-    width: 100%; padding: 13px 15px; border-radius: 12px; border: 1px solid rgba(0,0,0,.2);
+    width: 100%; padding: 11px 14px; border-radius: 12px; border: 1px solid rgba(0,0,0,.2);
     font-size: 15px; font-family: inherit; background: #fff; color: #000; box-sizing: border-box; }
   .entryForm input:focus { outline: none; border-color: #019147; }
   .efCheck { display: flex; align-items: flex-start; gap: 9px; font-size: 13px; line-height: 1.4; text-align: left; color: #000; cursor: pointer; }
@@ -129,8 +133,13 @@
     text-align: center; margin: 10px auto 0; max-width: 300px; padding: 0; }
   #overError:not(:empty) { padding: 8px 12px; }
   #entry .delivered, #entryDone .delivered { color: #000; font-size: clamp(24px, 6.6vw, 40px); }
-  .entryLogo { width: clamp(140px, 44vw, 220px); height: auto; margin: 0 auto 2px; display: block;
+  .entryLogo { width: clamp(108px, 32vw, 158px); height: auto; margin: 0 auto 2px; display: block;
     filter: drop-shadow(0 4px 12px rgba(0,0,0,.3)); }
+  /* Entry form is long; tighten the section gaps + copy so it fits the iPhone 16 Pro viewport
+     (and safe-center + overflow on .overlay means nothing clips even on the smallest phones). */
+  #entry { gap: 8px; padding-top: 18px; padding-bottom: 22px; }
+  #entry .delivered { font-size: clamp(22px, 5.6vw, 34px) !important; }
+  #entry p { font-size: 13.5px; line-height: 1.4; margin: 0; }
   .btn2sm { margin-top: 12px; background: rgba(255,255,255,.08); color: #fff; border: 1px solid rgba(255,255,255,.22);
     border-radius: 12px; padding: 10px 18px; font-size: 14px; font-weight: 700; cursor: pointer; }
   #over h1.delivered { color: #000; font-size: clamp(27px, 7.2vw, 48px); }
@@ -148,19 +157,19 @@
   #newbest.show { opacity: 1; height: auto; animation: pulse 1s ease-in-out infinite; }
   @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
   /* ---- how-to-play (real map preview) ---- */
-  #howto { justify-content: safe center; gap: 14px; overflow-y: auto;
-    padding: max(22px, env(safe-area-inset-top)) 20px 116px; }
+  #howto { justify-content: safe center; gap: 7px; overflow-y: auto;
+    padding: max(14px, env(safe-area-inset-top)) 20px 128px; }
   .howBrand { font-family: 'Uber Move', 'Uber Move Text', 'Inter', system-ui, sans-serif;
     font-size: 34px; font-weight: 900; letter-spacing: .3px; margin: 4px 0 0; color: #000; text-align: center; line-height: 1.05; }
   .howTitle { font-family: 'Uber Move', 'Uber Move Text', 'Inter', system-ui, sans-serif;
     font-size: 14px; font-weight: 800; letter-spacing: 1px; margin: 0; color: #000; opacity: .65; }
   /* Match the map image's 2:3 portrait aspect so the frame hugs it (no dark bars either side).
      Height-driven + capped so it stays responsive and doesn't dominate the layout. */
-  #htMap { aspect-ratio: 1024 / 1536; height: 30vh; max-height: 320px; width: auto; max-width: 100%; display: block; margin: 0 auto;
+  #htMap { aspect-ratio: 1024 / 1536; height: 20vh; max-height: 220px; width: auto; max-width: 100%; display: block; margin: 0 auto;
     border-radius: 16px; background: #0e1622; border: 1px solid rgba(255,255,255,.12); box-shadow: 0 10px 40px rgba(0,0,0,.45); }
-  #htChoose { display: flex; gap: 12px; width: 100%; max-width: 360px; margin-top: 2px; }
-  .htBtn { flex: 1; position: relative; border-radius: 14px; padding: 11px 0 8px; text-align: center;
-    font-size: 28px; font-weight: 900; line-height: 1; border: 3px solid; background: rgba(12,16,24,.82); }
+  #htChoose { display: flex; gap: 10px; width: 100%; max-width: 228px; margin-top: 1px; }
+  .htBtn { flex: 1; position: relative; border-radius: 11px; padding: 6px 0 5px; text-align: center;
+    font-size: 21px; font-weight: 900; line-height: 1; border: 2px solid; background: rgba(12,16,24,.82); }
   #htBtnA { color: #7ec2ff; border-color: #3da5ff; box-shadow: 0 0 24px rgba(61,165,255,.45); }
   #htBtnB { color: #ff85bf; border-color: #ff3d9a; box-shadow: 0 0 24px rgba(255,61,154,.45); }
   .htBtn small { display: block; font-size: 9px; letter-spacing: 2px; font-weight: 800; opacity: .85; color: #fff; margin-top: 4px; }
@@ -195,17 +204,18 @@
     <div id="right"><button id="muteBtn">🔊</button></div>
   </div>
   <div id="timerwrap"><div id="timerfill"></div></div>
-  <div id="prompt">Pick the smartest delivery route</div>
+  <div id="prompt">Pick the shortest delivery route</div>
 
-  <button class="choice" id="btnA"><span class="big">A</span><span class="lbl">ROUTE</span></button>
-  <button class="choice" id="btnB"><span class="big">B</span><span class="lbl">ROUTE</span></button>
+  <button class="choice" id="btnA"><span class="big">A</span></button>
+  <button class="choice" id="btnB"><span class="big">B</span></button>
 
   <div class="overlay" id="howto">
+    <img class="sqLogo" src="sq-logo.png?v=4" alt="Uber Eats Side Quest">
     <div class="howBrand">Path Picker</div>
     <canvas id="htMap"></canvas>
     <div id="htChoose">
-      <div class="htBtn" id="htBtnA">A<small>ROUTE</small></div>
-      <div class="htBtn" id="htBtnB">B<small>ROUTE</small></div>
+      <div class="htBtn" id="htBtnA">A</div>
+      <div class="htBtn" id="htBtnB">B</div>
     </div>
     <ol id="htSteps">
       <li><b>1</b><span>Choose the <span class="sgood">shortest</span> route of <span class="sA">A</span> or <span class="sB">B</span></span></li>
@@ -214,6 +224,7 @@
       <li><b>4</b><span>Submit your score and see if you make the leaderboard, where some <span class="sgood">serious prizes</span> await.</span></li>
     </ol>
     <button class="btn" id="howtoPlay">Play ▶</button>
+    <img class="rider" src="rider.png?v=2" alt="" aria-hidden="true">
   </div>
 
   <div class="overlay hidden" id="over">
