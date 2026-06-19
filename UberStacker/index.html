@@ -103,7 +103,7 @@
   /* ---------- Overlays ---------- */
   .overlay {
     position: absolute; inset: 0; z-index: 30;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: safe center; overflow-y: auto;
     gap: 16px; text-align: center; padding: 28px;
     background: #67BE6B; color: #000;
   }
@@ -177,8 +177,8 @@
   #howOv .htTitle .e { color: var(--green); }
   /* Uber Eats Side Quest logo above the game name on the start screen */
   .sqLogo { width: clamp(120px, 40vw, 190px); height: auto; display: block; margin: 0 auto 4px; }
-  #demoWrap { position: relative; border-radius: 14px; overflow: hidden; border: 2px solid rgba(6,193,103,.5); box-shadow: 0 10px 30px rgba(0,0,0,.5); }
-  #demoCv { display: block; width: 184px; height: 276px; background: #3E8B2C; }
+  #demoWrap { position: relative; flex-shrink: 0; border-radius: 14px; overflow: hidden; border: 2px solid rgba(6,193,103,.5); box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+  #demoCv { display: block; width: auto; height: min(276px, 32vh); aspect-ratio: 216 / 324; background: #3E8B2C; }
   #demoCap {
     position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 8px 8px;
     background: linear-gradient(transparent, rgba(0,0,0,.8)); color: #fff;
