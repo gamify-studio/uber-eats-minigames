@@ -112,6 +112,10 @@
   /* Win screen: the rider sits in-flow above the "Order Packed!" title, centred and sized to
      the column so it fits nicely on any phone (caps on large screens, shrinks on small ones). */
   #winOv .riderImg { position: static; left: auto; bottom: auto; width: clamp(96px, 30vw, 150px); margin: 0 auto 2px; }
+  /* Start screen: reserve the bottom-left corner for the rider so the numbered steps + Play
+     button always sit clear of him (the long step-1 text used to overlap him on iPhone 16 Pro).
+     safe center keeps the content from clipping at the top on short viewports. */
+  #howOv { justify-content: safe center; padding-bottom: 132px; }
   .overlay h1 { font-size: 30px; font-weight: 900; line-height: 1.1; }
   .overlay h1 .e { color: var(--green); }
   .overlay p { font-size: 14px; opacity: .8; line-height: 1.55; max-width: 320px; }
@@ -264,6 +268,7 @@
     <div class="htActions">
       <button class="cta" id="howPlay" style="margin-top:0">Play ▶</button>
     </div>
+    <img class="riderImg" src="assets/rider.png?v=2" alt="Uber Eats delivery rider" />
   </div>
 
   <!-- Win -->
