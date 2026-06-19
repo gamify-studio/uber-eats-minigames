@@ -1554,8 +1554,10 @@ function startGame(){
   popups.length = 0; particles.length = 0; flash = null; shake = 0; paused = false;
   stats = { answers: 0, correct: 0, rtSum: 0, picks: 0 };
   try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('portrait').catch(()=>{}); } catch (e) {}
-  document.getElementById('howto').classList.add('hidden');
-  document.getElementById('over').classList.add('hidden');
+  // Hide EVERY overlay (howto / over / entry / entryDone) so Play Again from any screen reveals
+  // the game. Previously only howto + over were hidden, so "Play Again" from the entryDone
+  // ("Your score has been delivered") screen left that overlay covering the running game.
+  document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
   document.body.classList.add('playing');
   updateHUD();
   holdPlay = true; newRound();                         // map draws in, timer waits for GO
