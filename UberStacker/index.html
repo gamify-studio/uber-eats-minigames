@@ -108,14 +108,14 @@
     background: #67BE6B; color: #000;
   }
   .overlay.hidden { display: none; }
-  .overlay .riderImg { position: absolute; left: 14px; bottom: 14px; width: min(16vw, 90px); height: auto; pointer-events: none; z-index: 1; }
+  .overlay .riderImg { position: absolute; left: 12px; bottom: 12px; width: min(14vw, 78px); height: auto; pointer-events: none; z-index: 1; }
   /* Win screen: the rider sits in-flow above the "Order Packed!" title, centred and sized to
      the column so it fits nicely on any phone (caps on large screens, shrinks on small ones). */
   #winOv .riderImg { position: static; left: auto; bottom: auto; width: clamp(96px, 30vw, 150px); margin: 0 auto 2px; }
   /* Start screen: reserve the bottom-left corner for the rider so the numbered steps + Play
      button always sit clear of him (the long step-1 text used to overlap him on iPhone 16 Pro).
      safe center keeps the content from clipping at the top on short viewports. */
-  #howOv { justify-content: safe center; padding-bottom: 132px; }
+  #howOv { justify-content: safe center; padding-bottom: 148px; }
   .overlay h1 { font-size: 30px; font-weight: 900; line-height: 1.1; }
   .overlay h1 .e { color: var(--green); }
   .overlay p { font-size: 14px; opacity: .8; line-height: 1.55; max-width: 320px; }
