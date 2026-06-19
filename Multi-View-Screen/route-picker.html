@@ -1422,9 +1422,11 @@ function resolve(kind){
   if (kind !== 'timeout'){ stats.picks++; stats.rtSum += (timeMax - timeLeft); }
   if (good) stats.correct++;
   if (good){
-    // score tracks rounds survived: round 20 = 150 (max). ~7.5 pts/round, hard-capped.
+    // score tracks rounds survived: ~7.5 pts/round, UNCAPPED so players can push their score as
+    // high as they can for the leaderboard prize competition. The backend SCORE_MAX is the only
+    // ceiling (a high anti-cheat sanity bound, not a gameplay cap).
     const prev = score;
-    score = Math.min(150, Math.round(round * 7.5));
+    score = Math.round(round * 7.5);
     const add = score - prev;
     streak++;
     if (streak > bestStreak){ bestStreak = streak; localStorage.setItem('routerush_beststreak', bestStreak); }
