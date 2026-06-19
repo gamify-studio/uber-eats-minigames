@@ -102,8 +102,8 @@
   #entryDone .rider { position: static; left: auto; bottom: auto; width: clamp(130px, 42vw, 210px); margin: 0 auto 4px; }
   /* start screen: Side Quest logo at the top + the Scooterman tucked in the bottom-left corner.
      #howto's bottom padding reserves his zone so the steps + Play button always sit clear of him. */
-  #howto .sqLogo { width: clamp(102px, 30vw, 150px); height: auto; display: block; margin: 0 auto -2px; filter: drop-shadow(0 4px 12px rgba(0,0,0,.28)); }
-  #howto .rider { position: absolute; left: 14px; bottom: 12px; width: min(15vw, 84px); height: auto; pointer-events: none; z-index: 1; filter: drop-shadow(0 5px 12px rgba(0,0,0,.55)); }
+  #howto .sqLogo { width: clamp(124px, 21vh, 208px); height: auto; display: block; margin: 0 auto -2px; filter: drop-shadow(0 4px 12px rgba(0,0,0,.28)); }
+  #howto .rider { position: absolute; left: 14px; bottom: 14px; width: clamp(82px, 13vh, 128px); height: auto; pointer-events: none; z-index: 1; filter: drop-shadow(0 5px 12px rgba(0,0,0,.55)); }
   .overlay h1 { font-size: clamp(34px, 9vw, 60px); font-weight: 900; letter-spacing: 1px; color: #019147; }
   .overlay p { max-width: 440px; line-height: 1.55; opacity: .9; font-size: 15px; color: #000; }
   .overlay .how { display: flex; flex-direction: column; gap: 8px; max-width: 460px;
@@ -157,15 +157,15 @@
   #newbest.show { opacity: 1; height: auto; animation: pulse 1s ease-in-out infinite; }
   @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
   /* ---- how-to-play (real map preview) ---- */
-  #howto { justify-content: safe center; gap: 7px; overflow-y: auto;
-    padding: max(14px, env(safe-area-inset-top)) 20px 128px; }
+  #howto { justify-content: safe center; gap: clamp(7px, 1.5vh, 16px); overflow-y: auto;
+    padding: max(14px, env(safe-area-inset-top)) 20px clamp(122px, 19vh, 196px); }
   .howBrand { font-family: 'Uber Move', 'Uber Move Text', 'Inter', system-ui, sans-serif;
     font-size: 34px; font-weight: 900; letter-spacing: .3px; margin: 4px 0 0; color: #000; text-align: center; line-height: 1.05; }
   .howTitle { font-family: 'Uber Move', 'Uber Move Text', 'Inter', system-ui, sans-serif;
     font-size: 14px; font-weight: 800; letter-spacing: 1px; margin: 0; color: #000; opacity: .65; }
   /* Match the map image's 2:3 portrait aspect so the frame hugs it (no dark bars either side).
      Height-driven + capped so it stays responsive and doesn't dominate the layout. */
-  #htMap { aspect-ratio: 1024 / 1536; height: 20vh; max-height: 220px; width: auto; max-width: 100%; display: block; margin: 0 auto;
+  #htMap { aspect-ratio: 1024 / 1536; height: clamp(130px, 22vh, 290px); max-height: none; width: auto; max-width: 100%; display: block; margin: 0 auto;
     border-radius: 16px; background: #0e1622; border: 1px solid rgba(255,255,255,.12); box-shadow: 0 10px 40px rgba(0,0,0,.45); }
   #htChoose { display: flex; gap: 10px; width: 100%; max-width: 228px; margin-top: 1px; }
   .htBtn { flex: 1; position: relative; border-radius: 11px; padding: 6px 0 5px; text-align: center;
