@@ -536,7 +536,7 @@ const CONFIG = {
   boardSize: 4,           // grid is N x N
   target: 6,              // level that wins (Uber Delivery Box)
   startTiles: 2,
-  spawn: [ { value: 1, weight: 100 } ], // every spawn is a 1 (Flower) - start tiles and every swipe
+  spawn: [ { value: 1, weight: 100 } ], // every spawn is a 1 (Smoothie) - start tiles and every swipe
   maxScore: 150,          // best possible score (also clamps a stored best)
   // efficiency tiers: win within `maxSwipes` -> that score. Fewer swipes = higher. Edit freely.
   scoreTiers: [
@@ -556,14 +556,14 @@ const CONFIG = {
   storageKey: "ubereats.merge.v1",
   tutorialKey: "ubereats.merge.tut",
   // image path per level - drop your renders into assets/uber/<level>.png
-  itemImg: (v) => `assets/uber/${v}.png?v=7`,
+  itemImg: (v) => `assets/uber/${v}.png?v=8`,
   numbersInImage: false,  // images have NO baked numbers - the game draws them (uniform size)
   // name + emoji fallback (shown until the PNG exists)
   items: {
-    1: { name: "Flowers",       emoji: "💐" },
+    1: { name: "Smoothie",      emoji: "🥤" },
     2: { name: "Coffee",        emoji: "☕" },
     3: { name: "Noodles",       emoji: "🍜" },
-    4: { name: "Smoothie",      emoji: "🥤" },
+    4: { name: "Flowers",       emoji: "💐" },
     5: { name: "Green Bag",     emoji: "🛍️" },
     6: { name: "Uber Eats Bag", emoji: "🛍️" }
   }
@@ -902,7 +902,7 @@ function newGame() {
   state.won = false;
   state.over = false;
   state.history = [];
-  for (let i = 0; i < CONFIG.startTiles; i++) spawnRandom(1); // always start with value-1 tiles (two Flowers)
+  for (let i = 0; i < CONFIG.startTiles; i++) spawnRandom(1); // always start with value-1 tiles (two Smoothies)
   hideOverlay();
   renderAll();
   showHint();
