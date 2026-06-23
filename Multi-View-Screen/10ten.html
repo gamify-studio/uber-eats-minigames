@@ -301,6 +301,8 @@
   }
   .win-box img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: contain; }
   .win-box .emoji { position: relative; z-index: 1; font-size: 90px; }
+  /* inline gold coin used in the win-screen "topped up" line */
+  .coin-inline { height: 1.15em; width: auto; vertical-align: -0.22em; margin-left: 2px; }
   @keyframes floatBox {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-8px); }
@@ -1012,7 +1014,7 @@ function showOverlay(kind) {
         <span class="emoji" style="display:none">${CONFIG.items[CONFIG.target].emoji}</span>
       </div>
       <h2>You did it!</h2>
-      <p>You created the Uber Eats Bag!</p>
+      <p>You completed the side quest and topped up <img class="coin-inline" src="coin.png?v=1" alt="points"></p>
       <p class="swipes-line">Delivered in <b>${state.moves}</b> swipe${state.moves === 1 ? "" : "s"}</p>
       ${miniScores()}
       <div class="btn-row">
