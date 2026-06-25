@@ -224,7 +224,7 @@
       <li><b>1</b><span>Choose the <span class="sgood">shortest</span> route of <span class="sA">A</span> or <span class="sB">B</span></span></li>
       <li><b>2</b><span>Lose a heart each time you choose the longest way</span></li>
       <li><b>3</b><span>Stages get harder the more you complete. Aim to get the highest score!</span></li>
-      <li><b>4</b><span>Submit your score and see if you make the leaderboard, where some <span class="sgood">serious prizes</span> await.</span></li>
+      <li><b>4</b><span>Submit your score and see if you make the leaderboard. The leaderboard can change until [DATE]. Prizes will be given to the top 160 players on the leaderboard on that date.</span></li>
     </ol>
     <button class="btn" id="howtoPlay">Play ▶</button>
     <img class="rider" src="rider.png?v=2" alt="" aria-hidden="true">
@@ -255,9 +255,9 @@
       <input id="efEmail" type="email" placeholder="Email" autocomplete="email" required>
       <input id="efPhone" type="tel" placeholder="Phone" autocomplete="tel" required>
       <input id="efPostcode" type="text" placeholder="Postcode" autocomplete="postal-code" required>
-      <label class="efCheck"><input id="efTerms" type="checkbox"><span>I agree to the <a href="#" target="_blank" rel="noopener">terms &amp; conditions</a></span></label>
-      <label class="efCheck"><input id="efAge" type="checkbox"><span>I'm 18 years or older</span></label>
-      <label class="efCheck"><input id="efMktg" type="checkbox"><span>Keep me updated with news and offers from Uber Eats</span></label>
+      <label class="efCheck"><input id="efTerms" type="checkbox"><span>I agree to the <a href="#" target="_blank" rel="noopener">terms &amp; conditions</a> *</span></label>
+      <label class="efCheck"><input id="efAge" type="checkbox"><span>I'm 18 years or older *</span></label>
+      <label class="efCheck"><input id="efMktg" type="checkbox"><span>I agree to receive more info from Uber Eats</span></label>
       <div class="efError" id="efError"></div>
       <button class="btn btn2" id="efSubmit" type="submit">Submit &amp; enter</button>
       <button class="btn ghost" id="efCancel" type="button">Back</button>
@@ -268,7 +268,7 @@
   <div class="overlay hidden" id="entryDone">
     <img class="rider" src="rider.png?v=2" alt="" aria-hidden="true">
     <h1 class="delivered">Your score has been delivered.</h1>
-    <p>Your score of <b id="edScore">0</b> is on the leaderboard and your entry is locked in. Good luck!</p>
+    <p>Your score of <b id="edScore">0</b> has been submitted as an entry. Good luck!</p>
     <div class="overbtns">
       <button class="btn" id="edAgain">Play Again</button>
       <button class="btn ghost" id="edTown">Back To Town</button>
@@ -1480,7 +1480,7 @@ function gameOver(){
   // score (no second entry / no re-collecting details). Otherwise it's the full sign-up.
   let entered = false; try { entered = localStorage.getItem('pathpicker_entered') === '1'; } catch (e) {}
   const eb = document.getElementById('enterBtn');
-  if (eb) eb.textContent = entered ? 'Update My Score' : 'Save & Enter Competition!';
+  if (eb) eb.textContent = entered ? 'Submit my updated score' : 'Save & Enter Competition!';
   const oerr = document.getElementById('overError'); if (oerr) oerr.textContent = '';
   document.getElementById('over').classList.remove('hidden');
 }
