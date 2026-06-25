@@ -267,8 +267,8 @@
   <!-- Confirmation after a successful entry -->
   <div class="overlay hidden" id="entryDone">
     <img class="rider" src="rider.png?v=2" alt="" aria-hidden="true">
-    <h1 class="delivered">Your score has been delivered.</h1>
-    <p>Your score of <b id="edScore">0</b> has been submitted as an entry. Good luck!</p>
+    <h1 class="delivered" id="edTitle">Your score has been delivered.</h1>
+    <p id="edMsg">Your score of <b>0</b> has been submitted as an entry. Good luck!</p>
     <div class="overbtns">
       <button class="btn" id="edAgain">Play Again</button>
       <button class="btn ghost" id="edTown">Back To Town</button>
@@ -1771,7 +1771,8 @@ async function submitScoreOnly(){
     const r = await fetch(LB_API + '/score', { method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ playerId: s.playerId, token: s.token, exp: s.exp, handle, score }) });
     if (!r.ok) throw new Error('score ' + r.status);
-    document.getElementById('edScore').textContent = score;
+    let sd = {}; try { sd = await r.json(); } catch (e) {}
+    fillEntryDone(sd);
     showOnlyOverlay('entryDone');
   } catch (ex) {
     if (oerr) oerr.textContent = 'Sorry, that didn’t go through. Please check your connection and try again.';
@@ -1783,6 +1784,25 @@ async function submitScoreOnly(){
 function showOnlyOverlay(id){
   document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
   const el = document.getElementById(id); if (el) el.classList.remove('hidden');
+}
+
+// Tailor the entry-confirmation copy to the player's leaderboard standing. The /score response
+// returns { rank, madeLeaderboard, score(best) }. If an older API doesn't send those, fall back
+// to the neutral "submitted as an entry" line so nothing breaks.
+function fillEntryDone(resp){
+  const title = document.getElementById('edTitle');
+  const msg = document.getElementById('edMsg');
+  const sc = (resp && Number.isFinite(resp.score)) ? resp.score : score; // server best, else this run
+  if (resp && resp.madeLeaderboard === true){
+    if (title) title.textContent = 'Your score has been delivered.';
+    if (msg) msg.innerHTML = 'Your score of <b>' + sc + "</b> made it onto the leaderboard. Don't lose your position - keep playing to better your score!";
+  } else if (resp && resp.madeLeaderboard === false){
+    if (title) title.textContent = 'Keep trying.';
+    if (msg) msg.innerHTML = 'Your score of <b>' + sc + "</b> didn't make it onto the leaderboard. Play again to try for real-world prizes.";
+  } else {
+    if (title) title.textContent = 'Your score has been delivered.';
+    if (msg) msg.innerHTML = 'Your score of <b>' + sc + '</b> has been submitted as an entry. Good luck!';
+  }
 }
 
 var _enterBtn = document.getElementById('enterBtn');
@@ -1815,6 +1835,7 @@ if (_entryForm) _entryForm.addEventListener('submit', async (e) => {
 
     const sr = await post('/score', { playerId: s.playerId, token: s.token, exp: s.exp, handle, score });
     if (!sr.ok) throw new Error('score ' + sr.status);
+    let sd = {}; try { sd = await sr.json(); } catch (e) {}
     const gr = await post('/signup', { playerId: s.playerId, firstName: first, lastName: last, email, phone, postcode,
       agreeTerms: true, confirmAge: true, marketingOptIn: chk('efMktg') });
     if (!gr.ok) throw new Error('signup ' + gr.status);
@@ -1823,7 +1844,7 @@ if (_entryForm) _entryForm.addEventListener('submit', async (e) => {
     // player can be offered a straight replay to beat their best). Best score lives in localStorage too.
     try { localStorage.setItem('pathpicker_entered', '1'); localStorage.setItem('pathpicker_handle', handle); } catch (e) {}
 
-    document.getElementById('edScore').textContent = score;
+    fillEntryDone(sd);
     showOnlyOverlay('entryDone');
   } catch (ex) {
     err.textContent = 'Sorry, that didn’t go through. Please check your connection and try again.';
