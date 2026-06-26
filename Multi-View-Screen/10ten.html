@@ -1024,8 +1024,7 @@ function showOverlay(kind) {
     spawnConfetti();
   } else {
     el.ovCard.innerHTML = `
-      <h2 class="danger">Game over</h2>
-      <p>No more moves left!</p>
+      <h2 class="danger">No more moves left!</h2>
       <p class="swipes-line">Used <b>${state.moves}</b> swipe${state.moves === 1 ? "" : "s"} - no delivery</p>
       <div class="mini-scores"><div class="seg"><div class="label">Best</div><div class="value">${state.best}</div></div></div>
       <div class="btn-row">
