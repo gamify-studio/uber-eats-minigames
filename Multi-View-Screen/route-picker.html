@@ -1750,7 +1750,17 @@ async function ensureSession(){
   if (lbSession && lbSession.exp && lbSession.exp * 1000 > Date.now() + 5000) return lbSession;
   // Reuse this device's playerId across visits so a returning player updates their SINGLE
   // leaderboard row + prize entry (no duplicates) and can beat their best on replay.
-  let pid = ''; try { pid = localStorage.getItem('pathpicker_pid') || ''; } catch (e) {}
+  // If the host game (Unity) passes ?pid=<uuid>, prefer it and persist it, so the in-game
+  // leaderboard ("where am I") and Path Picker share ONE identity for this device.
+  let pid = '';
+  try {
+    const urlPid = new URLSearchParams(location.search).get('pid') || '';
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(urlPid)) {
+      pid = urlPid; localStorage.setItem('pathpicker_pid', pid);
+    } else {
+      pid = localStorage.getItem('pathpicker_pid') || '';
+    }
+  } catch (e) {}
   const r = await fetch(LB_API + '/session', { method: 'POST', headers: { 'content-type': 'application/json' },
     body: JSON.stringify(pid ? { playerId: pid } : {}) });
   if (!r.ok) throw new Error('session ' + r.status);
