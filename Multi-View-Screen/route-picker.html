@@ -365,8 +365,7 @@ function bil(tA, tB, bB, bA, u, v){ return { x: (tA.x*(1-u)+tB.x*u)*(1-v) + (bA.
 
 // ---- game state ----
 let state = 'idle';                                // idle | draw | play | reveal | over
-let score = 0, best = +(localStorage.getItem('routerush_best') || 0);
-if (best > 250){ best = 0; localStorage.removeItem('routerush_best'); }   // discard stale pre-rescale best
+let score = 0, best = +(localStorage.getItem('routerush_best_v2') || 0);   // v2 key: skill-weighted scoring scale (base + speed bonus); old-scale bests ignored
 let lives = 3, streak = 0, round = 0;
 let timeLeft = 0, timeMax = 1, drawT = 0, revealT = 0, revealDur = 1;
 let chosen = null, lastResult = null;              // 'ok' | 'bad' | 'timeout'
@@ -1423,11 +1422,16 @@ function resolve(kind){
   if (kind !== 'timeout'){ stats.picks++; stats.rtSum += (timeMax - timeLeft); }
   if (good) stats.correct++;
   if (good){
-    // score tracks rounds survived: ~7.5 pts/round, UNCAPPED so players can push their score as
-    // high as they can for the leaderboard prize competition. The backend SCORE_MAX is the only
-    // ceiling (a high anti-cheat sanity bound, not a gameplay cap).
+    // Skill-weighted score: each correct route earns a fixed BASE plus a SPEED bonus from how much
+    // time was left when you answered. Faster, cleaner play scores higher, so players spread across
+    // many different totals instead of clustering on the same number (clean prize ranking; any exact
+    // ties are still broken server-side by who reached their score first). UNCAPPED here; the backend
+    // SCORE_MAX is the only ceiling (a high anti-cheat sanity bound, not a gameplay cap).
     const prev = score;
-    score = Math.round(round * 7.5);
+    const ROUND_BASE = 30;                                    // points for getting a route right
+    const SPEED_BONUS = 30;                                   // extra for a fast answer (0..SPEED_BONUS)
+    const speedFrac = Math.max(0, Math.min(1, timeLeft / timeMax));
+    score += ROUND_BASE + Math.round(SPEED_BONUS * speedFrac);
     const add = score - prev;
     streak++;
     if (streak > bestStreak){ bestStreak = streak; localStorage.setItem('routerush_beststreak', bestStreak); }
@@ -1435,7 +1439,7 @@ function resolve(kind){
     flash = { color: 'rgba(1,145,71,A)', a: 0.28 };
     sOK(); buzz(15); if (!reduceMotion) spawnParticles();
     addPopup(add > 0 ? '+' + add : 'MAX', COL.good, 34);
-    if (score > best){ best = score; localStorage.setItem('routerush_best', best); }
+    if (score > best){ best = score; localStorage.setItem('routerush_best_v2', best); }
   } else {
     streak = 0;                                           // wrong/slow resets the streak...
     lives = Math.max(0, lives - 1);                       // ...and costs a heart (3 strikes = game over)
@@ -1460,7 +1464,7 @@ function gameOver(){
   document.body.classList.remove('playing');
   setButtons(false); showPrompt(false);
   const isBest = score > 0 && score >= best;
-  if (score > best){ best = score; localStorage.setItem('routerush_best', best); }
+  if (score > best){ best = score; localStorage.setItem('routerush_best_v2', best); }
   // Credit the gig score to the Unity wallet (parent listens for {type:'gigScore'}).
   try { window.parent.postMessage({ type: 'gigScore', score: score }, '*'); } catch (e) {}
   document.getElementById('newbest').classList.toggle('show', isBest);
