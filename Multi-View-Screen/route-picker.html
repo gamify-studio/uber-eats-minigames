@@ -1467,6 +1467,7 @@ function gameOver(){
   if (score > best){ best = score; localStorage.setItem('routerush_best_v2', best); }
   // Credit the gig score to the Unity wallet (parent listens for {type:'gigScore'}).
   try { window.parent.postMessage({ type: 'gigScore', score: score }, '*'); } catch (e) {}
+  ga('pathpicker_complete', { score: score });
   document.getElementById('newbest').classList.toggle('show', isBest);
   const acc = stats.answers ? Math.round(stats.correct / stats.answers * 100) : 0;
   const avgRt = stats.picks ? (stats.rtSum / stats.picks / 1000).toFixed(2) + 's' : '-';
@@ -1775,6 +1776,9 @@ async function ensureSession(){
 
 // Returning entrant beating their PB: post the new score under the SAME playerId (backend keeps
 // best) WITHOUT re-collecting details or re-running /signup. One prize entry per person stands.
+// Bubble an analytics event up to the host page's gtag (same GA session as the page_view + UTMs).
+function ga(name, params){ try { window.parent.postMessage({ type:'ga', name:name, params:params||{} }, '*'); } catch(e){} }
+
 async function submitScoreOnly(){
   const btn = document.getElementById('enterBtn');
   const oerr = document.getElementById('overError'); if (oerr) oerr.textContent = '';
@@ -1785,6 +1789,7 @@ async function submitScoreOnly(){
     const r = await fetch(LB_API + '/score', { method: 'POST', headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ playerId: s.playerId, token: s.token, exp: s.exp, handle, score }) });
     if (!r.ok) throw new Error('score ' + r.status);
+    ga('leaderboard_submit', { score: score });
     let sd = {}; try { sd = await r.json(); } catch (e) {}
     fillEntryDone(sd);
     showOnlyOverlay('entryDone');
@@ -1849,10 +1854,12 @@ if (_entryForm) _entryForm.addEventListener('submit', async (e) => {
 
     const sr = await post('/score', { playerId: s.playerId, token: s.token, exp: s.exp, handle, score });
     if (!sr.ok) throw new Error('score ' + sr.status);
+    ga('leaderboard_submit', { score: score });
     let sd = {}; try { sd = await sr.json(); } catch (e) {}
     const gr = await post('/signup', { playerId: s.playerId, firstName: first, lastName: last, email, phone, postcode,
       agreeTerms: true, confirmAge: true, marketingOptIn: chk('efMktg') });
     if (!gr.ok) throw new Error('signup ' + gr.status);
+    ga('prize_signup', {});
 
     // Remember on this device that this player has completed + entered the draw (so a returning
     // player can be offered a straight replay to beat their best). Best score lives in localStorage too.
