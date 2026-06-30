@@ -68,11 +68,11 @@
     display: flex; align-items: center; justify-content: center;
     min-height: 0; padding: 4px 0;
   }
-  #board {
-    border-radius: 14px;
-    box-shadow: 0 12px 34px rgba(0,0,0,.6), inset 0 0 0 3px var(--bag-dark);
-    background: var(--bag);
-  }
+  /* The fluoro bag art sits behind a transparent grid canvas; the canvas is positioned over the
+     bag's yellow interior in fit(), so pieces only ever land in the yellow. */
+  #bagBg { position: absolute; pointer-events: none; z-index: 0;
+    filter: drop-shadow(0 12px 34px rgba(0,0,0,.55)); }
+  #board { position: absolute; z-index: 1; background: transparent; }
   .toast {
     position: absolute; top: 12%; left: 50%; transform: translateX(-50%) translateY(-6px);
     background: var(--green); color: #000; font-weight: 900; font-size: 15px;
@@ -178,7 +178,7 @@
   /* Uber Eats Side Quest logo above the game name on the start screen */
   .sqLogo { width: clamp(120px, 40vw, 190px); height: auto; display: block; margin: 0 auto 4px; }
   #demoWrap { position: relative; flex-shrink: 0; border-radius: 14px; overflow: hidden; border: 2px solid rgba(6,193,103,.5); box-shadow: 0 10px 30px rgba(0,0,0,.5); }
-  #demoCv { display: block; width: auto; height: min(276px, 32vh); aspect-ratio: 216 / 324; background: #3E8B2C; }
+  #demoCv { display: block; width: auto; height: min(276px, 32vh); aspect-ratio: 216 / 324; background: #111; }
   #demoCap {
     position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 8px 8px;
     background: linear-gradient(transparent, rgba(0,0,0,.8)); color: #fff;
@@ -224,6 +224,7 @@
   </div>
 
   <div id="playfield">
+    <img id="bagBg" src="assets/stackerbag.png" alt="">
     <canvas id="board"></canvas>
     <div class="toast" id="toast">Bag packed!</div>
   </div>
@@ -296,7 +297,7 @@
 <script>
 "use strict";
 (function () {
-  const COLS = 11, ROWS = 22;
+  const COLS = 13, ROWS = 16;   // matches the fluoro bag's printed grid (13x16 square cells) so pieces align (was 11x22)
   const FALL_BASE = 750; // level 1 fall interval (ms); speeds up each level
 
   // ---------- Pieces: tetromino-style food shapes wired to the sliced sprite art ----------
@@ -544,18 +545,37 @@
   const bctx = board.getContext("2d");
   let cell = 24, dpr = 1;
 
+  // Fluoro bag layout: the bag image is shown 'contain' in the playfield; the grid is inset into
+  // the bag's yellow interior (measured as fractions of the bag image), so pieces stay in the yellow.
+  const BAG_ASPECT = 1038 / 1515;
+  // Yellow interior = the bag's printed 13x16 grid, as fractions of the bag image (measured), so the
+  // game cells land on the printed grid lines.
+  const YELLOW = { l: 0.087, r: 0.901, t: 0.224, b: 0.900 };
   function fit() {
     const pf = document.getElementById("playfield");
-    const availW = pf.clientWidth - 4;
-    const availH = pf.clientHeight - 8;
-    cell = Math.max(14, Math.floor(Math.min(availW / COLS, availH / ROWS)));
+    const pw = pf.clientWidth, ph = pf.clientHeight;
+    // bag drawn 'contain' (preserve aspect) inside the playfield
+    let bw, bh;
+    if (pw / ph > BAG_ASPECT) { bh = ph; bw = ph * BAG_ASPECT; } else { bw = pw; bh = pw / BAG_ASPECT; }
+    const bx = (pw - bw) / 2, by = (ph - bh) / 2;
+    // yellow interior rect on screen
+    const yx = bx + YELLOW.l * bw, yy = by + YELLOW.t * bh;
+    const yw = (YELLOW.r - YELLOW.l) * bw, yh = (YELLOW.b - YELLOW.t) * bh;
+    // largest square cell that fits the grid inside the yellow
+    cell = Math.max(8, Math.floor(Math.min(yw / COLS, yh / ROWS)));
+    const gw = COLS * cell, gh = ROWS * cell;
+    const gx = yx + (yw - gw) / 2;          // centre horizontally in the yellow
+    const gy = yy + (yh - gh);              // anchor the grid bottom to the yellow bottom (stack sits at the base)
     dpr = Math.min(window.devicePixelRatio || 1, 2);
-    board.width = COLS * cell * dpr;
-    board.height = ROWS * cell * dpr;
-    board.style.width = (COLS * cell) + "px";
-    board.style.height = (ROWS * cell) + "px";
+    board.width = gw * dpr; board.height = gh * dpr;
+    board.style.width = gw + "px"; board.style.height = gh + "px";
+    board.style.position = "absolute";
+    board.style.left = gx + "px"; board.style.top = gy + "px";
     bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     bctx.imageSmoothingQuality = "high";
+    // size the bag art to match the contained rect
+    const bg = document.getElementById("bagBg");
+    if (bg) { bg.style.left = bx + "px"; bg.style.top = by + "px"; bg.style.width = bw + "px"; bg.style.height = bh + "px"; }
   }
 
   // ---------- Tile backing colours ----------
@@ -744,7 +764,15 @@
 
   function render() {
     const W = COLS * cell, H = ROWS * cell;
-    drawBagField(bctx, W, H, cell, COLS, ROWS);   // green bag + handles
+    // The fluoro bag is an <img> behind the board; the board is transparent and sits over the
+    // yellow interior (positioned in fit()), so pieces only ever land inside the yellow.
+    bctx.clearRect(0, 0, W, H);
+    // The bag's printed grid was flattened; the game draws its own crisp grid here, so pieces always
+    // sit perfectly on the visible cell lines (guaranteed alignment).
+    bctx.strokeStyle = "rgba(0,0,0,.08)"; bctx.lineWidth = 1; bctx.beginPath();
+    for (let gl = 1; gl < COLS; gl++) { bctx.moveTo(gl * cell, 0); bctx.lineTo(gl * cell, H); }
+    for (let gl = 1; gl < ROWS; gl++) { bctx.moveTo(0, gl * cell); bctx.lineTo(W, gl * cell); }
+    bctx.stroke();
 
     // packed-row glow (rows stay; just highlighted)
     packedRows.forEach(y => { bctx.fillStyle = "rgba(6,193,103,.20)"; bctx.fillRect(0, y*cell, W, cell); });
@@ -1060,7 +1088,16 @@
   // ---------- How-to-play: auto-playing gameplay demo (this is the start screen) ----------
   const demoCv = document.getElementById("demoCv");
   const dctx = demoCv.getContext("2d");
-  const DCOLS = 6, DROWS = 9, DCELL = demoCv.width / DCOLS;
+  const DCOLS = 6, DROWS = 9;
+  // The flattened fluoro bag fills the demo canvas; the demo grid is inset into the yellow interior
+  // (same fractions as the main board) and bottom-anchored, so the start screen matches the game.
+  const _dyw = (YELLOW.r - YELLOW.l) * demoCv.width, _dyh = (YELLOW.b - YELLOW.t) * demoCv.height;
+  const _dyx = YELLOW.l * demoCv.width, _dyy = YELLOW.t * demoCv.height;
+  const DCELL = Math.min(_dyw / DCOLS, _dyh / DROWS);
+  const DOX = _dyx + (_dyw - DCOLS * DCELL) / 2;   // centre horizontally in the yellow
+  const DOY = _dyy + (_dyh - DROWS * DCELL);       // bottom-anchored
+  let demoBagImg = null;
+  loadImage("assets/stackerbag.png").then(im => { demoBagImg = im; }).catch(() => {});
   // scripted tidy pack (lowest pieces first) - fills the bottom 4 rows with no gaps
   // scripted tidy pack (lowest pieces first) using a VARIETY of items - fills a tight block
   const DEMO_SCRIPT = [
@@ -1113,7 +1150,7 @@
     const spr = SPRITES[PIECES[key].sprite]; if (!spr) return;
     rot = rot || 0;
     const cols = cells[0].length, rows = cells.length;
-    const x = gx * DCELL, y = gy * DCELL, w = cols * DCELL, h = rows * DCELL;
+    const x = DOX + gx * DCELL, y = DOY + gy * DCELL, w = cols * DCELL, h = rows * DCELL;
     const hf = HANDLE_FRAC[PIECES[key].sprite];
     if (hf) { const dh = h / (1 - hf); dctx.drawImage(spr.rots[0], x, y - (dh - h), w, dh); return; }   // bag: baked outline only
     const img = spr.rots[rot];
@@ -1129,7 +1166,13 @@
   }
   function demoRender() {
     const W = demoCv.width, H = demoCv.height;
-    drawBagField(dctx, W, H, DCELL, DCOLS, DROWS);   // green bag + handles
+    dctx.clearRect(0, 0, W, H);
+    if (demoBagImg) dctx.drawImage(demoBagImg, 0, 0, W, H);   // flattened fluoro bag fills the canvas
+    // crisp game grid inset into the yellow (matches the main board)
+    dctx.strokeStyle = "rgba(0,0,0,.08)"; dctx.lineWidth = 1; dctx.beginPath();
+    for (let i = 0; i <= DCOLS; i++) { dctx.moveTo(DOX + i * DCELL, DOY); dctx.lineTo(DOX + i * DCELL, DOY + DROWS * DCELL); }
+    for (let i = 0; i <= DROWS; i++) { dctx.moveTo(DOX, DOY + i * DCELL); dctx.lineTo(DOX + DCOLS * DCELL, DOY + i * DCELL); }
+    dctx.stroke();
     for (const p of demoPlaced) demoDrawSprite(p.key, p.cells, p.x, p.y, p.rot);
     if (demoPhase !== "done" && demoIdx < DEMO_SCRIPT.length) {
       const s = DEMO_SCRIPT[demoIdx];
