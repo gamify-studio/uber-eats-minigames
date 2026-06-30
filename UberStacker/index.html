@@ -130,7 +130,9 @@
   .riderImg { display: none !important; }
   /* Win screen: the rider sits in-flow above the "Order Packed!" title, centred and sized to
      the column so it fits nicely on any phone (caps on large screens, shrinks on small ones). */
-  #winOv .riderImg { position: static; left: auto; bottom: auto; width: clamp(96px, 30vw, 150px); margin: 0 auto 2px; }
+  /* Scooter rider kept on the WIN screen (above "Order Packed!") per Ant - re-shown over the
+     blanket .riderImg hide; the start/how-to riders stay hidden. */
+  #winOv .riderImg { display: block !important; position: static; left: auto; bottom: auto; width: clamp(96px, 30vw, 150px); margin: 0 auto 2px; }
   /* Start screen: reserve the bottom-left corner for the rider so the numbered steps + Play
      button always sit clear of him (the long step-1 text used to overlap him on iPhone 16 Pro).
      safe center keeps the content from clipping at the top on short viewports. */
@@ -558,7 +560,7 @@
     if (eff >= 85) return { stars: 3, label: "Perfect pack" };
     if (eff >= 65) return { stars: 2, label: "Tidy delivery" };
     if (eff >= 40) return { stars: 1, label: "Good enough" };
-    return { stars: 0, label: "Messy pack, try again" };
+    return { stars: 0, label: "Keep practicing" };
   }
 
   // ---------- Rendering ----------
