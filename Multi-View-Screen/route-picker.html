@@ -30,6 +30,10 @@
     text-shadow: 0 2px 8px rgba(0,0,0,.7);
   }
   #lives { font-size: 26px; letter-spacing: 2px; min-width: 96px; }
+  /* Lives shown as Uber Eats delivery bags (client branding). The bag PNG keeps the same soft
+     shadow the heart emoji had via drop-shadow (the #hud isn't an overflow box, so no iOS clip). */
+  #lives .life-bag { height: 32px; width: auto; vertical-align: middle; margin: 0 1px;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,.7)); }
   #lives .dead { opacity: .22; filter: grayscale(1); }
   #scorebox { text-align: center; flex: 1; }
   #score { font-size: 36px; font-weight: 900; line-height: 1; letter-spacing: .5px; }
@@ -1496,7 +1500,7 @@ function addPopup(text, color, size){
 }
 function updateHUD(){
   let hearts = '';
-  for (let i = 0; i < 3; i++) hearts += '<span' + (i < lives ? '' : ' class="dead"') + '>❤️</span>';
+  for (let i = 0; i < 3; i++) hearts += '<img class="life-bag' + (i < lives ? '' : ' dead') + '" src="uber-bag.png" alt="life">';
   document.getElementById('lives').innerHTML = hearts;
   document.getElementById('score').textContent = score;
   document.getElementById('round').textContent = Math.max(1, round);
