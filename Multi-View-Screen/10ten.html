@@ -437,7 +437,12 @@
   }
   #tutorial h2.green { color: #000; font-size: clamp(29px, 9vw, 41px); margin-top: 2px; }
   /* Uber Eats Side Quest logo above the game name on the start screen */
-  .sqLogo { width: clamp(120px, 40vw, 190px); height: auto; display: block; margin: 0 auto 4px; }
+  /* Shared SideQuest logo size across all 3 minigames (Combo / Stacker / Path Picker). */
+  .sqLogo { width: clamp(140px, 44vw, 205px); height: auto; display: block; margin: 0 auto 4px; }
+  /* Top-anchor the how-to card so the logo sits up near the top instead of floating low with a
+     big empty band above it (centred layout left dead space on tall phones). overflow-y:auto means
+     it scrolls instead of clipping the Play button on short phones (same pattern as Path Picker). */
+  #tutorial { align-items: start; overflow-y: auto; padding-top: clamp(20px, 6vh, 72px); padding-bottom: 22px; }
   #tutorial .tut-lines p { color: #000; }
   #tutorial .tut-lines b { color: #000; }
   #tutorial .tut-lines .n { background: rgba(255, 255, 255, 0.85); color: #000; }
@@ -519,7 +524,6 @@
             </div>
             <div class="btn-row"><button class="btn" id="tut-got">Play ▶</button></div>
           </div>
-          <img class="rider" src="assets/uber/rider.png?v=2" alt="" />
         </div>
       </div>
     </div>
@@ -1014,7 +1018,7 @@ function showOverlay(kind) {
         <span class="emoji" style="display:none">${CONFIG.items[CONFIG.target].emoji}</span>
       </div>
       <h2>You did it!</h2>
-      <p>You completed the side quest and topped up <img class="coin-inline" src="coin.png?v=2" alt="points"></p>
+      <p>You completed the side quest and topped up <img class="coin-inline" src="coin.png?v=3" alt="points"></p>
       <p class="swipes-line">Delivered in <b>${state.moves}</b> swipe${state.moves === 1 ? "" : "s"}</p>
       ${miniScores()}
       <div class="btn-row">

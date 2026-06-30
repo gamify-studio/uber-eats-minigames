@@ -111,13 +111,15 @@
   }
   .overlay.hidden { display: none; }
   .overlay .riderImg { position: absolute; left: 12px; bottom: 12px; width: min(14vw, 78px); height: auto; pointer-events: none; z-index: 1; }
+  /* Scooter rider removed across all minigames for now (Ant) - keep markup, just hide it. */
+  .riderImg { display: none !important; }
   /* Win screen: the rider sits in-flow above the "Order Packed!" title, centred and sized to
      the column so it fits nicely on any phone (caps on large screens, shrinks on small ones). */
   #winOv .riderImg { position: static; left: auto; bottom: auto; width: clamp(96px, 30vw, 150px); margin: 0 auto 2px; }
   /* Start screen: reserve the bottom-left corner for the rider so the numbered steps + Play
      button always sit clear of him (the long step-1 text used to overlap him on iPhone 16 Pro).
      safe center keeps the content from clipping at the top on short viewports. */
-  #howOv { justify-content: safe center; padding-bottom: 148px; }
+  #howOv { justify-content: safe center; padding-bottom: 28px; }   /* was 148px to clear the rider; rider now hidden */
   .overlay h1 { font-size: 30px; font-weight: 900; line-height: 1.1; }
   .overlay h1 .e { color: var(--green); }
   .overlay p { font-size: 14px; opacity: .8; line-height: 1.55; max-width: 320px; }
@@ -178,7 +180,7 @@
   #howOv .htTitle { font-size: 43px; font-weight: 900; line-height: 1.05; }
   #howOv .htTitle .e { color: var(--green); }
   /* Uber Eats Side Quest logo above the game name on the start screen */
-  .sqLogo { width: clamp(120px, 40vw, 190px); height: auto; display: block; margin: 0 auto 4px; }
+  .sqLogo { width: clamp(140px, 44vw, 205px); height: auto; display: block; margin: 0 auto 4px; }  /* shared logo size across all 3 minigames */
   #demoWrap { position: relative; flex-shrink: 0; border-radius: 14px; overflow: hidden; border: 2px solid rgba(6,193,103,.5); box-shadow: 0 10px 30px rgba(0,0,0,.5); }
   #demoCv { display: block; width: auto; height: min(276px, 32vh); aspect-ratio: 216 / 324; background: #111; }
   #demoCap {
@@ -226,7 +228,7 @@
   </div>
 
   <div id="playfield">
-    <img id="bagBg" src="assets/stackerbag.png" alt="">
+    <img id="bagBg" src="assets/stackerbag.png?v=2" alt="">
     <canvas id="board"></canvas>
     <div class="toast" id="toast">Bag packed!</div>
   </div>
@@ -1099,7 +1101,7 @@
   const DOX = _dyx + (_dyw - DCOLS * DCELL) / 2;   // centre horizontally in the yellow
   const DOY = _dyy + (_dyh - DROWS * DCELL);       // bottom-anchored
   let demoBagImg = null;
-  loadImage("assets/stackerbag.png").then(im => { demoBagImg = im; }).catch(() => {});
+  loadImage("assets/stackerbag.png?v=2").then(im => { demoBagImg = im; }).catch(() => {});
   // scripted tidy pack (lowest pieces first) - fills the bottom 4 rows with no gaps
   // scripted tidy pack (lowest pieces first) using a VARIETY of items - fills a tight block
   const DEMO_SCRIPT = [

@@ -103,6 +103,8 @@
      which made the shadow look cut off on all sides. */
   .overlay .rider { position: absolute; left: 14px; bottom: 4px; width: clamp(72px, 19.5vw, 129px);
     height: auto; pointer-events: none; z-index: 2; }
+  /* Scooter rider removed across all minigames for now (Ant) - keep markup, just hide it. */
+  .rider { display: none !important; }
   /* On the game-over screen the rider sits in-flow above the title (centred), like Food Stacker. */
   #over .rider { position: static; left: auto; bottom: auto; width: clamp(66px, 13vh, 122px); margin: 0 auto 2px; }
   #over { gap: 8px; }   /* compact the game-over card so all 3 buttons fit short (webview) viewports */
@@ -110,7 +112,7 @@
   #entryDone .rider { position: static; left: auto; bottom: auto; width: clamp(130px, 42vw, 210px); margin: 0 auto 4px; }
   /* start screen: Side Quest logo at the top + the Scooterman tucked in the bottom-left corner.
      #howto's bottom padding reserves his zone so the steps + Play button always sit clear of him. */
-  #howto .sqLogo { width: clamp(124px, 21vh, 208px); height: auto; display: block; margin: 0 auto -2px; }
+  #howto .sqLogo { width: clamp(140px, 44vw, 205px); height: auto; display: block; margin: 0 auto -2px; }  /* shared logo size across all 3 minigames */
   #howto .rider { position: absolute; left: 14px; bottom: 14px; width: clamp(82px, 13vh, 128px); height: auto; pointer-events: none; z-index: 1; }
   .overlay h1 { font-size: clamp(34px, 9vw, 60px); font-weight: 900; letter-spacing: 1px; color: #019147; }
   .overlay p { max-width: 440px; line-height: 1.55; opacity: .9; font-size: 15px; color: #000; }
@@ -165,7 +167,7 @@
   @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
   /* ---- how-to-play (real map preview) ---- */
   #howto { justify-content: safe center; gap: clamp(7px, 1.5vh, 16px); overflow-y: auto;
-    padding: max(14px, env(safe-area-inset-top)) 20px clamp(122px, 19vh, 196px); }
+    padding: max(14px, env(safe-area-inset-top)) 20px clamp(20px, 4vh, 40px); }   /* was a tall reserve for the rider; rider now hidden */
   .howBrand { font-family: 'Uber Move', 'Uber Move Text', 'Inter', system-ui, sans-serif;
     font-size: 34px; font-weight: 900; letter-spacing: .3px; margin: 4px 0 0; color: #000; text-align: center; line-height: 1.05; }
   .howTitle { font-family: 'Uber Move', 'Uber Move Text', 'Inter', system-ui, sans-serif;
