@@ -84,6 +84,18 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+  /* Brand line on the gameplay screen (client wants "side quest when you want stuff" across all 3
+     games). Centred + responsive so it never overflows; sits above the controls. */
+  .sq-tagline {
+    flex: 0 0 auto;
+    text-align: center;
+    font-size: clamp(12px, 3.5vw, 16px);
+    font-weight: 900;
+    letter-spacing: 0.2px;
+    color: #0b1a10;
+    padding: 2px 10px 4px;
+  }
+
   /* ---------- Touch pad ---------- */
   #pad {
     flex: 0 0 auto;
@@ -235,6 +247,8 @@
     <canvas id="board"></canvas>
     <div class="toast" id="toast">Bag packed!</div>
   </div>
+
+  <div class="sq-tagline">Side quest when you want stuff</div>
 
   <div id="pad">
     <button class="btn" id="bLeft" aria-label="Left">
