@@ -118,8 +118,9 @@
   /* On the game-over screen the rider sits in-flow above the title (centred), like Food Stacker. */
   #over .rider { position: static; left: auto; bottom: auto; width: clamp(66px, 13vh, 122px); margin: 0 auto 2px; }
   #over { gap: 8px; }   /* compact the game-over card so all 3 buttons fit short (webview) viewports */
-  /* entryDone: rider above the title, bigger (client) */
-  #entryDone .rider { position: static; left: auto; bottom: auto; width: clamp(130px, 42vw, 210px); margin: 0 auto 4px; }
+  /* entryDone: rider above the title, bigger (client). Kept on this "Your score has been delivered"
+     confirmation page per Ant - re-shown over the blanket .rider hide (start/over riders stay hidden). */
+  #entryDone .rider { display: block !important; position: static; left: auto; bottom: auto; width: clamp(130px, 42vw, 210px); margin: 0 auto 4px; }
   /* start screen: Side Quest logo at the top + the Scooterman tucked in the bottom-left corner.
      #howto's bottom padding reserves his zone so the steps + Play button always sit clear of him. */
   #howto .sqLogo { width: clamp(140px, 44vw, 205px); height: auto; display: block; margin: 0 auto -2px; }  /* shared logo size across all 3 minigames */
