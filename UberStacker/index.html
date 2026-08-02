@@ -549,11 +549,11 @@
     // saturate: a 90% pack already counts as a perfect 100% (norm 0.9 -> 100, clamped)
     return Math.max(0, Math.min(100, Math.round(norm / 0.9 * 100)));
   }
-  // Score is the delivery grade: pack efficiency (0-100) + 50, capped at 150. A perfect
-  // pack = 150, a no-skill tower = 50. Tracks skill, not game length.
+  // Score is the delivery grade: pack efficiency (0-100) x 1.5, so 0-150. A perfect pack = 150,
+  // a no-skill spam-drop tower = ~0 (Ant 2026-08-03: the old +50 floor paid people for mashing
+  // drop, which killed the incentive to pack well - every point must be earned now).
   const SCORE_MAX = 150;
-  // pack grade -> score: 70% packing => 120, 100% => 150 (linear: pack% + 50, capped 150)
-  function computeScore() { return Math.min(SCORE_MAX, Math.round(efficiency() + 50)); }
+  function computeScore() { return Math.min(SCORE_MAX, Math.round(efficiency() * 1.5)); }
   function updateLevel() {
     const lv = 1 + Math.floor(placed.length / 8);   // +1 level every 8 pieces
     if (lv !== level) { level = lv; fallMs = Math.max(110, Math.round(FALL_BASE * Math.pow(0.86, level - 1))); }
