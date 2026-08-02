@@ -247,7 +247,7 @@
   </div>
 
   <div id="playfield">
-    <img id="bagBg" src="assets/stackerbag.png?v=2" alt="">
+    <img id="bagBg" src="assets/bagfield.png?v=4" alt="">
     <canvas id="board"></canvas>
     <div class="toast" id="toast">Bag packed!</div>
   </div>
@@ -341,16 +341,16 @@
   };
   const KEYS = ["I", "O", "L", "S", "T", "AV", "TR", "SH"];  // common shuffle bag (BN banana + BB parcel removed for now)
   const SPRITE_SRC = {
-    sub: "assets/sub.png?v=10",
-    ubereats: "assets/ubereats.png?v=15",
-    banana: "assets/banana.png?v=9",
-    eggs: "assets/eggs.png?v=10",
-    groceries: "assets/groceries.png?v=9",
-    nana: "assets/nana.png",
-    produce: "assets/produce.png?v=9",
-    toilet: "assets/toilet.png?v=9",
-    shampoo: "assets/shampoo.png?v=9",
-    parcel: "assets/parcel.png"
+    sub: "assets/sub.png?v=11",
+    ubereats: "assets/ubereats.png?v=16",
+    banana: "assets/banana.png?v=10",
+    eggs: "assets/eggs.png?v=11",
+    groceries: "assets/groceries.png?v=10",
+    nana: "assets/nana.png?v=2",
+    produce: "assets/produce.png?v=10",
+    toilet: "assets/toilet.png?v=10",
+    shampoo: "assets/shampoo.png?v=10",
+    parcel: "assets/parcel.png?v=2"
   };
   const SPRITES = {}; // key -> { rots: [canvas x4] }  (rots[r] = image rotated r*90° CW)
 
@@ -379,7 +379,7 @@
       const img = await loadImage(SPRITE_SRC[key]);
       SPRITES[key] = { rots: makeRotations(img) };
     }
-    try { bagImg = await loadImage("assets/bagfield.png?v=3"); } catch (e) { bagImg = null; }
+    try { bagImg = await loadImage("assets/bagfield.png?v=4"); } catch (e) { bagImg = null; }
   }
 
   function rotateMatrix(m) { // 90° clockwise
@@ -549,8 +549,8 @@
     // saturate: a 90% pack already counts as a perfect 100% (norm 0.9 -> 100, clamped)
     return Math.max(0, Math.min(100, Math.round(norm / 0.9 * 100)));
   }
-  // Score is the delivery grade, capped at 120: a perfect pack (100% efficiency) = 120,
-  // a no-skill tower = 0. Tracks skill, not game length.
+  // Score is the delivery grade: pack efficiency (0-100) + 50, capped at 150. A perfect
+  // pack = 150, a no-skill tower = 50. Tracks skill, not game length.
   const SCORE_MAX = 150;
   // pack grade -> score: 70% packing => 120, 100% => 150 (linear: pack% + 50, capped 150)
   function computeScore() { return Math.min(SCORE_MAX, Math.round(efficiency() + 50)); }
@@ -570,12 +570,14 @@
   const bctx = board.getContext("2d");
   let cell = 24, dpr = 1;
 
-  // Fluoro bag layout: the bag image is shown 'contain' in the playfield; the grid is inset into
-  // the bag's yellow interior (measured as fractions of the bag image), so pieces stay in the yellow.
-  const BAG_ASPECT = 1038 / 1515;
-  // Yellow interior = the bag's printed 13x16 grid, as fractions of the bag image (measured), so the
-  // game cells land on the printed grid lines.
-  const YELLOW = { l: 0.087, r: 0.901, t: 0.224, b: 0.900 };
+  // Fluoro grid-box layout (client-approved flat look): the playfield art is the exact 13x16 grid
+  // image (1260x1548 = 13x16 cells of 96px + 6px walls all round). The board canvas covers the
+  // interior; the walls ring it via the #bagBg image positioned from the canvas rect in fit().
+  const BAG_ASPECT = 1260 / 1548;
+  const GRID_SRC = { px: 1260, py: 1548, wall: 6, cellPx: 96 }; // source-image geometry
+  // interior (inside the walls) as fractions of the grid image
+  const YELLOW = { l: 6 / 1260, r: 1254 / 1260, t: 6 / 1548, b: 1542 / 1548 };
+  // the start-screen demo uses the old flat-bag fractions no longer; see demo section.
   function fit() {
     const pf = document.getElementById("playfield");
     const pw = pf.clientWidth, ph = pf.clientHeight;
@@ -598,9 +600,14 @@
     board.style.left = gx + "px"; board.style.top = gy + "px";
     bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     bctx.imageSmoothingQuality = "high";
-    // size the bag art to match the contained rect
+    // position the grid art so its interior aligns EXACTLY with the board canvas; the visible
+    // ring outside the canvas is the fluoro walls (wall = 6px per 96px cell = cell/16)
     const bg = document.getElementById("bagBg");
-    if (bg) { bg.style.left = bx + "px"; bg.style.top = by + "px"; bg.style.width = bw + "px"; bg.style.height = bh + "px"; }
+    if (bg) {
+      const wallPx = cell * (GRID_SRC.wall / GRID_SRC.cellPx);
+      bg.style.left = (gx - wallPx) + "px"; bg.style.top = (gy - wallPx) + "px";
+      bg.style.width = (gw + 2 * wallPx) + "px"; bg.style.height = (gh + 2 * wallPx) + "px";
+    }
   }
 
   // ---------- Tile backing colours ----------
@@ -639,18 +646,21 @@
 
   // draw a piece as uniform square tiles: art sliced per cell (no bleed into empty cells), each
   // solid cell backed by the food's own colour (no field-green gaps), no handle overhang.
-  const HANDLE_FRAC = { ubereats: 0.136 };   // bag handle overhangs above its 2x2 body
-  const OUTLINE = u => Math.max(2, u * 0.075);   // outer outline width (internal divisions = 1/3 of this)
-  function outlineCells(ctx, cells, ox, oy, unit) {   // thin internal cell divisions, full-weight outer silhouette
+  // Handle overhang per sprite (art drawn taller than the collision box). The OLD green bag
+  // needed 0.136 for its carry handles; the new square art fills its 2x2 exactly, so none.
+  const HANDLE_FRAC = {};
+  // Piece outlines: 'none' = client-approved look (no outlines at all, per the approved Figma
+  // window). 'thin' = the maybe-option Ant is showing the client: outer silhouette only at
+  // OUTLINE width below. Flip this one word to switch.
+  const PIECE_OUTLINE = 'none';
+  const OUTLINE = u => Math.max(1.5, u * 0.045);  // thin outer silhouette outline ('thin' mode)
+  function outlineCells(ctx, cells, ox, oy, unit) {   // outer silhouette only - no internal cell divisions
+    if (PIECE_OUTLINE === 'none') return;
     const rows = cells.length, cols = cells[0].length;
     const solid = (yy, xx) => yy >= 0 && yy < rows && xx >= 0 && xx < cols && cells[yy][xx];
     const W = OUTLINE(unit);
     ctx.strokeStyle = "#000"; ctx.lineJoin = "miter"; ctx.lineCap = "butt";
-    // internal divisions: every solid-cell edge, 1/3 weight
-    ctx.lineWidth = Math.max(1, W / 3);
-    for (let yy = 0; yy < rows; yy++) for (let xx = 0; xx < cols; xx++)
-      if (cells[yy][xx]) ctx.strokeRect(ox + xx * unit, oy + yy * unit, unit, unit);
-    // outer silhouette: edges touching empty/outside, full weight
+    // outer silhouette: edges touching empty/outside
     ctx.lineWidth = W; ctx.beginPath();
     for (let yy = 0; yy < rows; yy++) for (let xx = 0; xx < cols; xx++) {
       if (!cells[yy][xx]) continue;
@@ -743,16 +753,10 @@
   function drawBagField(ctx, W, H, cell, cols, rows) {
     ctx.clearRect(0, 0, W, H);
     if (bagImg) {
-      ctx.drawImage(bagImg, 0, 0, W, H);   // real Uber-bag art (uber bag tetris 2)
-      // grid lines aligned to the gameplay cells so the bag grid matches where pieces snap
-      ctx.save();
-      ctx.lineWidth = Math.max(1, cell * 0.05);
-      ctx.strokeStyle = "rgba(0,0,0,.12)";
-      ctx.beginPath();
-      for (let x = 1; x < cols; x++) { ctx.moveTo(x * cell, 0); ctx.lineTo(x * cell, H); }
-      for (let y = 1; y < rows; y++) { ctx.moveTo(0, y * cell); ctx.lineTo(W, y * cell); }
-      ctx.stroke();
-      ctx.restore();
+      // draw the grid art's INTERIOR (inside the 6px walls) stretched to the exact cell grid, so
+      // the printed lines land precisely on where pieces snap; no extra overlay lines needed
+      const w = GRID_SRC.wall;
+      ctx.drawImage(bagImg, w, w, GRID_SRC.px - 2 * w, GRID_SRC.py - 2 * w, 0, 0, W, H);
       return;
     }
     const quad = (pts, col) => { ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(pts[0], pts[1]);
@@ -1114,15 +1118,14 @@
   const demoCv = document.getElementById("demoCv");
   const dctx = demoCv.getContext("2d");
   const DCOLS = 6, DROWS = 9;
-  // The flattened fluoro bag fills the demo canvas; the demo grid is inset into the yellow interior
-  // (same fractions as the main board) and bottom-anchored, so the start screen matches the game.
-  const _dyw = (YELLOW.r - YELLOW.l) * demoCv.width, _dyh = (YELLOW.b - YELLOW.t) * demoCv.height;
-  const _dyx = YELLOW.l * demoCv.width, _dyy = YELLOW.t * demoCv.height;
-  const DCELL = Math.min(_dyw / DCOLS, _dyh / DROWS);
-  const DOX = _dyx + (_dyw - DCOLS * DCELL) / 2;   // centre horizontally in the yellow
-  const DOY = _dyy + (_dyh - DROWS * DCELL);       // bottom-anchored
+  // The demo shows a 6x9 window of the real fluoro grid: the 216x324 canvas divides exactly into
+  // 6x9 cells of 36px, and we blit a centred 6x9-cell crop of the grid art's interior behind it,
+  // so the printed lines align 1:1 with where the demo pieces snap.
+  const DCELL = Math.min(demoCv.width / DCOLS, demoCv.height / DROWS);
+  const DOX = (demoCv.width - DCOLS * DCELL) / 2;
+  const DOY = demoCv.height - DROWS * DCELL;       // bottom-anchored
   let demoBagImg = null;
-  loadImage("assets/stackerbag.png?v=2").then(im => { demoBagImg = im; }).catch(() => {});
+  loadImage("assets/bagfield.png?v=4").then(im => { demoBagImg = im; }).catch(() => {});
   // scripted tidy pack (lowest pieces first) - fills the bottom 4 rows with no gaps
   // scripted tidy pack (lowest pieces first) using a VARIETY of items - fills a tight block
   const DEMO_SCRIPT = [
@@ -1192,12 +1195,14 @@
   function demoRender() {
     const W = demoCv.width, H = demoCv.height;
     dctx.clearRect(0, 0, W, H);
-    if (demoBagImg) dctx.drawImage(demoBagImg, 0, 0, W, H);   // flattened fluoro bag fills the canvas
-    // crisp game grid inset into the yellow (matches the main board)
-    dctx.strokeStyle = "rgba(0,0,0,.08)"; dctx.lineWidth = 1; dctx.beginPath();
-    for (let i = 0; i <= DCOLS; i++) { dctx.moveTo(DOX + i * DCELL, DOY); dctx.lineTo(DOX + i * DCELL, DOY + DROWS * DCELL); }
-    for (let i = 0; i <= DROWS; i++) { dctx.moveTo(DOX, DOY + i * DCELL); dctx.lineTo(DOX + DCOLS * DCELL, DOY + i * DCELL); }
-    dctx.stroke();
+    if (demoBagImg) {
+      // centred DCOLSxDROWS-cell crop of the grid interior; printed lines land on the demo cells
+      const g = GRID_SRC;
+      const sx = g.wall + Math.floor((g.px - 2 * g.wall - DCOLS * g.cellPx) / 2);
+      const sy = g.py - g.wall - DROWS * g.cellPx;
+      dctx.drawImage(demoBagImg, sx, sy, DCOLS * g.cellPx, DROWS * g.cellPx,
+        DOX, DOY, DCOLS * DCELL, DROWS * DCELL);
+    }
     for (const p of demoPlaced) demoDrawSprite(p.key, p.cells, p.x, p.y, p.rot);
     if (demoPhase !== "done" && demoIdx < DEMO_SCRIPT.length) {
       const s = DEMO_SCRIPT[demoIdx];

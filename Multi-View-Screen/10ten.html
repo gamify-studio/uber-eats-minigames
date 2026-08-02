@@ -190,6 +190,12 @@
     text-shadow: 0 2px 3px rgba(0, 0, 0, 0.7);
     font-variant-numeric: tabular-nums;
   }
+  .tile .lvlimg {
+    position: absolute;
+    right: 7%; bottom: 7%;
+    width: 26%; height: auto;
+    pointer-events: none;
+  }
 
   .tile.win-tile {
     background: radial-gradient(60% 60% at 50% 45%, rgba(6, 193, 103, 0.28), transparent 70%);
@@ -412,6 +418,7 @@
   .dgt img { width: 100%; height: 100%; object-fit: contain; }
   .dgt .dn { position: absolute; right: 4%; bottom: 1%; color: var(--green); font-weight: 900;
     font-size: clamp(11px, 4.5vw, 16px); -webkit-text-stroke: 1.4px rgba(0,0,0,0.75); paint-order: stroke fill; }
+  .dgt .dnimg { position: absolute; right: 6%; bottom: 6%; width: 28%; height: auto; pointer-events: none; }
   .dgt.pop { animation: pop 0.32s ease; }
   .demo-hand { position: absolute; width: 30px; height: 30px; transform: translate(-50%, -50%);
     fill: #fff; pointer-events: none; opacity: 0;
@@ -544,15 +551,18 @@ const CONFIG = {
   startTiles: 2,
   spawn: [ { value: 1, weight: 100 } ], // every spawn is a 1 (Coffee) - start tiles and every swipe
   maxScore: 150,          // best possible score (also clamps a stored best)
-  // efficiency tiers: win within `maxSwipes` -> that score. Fewer swipes = higher. Edit freely.
+  // efficiency tiers: win within `maxSwipes` -> that score. Fewer swipes = higher.
+  // Maths: winning needs 32 units of value-1; you start with 2 and gain exactly 1 per swipe
+  // (spawn after the swipe), so the theoretical minimum win is 31 swipes. Tiers start at 34
+  // so 150 is reachable with near-perfect play (the old 25/29 tiers were impossible).
   scoreTiers: [
-    { maxSwipes: 25,       score: 150 },
-    { maxSwipes: 29,       score: 140 },
-    { maxSwipes: 34,       score: 120 },
-    { maxSwipes: 39,       score: 100 },
-    { maxSwipes: 44,       score: 80 },
-    { maxSwipes: 49,       score: 60 },
-    { maxSwipes: 54,       score: 40 },
+    { maxSwipes: 34,       score: 150 },
+    { maxSwipes: 38,       score: 140 },
+    { maxSwipes: 43,       score: 120 },
+    { maxSwipes: 48,       score: 100 },
+    { maxSwipes: 54,       score: 80 },
+    { maxSwipes: 60,       score: 60 },
+    { maxSwipes: 67,       score: 40 },
     { maxSwipes: Infinity, score: 20 }
   ],
   animMs: 130,
@@ -562,8 +572,10 @@ const CONFIG = {
   storageKey: "ubereats.merge.v1",
   tutorialKey: "ubereats.merge.tut",
   // image path per level - drop your renders into assets/uber/<level>.png
-  itemImg: (v) => `assets/uber/${v}.png?v=13`,
-  numbersInImage: false,  // images have NO baked numbers - the game draws them (uniform size)
+  itemImg: (v) => `assets/uber/${v}.png?v=14`,
+  // level-number badge graphics (bottom-right corner); the win bag (6) carries no number
+  numImg: (v) => `assets/uber/num${v}.png?v=1`,
+  numbersInImage: false,  // images have NO baked numbers - the game overlays the badge PNGs
   // name + emoji fallback (shown until the PNG exists)
   items: {
     1: { name: "Coffee",        emoji: "☕" },
@@ -749,17 +761,31 @@ function applyTileVisual(elm, value) {
   const lvl = document.createElement("span");
   lvl.className = "lvl";
   lvl.textContent = value;
-  // when the render already has its number baked in, don't double it up
-  if (CONFIG.numbersInImage) lvl.style.display = "none";
+  lvl.style.display = "none"; // text numeral is a fallback only - the badge PNG is the real look
 
-  // fall back to emoji (and re-show the number) if the render isn't present yet
+  // graphic number badge (levels 1-5 only; the win bag carries no number)
+  let badge = null;
+  if (!CONFIG.numbersInImage && value < CONFIG.target) {
+    badge = document.createElement("img");
+    badge.className = "lvlimg";
+    badge.src = CONFIG.numImg(value);
+    badge.alt = String(value);
+    badge.addEventListener("error", () => {
+      badge.style.display = "none";
+      lvl.style.display = "";
+    }, { once: true });
+  }
+
+  // fall back to emoji (and the text number) if the render isn't present yet
   img.addEventListener("error", () => {
     img.style.display = "none";
     emo.style.display = "";
+    if (badge) badge.style.display = "none";
     lvl.style.display = "";
   }, { once: true });
 
   elm.append(img, emo, lvl);
+  if (badge) elm.append(badge);
 }
 
 function placeTileEl(elm, r, c) {
@@ -1101,7 +1127,8 @@ function dPlace(v, r, c, pop) {
   node.className = "dgt";
   node.style.left = pos(c) + "%"; node.style.top = pos(r) + "%";
   node.style.width = CELL + "%"; node.style.height = CELL + "%";
-  node.innerHTML = `<img src="${CONFIG.itemImg(v)}" alt=""><span class="dn">${v}</span>`;
+  node.innerHTML = `<img src="${CONFIG.itemImg(v)}" alt="">` +
+    (v < CONFIG.target ? `<img class="dnimg" src="${CONFIG.numImg(v)}" alt="${v}">` : "");
   if (pop) node.style.opacity = "0";
   el.demoTiles.appendChild(node);
   dBoard[r][c] = id;
@@ -1199,7 +1226,12 @@ function dApply(p) {
       if (m.becomes) {
         t.v = m.becomes;
         t.el.querySelector("img").src = CONFIG.itemImg(m.becomes);
-        t.el.querySelector(".dn").textContent = m.becomes;
+        const dn = t.el.querySelector(".dnimg");
+        if (m.becomes < CONFIG.target) {
+          if (dn) dn.src = CONFIG.numImg(m.becomes);
+        } else if (dn) {
+          dn.remove(); // the win bag carries no number badge
+        }
         t.el.classList.remove("pop"); void t.el.offsetWidth; t.el.classList.add("pop");
         t.el.style.zIndex = "2";
       }

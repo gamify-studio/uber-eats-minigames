@@ -29,7 +29,7 @@ CONFLICT to verify: the repo `README.md` is stale. It lists the three as "Uber S
 - Path Picker gating: the final game is meant to be locked behind completing the last story beat, but is deliberately left OPEN/ungated for testing (re-gate before launch). That gate lives in the Unity repo, not here.
 
 ## Key docs / where things live
-Repo (this project): `C:\Users\Ant\Documents\Claude\Projects\uber-eats-minigames`
+Repo (this project): `C:\Users\Ant\Documents\Claude\Projects\Uber Eats Build\uber-eats-minigames` (moved into the recombined `Uber Eats Build` umbrella folder 2026-07-27; read the umbrella `..\CLAUDE.md` + `..\plan.md` too)
 - `README.md` - repo overview (STALE game names; see conflict above).
 - `UberStacker/` - Food Stacker (`index.html`, `README.md`, `assets/`; `assets/slice.py` regenerates piece PNGs from `pieces-src.png`).
 - `Multi-View-Screen/` - holds `10ten.html` (Combo), `route-picker.html` (Path Picker), plus legacy `route-rush.html` / `route-rush-v2.html`, `delivery.html`, `delivery3d.html`, `pack-the-bag.html`, and `docs/superpowers/{plans,specs}/` (moped-game design docs).
