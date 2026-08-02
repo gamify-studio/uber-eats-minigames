@@ -289,6 +289,7 @@
     <h1 class="delivered" id="edTitle">Your score has been delivered.</h1>
     <p id="edMsg">Your score of <b>0</b> has been submitted as an entry. Good luck!</p>
     <div class="overbtns">
+      <button class="btn btn2" id="edShare">Share with a friend</button>
       <button class="btn" id="edAgain">Play Again</button>
       <button class="btn ghost" id="edTown">Back To Town</button>
     </div>
@@ -849,6 +850,7 @@ function fillEntryDone(resp){
   const title = document.getElementById('edTitle');
   const msg = document.getElementById('edMsg');
   const sc = (resp && Number.isFinite(resp.score)) ? resp.score : score; // server best, else this run
+  _shareScoreVal = sc;
   if (resp && resp.madeLeaderboard === true){
     if (title) title.textContent = 'Your score has been delivered.';
     if (msg) msg.innerHTML = 'Your score of <b>' + sc + "</b> made it onto the leaderboard. Don't lose your position - keep playing to better your score!";
@@ -910,6 +912,52 @@ if (_entryForm) _entryForm.addEventListener('submit', async (e) => {
     btn.disabled = false; btn.textContent = label;
   }
 });
+
+/* ===== Share tile: the approved "Can you beat my score" 1080x1080 graphic with the player's
+   real score composited into the pill (UberMoveBold), shared natively where supported. ===== */
+var _shareScoreVal = 0;
+async function buildShareTile(score){
+  const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = 'share-tile-base.png?v=1'; });
+  try {
+    const f = new FontFace('UberMoveBoldTile', "url('assets/UberMoveBold.otf')");
+    await f.load(); document.fonts.add(f);
+  } catch (e) {}
+  const cv = document.createElement('canvas'); cv.width = 1080; cv.height = 1080;
+  const c = cv.getContext('2d');
+  c.drawImage(img, 0, 0);
+  const txt = String(score);
+  let size = 340;                                   // matches the approved tile's 615 (cap ~247px)
+  c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#fff';
+  do { c.font = '700 ' + size + "px 'UberMoveBoldTile',system-ui,sans-serif"; size -= 10; }
+  while (c.measureText(txt).width > 640 && size > 120);
+  c.fillText(txt, 540, 600);
+  return cv;
+}
+async function shareScoreTile(){
+  const score = _shareScoreVal || best || 0;
+  const msg = 'Can you beat my score of ' + score + ' on Uber Eats Side Quest? ' + location.origin + location.pathname.replace(/games\/mvs\/.*/, '');
+  const btn = document.getElementById('edShare');
+  const label = btn.textContent; btn.textContent = 'Sharing...';
+  try {
+    const cv = await buildShareTile(score);
+    const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+    const file = new File([blob], 'side-quest-score.png', { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], text: msg });
+    } else if (navigator.share) {
+      await navigator.share({ text: msg });
+    } else {
+      try { await navigator.clipboard.writeText(msg); } catch (e) {}
+      const a = document.createElement('a');
+      a.download = 'side-quest-score.png'; a.href = cv.toDataURL('image/png'); a.click();
+    }
+    ga('share_score', { score: score });
+  } catch (e) { /* user cancelled the share sheet - fine */ }
+  btn.textContent = label;
+}
+var _edShare = document.getElementById('edShare');
+if (_edShare) _edShare.addEventListener('click', shareScoreTile);
+if (typeof window.__rp === 'object') window.__rp.buildShareTile = buildShareTile;
 
 var _edAgain = document.getElementById('edAgain');
 if (_edAgain) _edAgain.addEventListener('click', startGame);
