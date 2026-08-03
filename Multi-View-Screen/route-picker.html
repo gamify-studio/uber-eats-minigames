@@ -987,7 +987,14 @@ function fillEntryDone(resp){
   const msg = document.getElementById('edMsg');
   const sc = (resp && Number.isFinite(resp.score)) ? resp.score : score; // server best, else this run
   _shareScoreVal = sc;
-  if (msg) msg.innerHTML = 'Your score of <b>' + sc + '</b> has been submitted as your competition entry. Good luck!';
+  if (msg){
+    if (sc > score){
+      // this run scored lower than the stored best: the best still stands as the entry
+      msg.innerHTML = 'This run: <b>' + score + '</b>. Your best score of <b>' + sc + '</b> still stands as your competition entry!';
+    } else {
+      msg.innerHTML = 'Your score of <b>' + sc + '</b> has been submitted as your competition entry. Good luck!';
+    }
+  }
   const pl = document.getElementById('edPrize');
   if (pl){
     const prize = (resp && resp.madeLeaderboard === true && Number.isFinite(resp.rank)) ? prizeForRank(resp.rank) : null;
