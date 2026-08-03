@@ -293,6 +293,7 @@
     </div>
     <div class="ovBottom">
       <button class="pillbtn dark" id="enterBtn">Save &amp; enter competition</button>
+      <button class="pillbtn outline" id="overAgain" style="margin-top:12px;">Play again</button>
       <div id="overError" role="alert"></div>
     </div>
   </div>
@@ -858,6 +859,13 @@ function startGame(){
 document.getElementById('howtoPlay').addEventListener('click', function(){ stopHowtoAnim(); startGame(); });
 var _againBtn = document.getElementById('againBtn');
 if (_againBtn) _againBtn.addEventListener('click', startGame);
+// Livewire-approved (Anthony, 2026-08-03): players who don't want to enter yet return to the
+// game's splash screen - stays in the Path Picker loop and nudges them toward entering later
+var _overAgain = document.getElementById('overAgain');
+if (_overAgain) _overAgain.addEventListener('click', function(){
+  showOnlyOverlay('howto');
+  startHowtoAnim();
+});
 
 layout();
 updateHUD();
