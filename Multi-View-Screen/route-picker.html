@@ -980,7 +980,7 @@ async function buildShareTile(score){
 }
 async function shareScoreTile(){
   const score = _shareScoreVal || best || 0;
-  const msg = 'Can you beat my score of ' + score + ' on Uber Eats Side Quest? ' + location.origin + location.pathname.replace(/games\/mvs\/.*/, '');
+  const msg = 'Can you beat my score of ' + score + ' on Uber Eats Side Quest? ' + new URL('../../index.html', location.href).href;   // explicit index.html - the S3 endpoint denies bare paths
   const btn = document.getElementById('edShare');
   const label = btn.textContent; btn.textContent = 'Sharing...';
   try {
