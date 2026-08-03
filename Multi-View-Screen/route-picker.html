@@ -128,11 +128,13 @@
   .pillbtn.light { background: #fff; color: #0b0b0b; }
   .pillbtn.outline { background: transparent; color: #0b0b0b; border: 2.5px solid #0b0b0b; }
   .edLogo { width: clamp(84px, 22vw, 120px); margin-top: 2px; }
-  .edRider { width: clamp(120px, 26vh, 210px); filter: drop-shadow(0 12px 26px rgba(0,0,0,.18)); }
-  #entryDone { gap: 10px; }
-  #entryDone #edMsg { color: #0b0b0b; font-size: 15.5px; font-weight: 600; line-height: 1.45; max-width: 340px; margin: 0; }
-  .edBtns { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 420px; margin-top: 6px;
-            padding-bottom: max(6px, env(safe-area-inset-bottom)); }
+  .edRider { width: clamp(150px, 30vh, 250px); filter: drop-shadow(0 12px 26px rgba(0,0,0,.18)); margin-top: 4px; }
+  #entryDone { gap: 12px; }
+  #entryDone .ovHead { margin-top: 8px; }
+  #entryDone #edMsg { color: #0b0b0b; font-size: 16px; font-weight: 600; line-height: 1.45; max-width: 360px; margin: 0; }
+  /* buttons anchor to the bottom of the screen with even spacing, per the Figma */
+  .edBtns { display: flex; flex-direction: column; gap: 13px; width: 100%; max-width: 420px; margin-top: auto;
+            padding-bottom: max(16px, env(safe-area-inset-bottom)); }
   /* No CSS filter: drop-shadow here. The rider PNG carries its own baked soft shadow, and a CSS
      drop-shadow gets hard-clipped to the box by iOS Safari inside this overflow:auto overlay,
      which made the shadow look cut off on all sides. */
