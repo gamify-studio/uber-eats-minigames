@@ -127,14 +127,15 @@
   .pillbtn.dark { background: #0b0b0b; color: #fff; }
   .pillbtn.light { background: #fff; color: #0b0b0b; }
   .pillbtn.outline { background: transparent; color: #0b0b0b; border: 2.5px solid #0b0b0b; }
-  .edLogo { width: clamp(84px, 22vw, 120px); margin-top: 2px; }
-  .edRider { width: clamp(150px, 30vh, 250px); filter: drop-shadow(0 12px 26px rgba(0,0,0,.18)); margin-top: 4px; }
-  #entryDone { gap: 12px; }
-  #entryDone .ovHead { margin-top: 8px; }
-  #entryDone #edMsg { color: #0b0b0b; font-size: 16px; font-weight: 600; line-height: 1.45; max-width: 360px; margin: 0; }
-  /* buttons anchor to the bottom of the screen with even spacing, per the Figma */
-  .edBtns { display: flex; flex-direction: column; gap: 13px; width: 100%; max-width: 420px; margin-top: auto;
-            padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+  /* You're in spacing matched to the Figma: logo / rider / heading / copy rhythm, buttons low */
+  .edLogo { width: clamp(84px, 22vw, 120px); margin-top: 0; }
+  .edRider { width: clamp(160px, 32vh, 260px); filter: drop-shadow(0 12px 26px rgba(0,0,0,.18)); margin-top: clamp(14px, 3.2svh, 34px); }
+  #entryDone { gap: 0; }
+  #entryDone .ovHead { margin-top: clamp(14px, 3svh, 30px); }
+  #entryDone #edMsg { color: #0b0b0b; font-size: 16px; font-weight: 600; line-height: 1.45; max-width: 360px;
+                      margin: clamp(10px, 2svh, 18px) 0 0; }
+  .edBtns { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 420px; margin-top: auto;
+            padding-top: 16px; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
   /* No CSS filter: drop-shadow here. The rider PNG carries its own baked soft shadow, and a CSS
      drop-shadow gets hard-clipped to the box by iOS Safari inside this overflow:auto overlay,
      which made the shadow look cut off on all sides. */
@@ -476,8 +477,15 @@ function layout(){
   if (pr){ const r = pr.getBoundingClientRect(); if (r.height > 0) HUD_TOP = Math.max(120, Math.round(r.bottom) + 10); }
   const btnH = Math.min(59, Math.max(41, 0.06 * cssH));
   const availW = cssW - PAD * 2;
-  const availH = cssH - HUD_TOP - (btnH + 42);
-  avail = { y: HUD_TOP, w: availW, h: Math.max(220, availH) };
+  // measure the REAL top of the bottom UI (tagline + A/B buttons incl safe-area insets) so the
+  // map window can never overlap them; fall back to the estimate when they are display:none
+  let bottomTop = cssH - (btnH + 42);
+  const tagEl = document.querySelector('.sq-tagline');
+  if (tagEl){ const tr = tagEl.getBoundingClientRect(); if (tr.height > 0) bottomTop = Math.min(bottomTop, tr.top); }
+  const baEl = document.getElementById('btnA');
+  if (baEl){ const br = baEl.getBoundingClientRect(); if (br.height > 0) bottomTop = Math.min(bottomTop, br.top); }
+  const availH = bottomTop - HUD_TOP - 12;
+  avail = { y: HUD_TOP, w: availW, h: Math.max(200, availH) };
   win = { x: PAD, y: HUD_TOP, w: availW, h: avail.h };
   if (cur) fitWindowToRound();   // keep the round's window shape on resize
 }
@@ -856,7 +864,7 @@ updateHUD();
 startHowtoAnim();
 
 // QA hook (also used by automated shell tests); the debug overlay stays ?debug=1-gated
-window.__rp = { choose: choose, resolve: resolve,
+window.__rp = { choose: choose, resolve: resolve, get win(){ return win; }, get avail(){ return avail; },
   get cur(){ return cur; }, get state(){ return state; },
   get score(){ return score; }, get lives(){ return lives; }, set lives(v){ lives = v; } };
 
