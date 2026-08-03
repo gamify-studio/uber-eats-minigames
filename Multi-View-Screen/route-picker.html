@@ -108,6 +108,31 @@
     pointer-events: auto;
   }
   .overlay.hidden { display: none; }
+  /* approved end screens: flat brand green, black ink */
+  #over, #entryDone { background: #06C167; color: #0b0b0b; justify-content: flex-start; gap: 0; }
+  #over .ovTop { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; width: 100%; }
+  .ovBag { width: clamp(110px, 24vh, 170px); filter: drop-shadow(0 10px 24px rgba(0,0,0,.18)); }
+  .ovHead { color: #0b0b0b; font-size: clamp(26px, 7.4vw, 34px); font-weight: 800; letter-spacing: -0.02em; margin: 0; }
+  #stars { font-size: 30px; letter-spacing: 10px; line-height: 1; padding-left: 10px; color: #F6A609; }
+  #stars .dim { color: rgba(11,11,11,.25); }
+  .statcard { display: flex; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,.10); }
+  .statcard .stat { display: flex; flex-direction: column; gap: 3px; padding: 14px 22px; border-left: 1.5px solid #E8EAE8; min-width: 88px; }
+  .statcard .stat:first-child { border-left: none; }
+  .statcard .k { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: #8a8f8b; }
+  .statcard .v { font-size: 22px; font-weight: 800; color: #0b0b0b; }
+  #over .ovBottom { width: 100%; max-width: 420px; padding-bottom: max(6px, env(safe-area-inset-bottom)); }
+  .pillbtn { width: 100%; max-width: 420px; border: none; border-radius: 999px; padding: 17px 20px;
+             font: inherit; font-weight: 800; font-size: 17px; cursor: pointer;
+             display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .pillbtn.dark { background: #0b0b0b; color: #fff; }
+  .pillbtn.light { background: #fff; color: #0b0b0b; }
+  .pillbtn.outline { background: transparent; color: #0b0b0b; border: 2.5px solid #0b0b0b; }
+  .edLogo { width: clamp(84px, 22vw, 120px); margin-top: 2px; }
+  .edRider { width: clamp(120px, 26vh, 210px); filter: drop-shadow(0 12px 26px rgba(0,0,0,.18)); }
+  #entryDone { gap: 10px; }
+  #entryDone #edMsg { color: #0b0b0b; font-size: 15.5px; font-weight: 600; line-height: 1.45; max-width: 340px; margin: 0; }
+  .edBtns { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 420px; margin-top: 6px;
+            padding-bottom: max(6px, env(safe-area-inset-bottom)); }
   /* No CSS filter: drop-shadow here. The rider PNG carries its own baked soft shadow, and a CSS
      drop-shadow gets hard-clipped to the box by iOS Safari inside this overflow:auto overlay,
      which made the shadow look cut off on all sides. */
@@ -209,6 +234,10 @@
   .sA { color: #7ec2ff; font-weight: 800; } .sB { color: #ff85bf; font-weight: 800; }
   #howtoPlay { margin-top: 4px; color: #000;
     background: #377E22; box-shadow: 0 8px 26px rgba(0,0,0,.3); }
+  /* approved end-screen palette - placed last so it beats the legacy overlay rules */
+  #over .ovHead, #entryDone .ovHead, #entryDone #edMsg { color: #0b0b0b; }
+  #stars { color: #F6A609; letter-spacing: 10px; padding-left: 10px; font-size: 30px; }
+  #stars .dim { color: rgba(11,11,11,.22); }
 </style>
 </head>
 <body>
@@ -249,17 +278,20 @@
   </div>
 
   <div class="overlay hidden" id="over">
-    <img class="rider" src="rider.png?v=2" alt="" aria-hidden="true">
-    <h1 class="delivered">Orders Delivered!</h1>
-    <div id="stars"></div>
-    <div id="newbest">🏆 NEW BEST!</div>
-    <div id="overStats"></div>
-    <div class="overbtns">
-      <button class="btn btn2" id="enterBtn">Save &amp; Enter Competition!</button>
-      <button class="btn" id="againBtn">Play Again</button>
-      <button class="btn ghost" id="townBtn">Back To Town</button>
+    <div class="ovTop">
+      <img class="ovBag" src="uber-bag.png" alt="">
+      <h1 class="ovHead">Orders delivered!</h1>
+      <div id="stars"></div>
+      <div class="statcard">
+        <div class="stat"><span class="k">Score</span><span class="v" id="ovScore">0</span></div>
+        <div class="stat"><span class="k">Orders</span><span class="v" id="ovOrders">0</span></div>
+        <div class="stat"><span class="k">Accuracy</span><span class="v" id="ovAcc">0%</span></div>
+      </div>
     </div>
-    <div id="overError" role="alert"></div>
+    <div class="ovBottom">
+      <button class="pillbtn dark" id="enterBtn">Save &amp; enter competition</button>
+      <div id="overError" role="alert"></div>
+    </div>
   </div>
 
   <!-- Prize-draw entry form: posts the score to the leaderboard + the player's details to the prize DB -->
@@ -285,13 +317,19 @@
 
   <!-- Confirmation after a successful entry -->
   <div class="overlay hidden" id="entryDone">
-    <img class="rider" src="rider.png?v=2" alt="" aria-hidden="true">
-    <h1 class="delivered" id="edTitle">Your score has been delivered.</h1>
-    <p id="edMsg">Your score of <b>0</b> has been submitted as an entry. Good luck!</p>
-    <div class="overbtns">
-      <button class="btn btn2" id="edShare">Share with a friend</button>
-      <button class="btn" id="edAgain">Play Again</button>
-      <button class="btn ghost" id="edTown">Back To Town</button>
+    <img class="edLogo" src="sq-logo.png?v=5" alt="Uber Eats Side Quest">
+    <img class="edRider" src="rider.png?v=2" alt="" aria-hidden="true">
+    <h1 class="ovHead" id="edTitle">You're in!</h1>
+    <p id="edMsg">Your score of <b>0</b> has been submitted as your competition entry. Good luck!</p>
+    <div class="edBtns">
+      <button class="pillbtn outline" id="edShare">Share with a friend
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+          <circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/>
+          <path d="M8.2 10.8l7.6-4.6M8.2 13.2l7.6 4.6"/></svg>
+      </button>
+      <button class="pillbtn outline" id="edLb">Leaderboard</button>
+      <button class="pillbtn dark" id="edAgain">Play again</button>
+      <button class="pillbtn light" id="edIrl">Start delivering IRL</button>
     </div>
   </div>
 
@@ -647,14 +685,13 @@ function gameOver(){
   if (score > best){ best = score; localStorage.setItem('routerush_best_v2', best); }
   try { window.parent.postMessage({ type: 'gigScore', score: score }, '*'); } catch (e) {}
   ga('pathpicker_complete', { score: score });
-  document.getElementById('newbest').classList.toggle('show', isBest);
   const acc = stats.answers ? Math.round(stats.correct / stats.answers * 100) : 0;
-  const avgRt = stats.picks ? (stats.rtSum / stats.picks / 1000).toFixed(2) + 's' : '-';
   const nStars = acc >= 85 ? 3 : acc >= 60 ? 2 : acc >= 35 ? 1 : 0;
-  document.getElementById('stars').textContent = '\u2605'.repeat(nStars) + '\u2606'.repeat(3 - nStars);
-  document.getElementById('overStats').innerHTML =
-    '<div class="bigscore">' + score + '</div>' +
-    '<div class="substat">Routes delivered: <b>' + stats.correct + '</b> &middot; Accuracy: <b>' + acc + '%</b> &middot; Avg pick: <b>' + avgRt + '</b></div>';
+  document.getElementById('stars').innerHTML =
+    '\u2605'.repeat(nStars) + '<span class="dim">' + '\u2605'.repeat(3 - nStars) + '</span>';
+  document.getElementById('ovScore').textContent = score;
+  document.getElementById('ovOrders').textContent = stats.correct;
+  document.getElementById('ovAcc').textContent = acc + '%';
   showOnlyOverlay('over');
 }
 
@@ -809,7 +846,8 @@ function startGame(){
   newRound();
 }
 document.getElementById('howtoPlay').addEventListener('click', function(){ stopHowtoAnim(); startGame(); });
-document.getElementById('againBtn').addEventListener('click', startGame);
+var _againBtn = document.getElementById('againBtn');
+if (_againBtn) _againBtn.addEventListener('click', startGame);
 
 layout();
 updateHUD();
@@ -892,21 +930,13 @@ function showOnlyOverlay(id){
 // returns { rank, madeLeaderboard, score(best) }. If an older API doesn't send those, fall back
 // to the neutral "submitted as an entry" line so nothing breaks.
 function fillEntryDone(resp){
-  const title = document.getElementById('edTitle');
+  // approved "You're in!" screen: fixed heading + submitted-entry copy (score bolded)
   const msg = document.getElementById('edMsg');
   const sc = (resp && Number.isFinite(resp.score)) ? resp.score : score; // server best, else this run
   _shareScoreVal = sc;
-  if (resp && resp.madeLeaderboard === true){
-    if (title) title.textContent = 'Your score has been delivered.';
-    if (msg) msg.innerHTML = 'Your score of <b>' + sc + "</b> made it onto the leaderboard. Don't lose your position - keep playing to better your score!";
-  } else if (resp && resp.madeLeaderboard === false){
-    if (title) title.textContent = 'Keep trying.';
-    if (msg) msg.innerHTML = 'Your score of <b>' + sc + "</b> didn't make it onto the leaderboard. Play again to try for real-world prizes.";
-  } else {
-    if (title) title.textContent = 'Your score has been delivered.';
-    if (msg) msg.innerHTML = 'Your score of <b>' + sc + '</b> has been submitted as an entry. Good luck!';
-  }
+  if (msg) msg.innerHTML = 'Your score of <b>' + sc + '</b> has been submitted as your competition entry. Good luck!';
 }
+
 
 var _enterBtn = document.getElementById('enterBtn');
 if (_enterBtn) _enterBtn.addEventListener('click', () => {
@@ -1006,8 +1036,12 @@ if (typeof window.__rp === 'object') window.__rp.buildShareTile = buildShareTile
 
 var _edAgain = document.getElementById('edAgain');
 if (_edAgain) _edAgain.addEventListener('click', startGame);
-var _edTown = document.getElementById('edTown');
-if (_edTown) _edTown.addEventListener('click', backToTown);
+var _edLb = document.getElementById('edLb');
+if (_edLb) _edLb.addEventListener('click', backToTown);   // in the shell this lands on the live leaderboard screen
+var _edIrl = document.getElementById('edIrl');
+if (_edIrl) _edIrl.addEventListener('click', function(){
+  window.open('http://www.uber.com/au/en/s/c/deliver?utm_source=Gaming&utm_medium=LW&utm_campaign=SideQuest', '_blank');
+});
 
 // Warm up a leaderboard session the moment a game starts, so submitting at the end is instant.
 ['howtoPlay', 'againBtn'].forEach(id => { const b = document.getElementById(id); if (b) b.addEventListener('click', () => { ensureSession().catch(() => {}); }); });
