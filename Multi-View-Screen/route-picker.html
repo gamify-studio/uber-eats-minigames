@@ -716,29 +716,74 @@ muteBtn.addEventListener('click', function(){ muted = !muted; localStorage.setIt
 syncMute();
 
 let htTimer = null;
+// the how-to preview auto-picks the easy pair whose shape best fits the preview box
+function htBestExample(ar){
+  let best = 0, bd = 1e9;
+  LIB.E.forEach(function(rd, i){
+    const all = rd.short.concat(rd.long);
+    const w = Math.max.apply(null, all.map(p => p[0])) - Math.min.apply(null, all.map(p => p[0]));
+    const h = Math.max.apply(null, all.map(p => p[1])) - Math.min.apply(null, all.map(p => p[1]));
+    const d = Math.abs(Math.log((h / w) / ar));
+    if (d < bd){ bd = d; best = i; }
+  });
+  return best;
+}
 function drawHowto(){
   const cv = document.getElementById('htMap'); if (!cv || !mapReady) return;
+  // size the bitmap to the canvas's CSS box (2x for sharpness) - the markup ships no
+  // width/height, and the 300x150 default squashed the preview into the portrait box
+  const box = cv.getBoundingClientRect();
+  if (box.width < 10) return;
+  cv.width = Math.round(box.width * 2); cv.height = Math.round(box.height * 2);
   const c2 = cv.getContext('2d');
-  const rd = LIB.E[0];
+  const rd = LIB.E[htBestExample(cv.height / cv.width)];
   const all = rd.short.concat(rd.long);
-  let x0 = Math.min.apply(null, all.map(p => p[0])) - 50, x1 = Math.max.apply(null, all.map(p => p[0])) + 50;
-  let y0 = Math.min.apply(null, all.map(p => p[1])) - 50, y1 = Math.max.apply(null, all.map(p => p[1])) + 50;
+  let x0 = Math.min.apply(null, all.map(p => p[0])) - 45, x1 = Math.max.apply(null, all.map(p => p[0])) + 45;
+  let y0 = Math.min.apply(null, all.map(p => p[1])) - 45, y1 = Math.max.apply(null, all.map(p => p[1])) + 45;
   const W = cv.width, H = cv.height, AR = W / H;
   let w = x1 - x0, h = y1 - y0;
   if (w / h > AR){ const nh = w / AR; y0 -= (nh - h) / 2; h = nh; } else { const nw = h * AR; x0 -= (nw - w) / 2; w = nw; }
   c2.clearRect(0, 0, W, H);
   c2.drawImage(mapImg, x0, y0, w, h, 0, 0, W, H);
+  const pj = p => ({ x: (p[0] - x0) / w * W, y: (p[1] - y0) / h * H });
+  const lw = Math.max(5, W * 0.028);
   [[rd.long, COL.B], [rd.short, COL.A]].forEach(function(pair){
     const pts = pair[0], col = pair[1];
     c2.beginPath();
-    const p0 = { x: (pts[0][0] - x0) / w * W, y: (pts[0][1] - y0) / h * H };
-    c2.moveTo(p0.x, p0.y);
-    for (let i = 1; i < pts.length; i++) c2.lineTo((pts[i][0] - x0) / w * W, (pts[i][1] - y0) / h * H);
+    const p0 = pj(pts[0]); c2.moveTo(p0.x, p0.y);
+    for (let i = 1; i < pts.length; i++){ const q = pj(pts[i]); c2.lineTo(q.x, q.y); }
     c2.lineJoin = 'round'; c2.lineCap = 'round';
-    c2.strokeStyle = 'rgba(255,255,255,.9)'; c2.lineWidth = 8; c2.stroke();
-    c2.strokeStyle = col; c2.lineWidth = 5; c2.stroke();
+    c2.strokeStyle = 'rgba(255,255,255,.9)'; c2.lineWidth = lw + 4; c2.stroke();
+    c2.strokeStyle = col; c2.lineWidth = lw; c2.stroke();
+  });
+  // mini A/B badges at route midpoints + start/end dots, like real gameplay
+  function midOf(pts){
+    let tot = 0; const cum = [0];
+    for (let i = 1; i < pts.length; i++){ tot += Math.hypot(pts[i][0]-pts[i-1][0], pts[i][1]-pts[i-1][1]); cum.push(tot); }
+    const t = tot / 2;
+    for (let i = 1; i < cum.length; i++) if (cum[i] >= t){
+      const f = (t - cum[i-1]) / ((cum[i] - cum[i-1]) || 1);
+      return pj([pts[i-1][0] + (pts[i][0]-pts[i-1][0]) * f, pts[i-1][1] + (pts[i][1]-pts[i-1][1]) * f]);
+    }
+    return pj(pts[0]);
+  }
+  const br = Math.max(9, W * 0.055);
+  [[rd.short, 'A', COL.A], [rd.long, 'B', COL.B]].forEach(function(t3){
+    const m = midOf(t3[0]);
+    c2.beginPath(); c2.arc(m.x, m.y, br, 0, Math.PI * 2);
+    c2.fillStyle = t3[2]; c2.fill();
+    c2.lineWidth = 3; c2.strokeStyle = '#fff'; c2.stroke();
+    c2.fillStyle = '#fff'; c2.font = '900 ' + Math.round(br * 1.05) + 'px system-ui,sans-serif';
+    c2.textAlign = 'center'; c2.textBaseline = 'middle'; c2.fillText(t3[1], m.x, m.y + 1);
+  });
+  [[rd.short[0], '#0b0b0b'], [rd.short[rd.short.length - 1], '#06C167']].forEach(function(t2){
+    const q = pj(t2[0]);
+    c2.beginPath(); c2.arc(q.x, q.y, br * 0.6, 0, Math.PI * 2);
+    c2.fillStyle = t2[1]; c2.fill();
+    c2.lineWidth = 3; c2.strokeStyle = '#fff'; c2.stroke();
   });
 }
+window.addEventListener('resize', drawHowto);
 function startHowtoAnim(){
   clearInterval(htTimer);
   let flip = false;
