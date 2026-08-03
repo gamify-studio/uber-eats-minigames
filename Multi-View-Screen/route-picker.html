@@ -352,6 +352,7 @@
     <img class="edLogo" src="sq-logo.png?v=5" alt="Uber Eats Side Quest">
     <h1 class="ovHead">Leaderboard</h1>
     <div id="lbList"></div>
+    <p id="lbPrize" style="font-weight:800;font-size:16px;max-width:360px;margin:14px 0 0;color:#0b0b0b;"></p>
     <div class="edBtns" style="margin-top:auto;">
       <button class="pillbtn dark" id="lbBack">Back</button>
     </div>
@@ -1119,6 +1120,7 @@ async function showLeaderboard(){
               String(t.handle || 'Player').replace(/[<>&]/g, '') + '</span><span class="sc">' + t.score + '</span></div>';
     });
   } catch (e) {}
+  let prizeHtml = 'Win <b>Nintendo Switch 2 Consoles</b>, HOYTS movie vouchers, gaming gift cards + more';
   try {
     let pid = ''; try { pid = localStorage.getItem('pathpicker_pid') || ''; } catch (e) {}
     if (pid){
@@ -1130,8 +1132,14 @@ async function showLeaderboard(){
         rows = rows.replace('<div class="lbrow"><span class="rk">' + d2.rank + '</span>',
                             '<div class="lbrow you"><span class="rk">' + d2.rank + '</span>');
       }
+      if (d2.onBoard && d2.madeLeaderboard){
+        const pz = prizeForRank(d2.rank);
+        if (pz) prizeHtml = "You're currently on track to win a <b>" + pz + "</b>!";
+      }
     }
   } catch (e) {}
+  const pl = document.getElementById('lbPrize');
+  if (pl) pl.innerHTML = prizeHtml;
   list.innerHTML = rows || '<div class="lbrow"><span class="nm">Leaderboard unavailable - try again shortly.</span></div>';
 }
 var _lbBack = document.getElementById('lbBack');
