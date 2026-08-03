@@ -241,7 +241,7 @@
         <div class="stat"><div class="k">Lines</div><div class="v" id="lines">0</div></div>
       </div>
       <div id="nextWrap"><div class="k">Next</div><canvas id="next" width="60" height="60"></canvas></div>
-      <button id="musicBtn" title="Music on/off">🎵</button>
+      <button id="musicBtn" title="Music on/off" style="display:none;">🎵</button>
       <button id="muteBtn" title="Sound effects">🔊</button>
     </div>
   </div>
@@ -907,15 +907,7 @@
   const MUSIC_VOL = 0.6;
   let bgm = null, musicOn = false, musicOff = false;
   function startMusic() {
-    if (musicOn || musicOff) return;
-    try {
-      bgm = new Audio("assets/music.mp3");
-      bgm.loop = true;
-      bgm.volume = MUSIC_VOL;
-      bgm.muted = muted || musicOff;
-      bgm.play().catch(function () {});
-      musicOn = true;
-    } catch (e) {}
+    // Background music removed (Ant, 2026-08-03). SFX stay; the mute button still governs them.
   }
 
   const muteBtn = document.getElementById("muteBtn");
@@ -942,6 +934,18 @@
     state = "won";
     const eff = efficiency();
     score = computeScore();   // final pack grade (max 150)
+    // Credit the gig score to the shell wallet (parent listens for {type:'gigScore'}).
+    try { window.parent.postMessage({ type: 'gigScore', score: score }, '*'); } catch (e) {}
+    sfx("win");
+    buzz([0, 40, 60, 40, 60, 80]);
+    let inShell = false; try { inShell = window.parent !== window; } catch (e) { inShell = true; }
+    if (inShell) {
+      // In the app: skip the game's own win screen entirely - the shell's quest-complete
+      // screen (coin, +score, stars, Back to <friend>) is THE end screen (Ant, 2026-08-03).
+      setTimeout(function () { try { window.parent.postMessage({ type: 'close' }, '*'); } catch (e) {} }, 700);
+      return;
+    }
+    // Standalone (direct link / dev): keep the local overlay so the game still ends somewhere.
     const g = gradeFor(eff);
     document.getElementById("stars").textContent = g.stars > 0 ? "★".repeat(g.stars) + "☆".repeat(3 - g.stars) : "☆☆☆";
     document.getElementById("grade").textContent = g.label;
@@ -949,10 +953,6 @@
     document.getElementById("wBags").textContent = bags;
     document.getElementById("wScore").textContent = score;
     document.getElementById("winOv").classList.remove("hidden");
-    // Credit the gig score to the Unity wallet (parent listens for {type:'gigScore'}).
-    try { window.parent.postMessage({ type: 'gigScore', score: score }, '*'); } catch (e) {}
-    sfx("win");
-    buzz([0, 40, 60, 40, 60, 80]);
   }
 
   // ---------- Juice (shake / particles / popups / haptics) ----------
