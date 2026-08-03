@@ -1007,12 +1007,19 @@ function move(dir) {
       state.won = true;
       state.score = scoreFromMoves(state.moves);     // efficiency score, locked in at the win
       if (state.score > state.best) state.best = state.score;
-      // Credit the gig score to the Unity wallet (parent listens for {type:'gigScore'}).
+      // Credit the gig score to the shell wallet (parent listens for {type:'gigScore'}).
       try { window.parent.postMessage({ type: 'gigScore', score: state.score }, '*'); } catch (e) {}
       updateScores();
       playWin();
       haptic([0, 40, 40, 40, 40, 90]);
-      showOverlay("win");
+      let inShell = false; try { inShell = window.parent !== window; } catch (e) { inShell = true; }
+      if (inShell) {
+        // In the app: no internal win screen - close straight to the shell's quest-complete
+        // (coin, +score, stars). The game's own win overlay only shows standalone (Ant, 2026-08-03).
+        setTimeout(function(){ try { window.parent.postMessage({ type: 'close' }, '*'); } catch (e) {} }, 700);
+      } else {
+        showOverlay("win");
+      }
     } else if (!anyMovePossible(state.tiles, state.grid)) {
       state.over = true;
       playOver();
