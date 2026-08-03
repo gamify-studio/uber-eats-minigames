@@ -127,6 +127,7 @@
   .pillbtn.dark { background: #0b0b0b; color: #fff; }
   .pillbtn.light { background: #fff; color: #0b0b0b; }
   .pillbtn.outline { background: transparent; color: #0b0b0b; border: 2.5px solid #0b0b0b; }
+  .pillbtn.gold { background: #EBD045; color: #0b0b0b; }
   /* You're in spacing matched to the Figma: logo / rider / heading / copy rhythm, buttons low */
   .edLogo { width: clamp(84px, 22vw, 120px); margin-top: 0; }
   .edRider { width: clamp(160px, 32vh, 260px); filter: drop-shadow(0 12px 26px rgba(0,0,0,.18)); margin-top: clamp(14px, 3.2svh, 34px); }
@@ -143,7 +144,7 @@
   .lbrow .rk { color: #8a8f8b; min-width: 34px; }
   .lbrow .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .lbrow .sc { margin-left: auto; }
-  .lbrow.you { background: #fff; outline: 3px solid #0b0b0b; }
+  .lbrow.you { background: #fff; outline: 3px solid #EBD045; }
   .lbrow.you .rk { color: #049B53; }
   /* No CSS filter: drop-shadow here. The rider PNG carries its own baked soft shadow, and a CSS
      drop-shadow gets hard-clipped to the box by iOS Safari inside this overflow:auto overlay,
@@ -354,6 +355,7 @@
     <div id="lbList"></div>
     <p id="lbPrize" style="font-weight:800;font-size:16px;max-width:360px;margin:14px 0 0;color:#0b0b0b;"></p>
     <div class="edBtns" style="margin-top:auto;">
+      <button class="pillbtn gold" id="lbPrizes">See the prizes</button>
       <button class="pillbtn dark" id="lbBack">Back</button>
     </div>
   </div>
@@ -1142,6 +1144,12 @@ async function showLeaderboard(){
   if (pl) pl.innerHTML = prizeHtml;
   list.innerHTML = rows || '<div class="lbrow"><span class="nm">Leaderboard unavailable - try again shortly.</span></div>';
 }
+var _lbPrizes = document.getElementById('lbPrizes');
+if (_lbPrizes) _lbPrizes.addEventListener('click', function(){
+  let inShell = false; try { inShell = window.parent !== window; } catch (e) { inShell = true; }
+  if (inShell){ try { window.parent.postMessage({ type: 'showPrizes' }, '*'); } catch (e) {} }
+  else { location.href = new URL('../../index.html?goto=prizes', location.href).href; }
+});
 var _lbBack = document.getElementById('lbBack');
 if (_lbBack) _lbBack.addEventListener('click', function(){ showOnlyOverlay('entryDone'); });
 var _edLb = document.getElementById('edLb');
