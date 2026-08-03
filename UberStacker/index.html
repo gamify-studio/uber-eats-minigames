@@ -512,13 +512,13 @@
     updateLevel();
     if (newRows > 0) {
       bags += newRows;
-      flashToast(newRows > 1 ? newRows + " bags packed!" : "Bag packed!");
+      flashToast("Nicely packed!");
       sfx("row");
       buzz([0, 25, 35, 25]);
       addShake(7 + newRows * 2);
       newRowYs.forEach(y => spawnBurst(y));
       const topY = Math.min.apply(null, newRowYs);
-      popups.push({ text: newRows > 1 ? newRows + " BAGS!" : "BAG!", x: COLS * cell / 2, y: topY * cell + cell / 2 - cell * 0.3, life: 950, maxLife: 950 });
+      popups.push({ text: "NICE!", x: COLS * cell / 2, y: topY * cell + cell / 2 - cell * 0.3, life: 950, maxLife: 950 });
     }
     score = computeScore();
     updateHud();
