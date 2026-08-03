@@ -136,6 +136,15 @@
                       margin: clamp(10px, 2svh, 18px) 0 0; }
   .edBtns { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 420px; margin-top: auto;
             padding-top: 16px; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+  #lbOv { background: #06C167; }
+  #lbList { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 420px; margin-top: 10px; }
+  .lbrow { display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 16px;
+           padding: 14px 18px; font-weight: 800; font-size: 16px; color: #0b0b0b; text-align: left; }
+  .lbrow .rk { color: #8a8f8b; min-width: 34px; }
+  .lbrow .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lbrow .sc { margin-left: auto; }
+  .lbrow.you { background: #fff; outline: 3px solid #0b0b0b; }
+  .lbrow.you .rk { color: #049B53; }
   /* No CSS filter: drop-shadow here. The rider PNG carries its own baked soft shadow, and a CSS
      drop-shadow gets hard-clipped to the box by iOS Safari inside this overflow:auto overlay,
      which made the shadow look cut off on all sides. */
@@ -238,7 +247,7 @@
   #howtoPlay { margin-top: 4px; color: #000;
     background: #377E22; box-shadow: 0 8px 26px rgba(0,0,0,.3); }
   /* approved end-screen palette - placed last so it beats the legacy overlay rules */
-  #over .ovHead, #entryDone .ovHead, #entryDone #edMsg { color: #0b0b0b; }
+  #over .ovHead, #entryDone .ovHead, #lbOv .ovHead, #entryDone #edMsg { color: #0b0b0b; }
   #stars { color: #F6A609; letter-spacing: 10px; padding-left: 10px; font-size: 30px; }
   #stars .dim { color: rgba(11,11,11,.22); }
 </style>
@@ -335,6 +344,16 @@
       <button class="pillbtn outline" id="edLb">Leaderboard</button>
       <button class="pillbtn dark" id="edAgain">Play again</button>
       <button class="pillbtn light" id="edIrl">Start delivering IRL</button>
+    </div>
+  </div>
+
+  <!-- in-game leaderboard (works standalone AND inside the shell) -->
+  <div class="overlay hidden" id="lbOv">
+    <img class="edLogo" src="sq-logo.png?v=5" alt="Uber Eats Side Quest">
+    <h1 class="ovHead">Leaderboard</h1>
+    <div id="lbList"></div>
+    <div class="edBtns" style="margin-top:auto;">
+      <button class="pillbtn dark" id="lbBack">Back</button>
     </div>
   </div>
 
@@ -1080,8 +1099,38 @@ if (typeof window.__rp === 'object') window.__rp.buildShareTile = buildShareTile
 
 var _edAgain = document.getElementById('edAgain');
 if (_edAgain) _edAgain.addEventListener('click', startGame);
+async function showLeaderboard(){
+  const list = document.getElementById('lbList');
+  list.innerHTML = '<div class="lbrow"><span class="nm">Loading...</span></div>';
+  showOnlyOverlay('lbOv');
+  let rows = '';
+  try {
+    const r = await fetch(LB_API + '/top?n=5', { cache: 'no-store' });
+    const d = await r.json();
+    (d.top || []).forEach(function(t){
+      rows += '<div class="lbrow"><span class="rk">' + t.rank + '</span><span class="nm">' +
+              String(t.handle || 'Player').replace(/[<>&]/g, '') + '</span><span class="sc">' + t.score + '</span></div>';
+    });
+  } catch (e) {}
+  try {
+    let pid = ''; try { pid = localStorage.getItem('pathpicker_pid') || ''; } catch (e) {}
+    if (pid){
+      const r2 = await fetch(LB_API + '/rank?playerId=' + encodeURIComponent(pid), { cache: 'no-store' });
+      const d2 = await r2.json();
+      if (d2.onBoard && d2.rank > 5){
+        rows += '<div class="lbrow you"><span class="rk">' + d2.rank + '</span><span class="nm">YOU</span><span class="sc">' + d2.score + '</span></div>';
+      } else if (d2.onBoard) {
+        rows = rows.replace('<div class="lbrow"><span class="rk">' + d2.rank + '</span>',
+                            '<div class="lbrow you"><span class="rk">' + d2.rank + '</span>');
+      }
+    }
+  } catch (e) {}
+  list.innerHTML = rows || '<div class="lbrow"><span class="nm">Leaderboard unavailable - try again shortly.</span></div>';
+}
+var _lbBack = document.getElementById('lbBack');
+if (_lbBack) _lbBack.addEventListener('click', function(){ showOnlyOverlay('entryDone'); });
 var _edLb = document.getElementById('edLb');
-if (_edLb) _edLb.addEventListener('click', backToTown);   // in the shell this lands on the live leaderboard screen
+if (_edLb) _edLb.addEventListener('click', showLeaderboard);
 var _edIrl = document.getElementById('edIrl');
 if (_edIrl) _edIrl.addEventListener('click', function(){
   window.open('http://www.uber.com/au/en/s/c/deliver?utm_source=Gaming&utm_medium=LW&utm_campaign=SideQuest', '_blank');
