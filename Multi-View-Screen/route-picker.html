@@ -244,9 +244,16 @@
   #htSteps b { flex: none; display: inline-block; width: 21px; height: 21px; line-height: 21px; text-align: center;
     border-radius: 50%; background: #D3E5D6; color: #000; font-size: 13px; font-weight: 900; margin-right: 9px; }
   .sgood { color: #000; font-weight: 800; }
-  .sA { color: #7ec2ff; font-weight: 800; } .sB { color: #ff85bf; font-weight: 800; }
-  #howtoPlay { margin-top: 4px; color: #000;
-    background: #377E22; box-shadow: 0 8px 26px rgba(0,0,0,.3); }
+  /* inline A/B chips styled like the demo buttons above (black pill + coloured letter/border)
+     - the bare coloured letters were unreadable on the green (Ant, 2026-08-03) */
+  .sA, .sB { display: inline-block; background: rgba(12,16,24,.9); font-weight: 900;
+    padding: 1px 11px 2px; border-radius: 999px; border: 2px solid; line-height: 1.25;
+    font-size: 0.92em; vertical-align: baseline; }
+  .sA { color: #7ec2ff; border-color: #3da5ff; }
+  .sB { color: #ff85bf; border-color: #ff3ea5; }
+  #howtoPlay { margin-top: 4px; color: #fff;
+    background: #0b0b0b; box-shadow: 0 8px 26px rgba(0,0,0,.3);
+    width: min(88vw, 340px); padding: 16px 0; font-size: 18px; }
   /* approved end-screen palette - placed last so it beats the legacy overlay rules */
   #over .ovHead, #entryDone .ovHead, #lbOv .ovHead, #entryDone #edMsg { color: #0b0b0b; }
   #stars { color: #F6A609; letter-spacing: 10px; padding-left: 10px; font-size: 30px; }
@@ -286,7 +293,7 @@
       <li><b>3</b><span>Stages get harder the more you complete. Aim to get the highest score!</span></li>
       <li><b>4</b><span>Submit your score and see if you make the leaderboard. The leaderboard can change until 21 July 2026. Prizes will be given to the top 160 players on the leaderboard on that date.</span></li>
     </ol>
-    <button class="btn" id="howtoPlay">Play ▶</button>
+    <button class="btn" id="howtoPlay">Play</button>
     <img class="rider" src="rider.png?v=2" alt="" aria-hidden="true">
   </div>
 
