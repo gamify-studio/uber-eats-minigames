@@ -1115,7 +1115,11 @@ if (_edShare) _edShare.addEventListener('click', shareScoreTile);
 if (typeof window.__rp === 'object') window.__rp.buildShareTile = buildShareTile;
 
 var _edAgain = document.getElementById('edAgain');
-if (_edAgain) _edAgain.addEventListener('click', startGame);
+if (_edAgain) _edAgain.addEventListener('click', function(){
+  // consistent with the Orders-delivered Play again: return to the splash, not straight into a run
+  showOnlyOverlay('howto');
+  startHowtoAnim();
+});
 async function showLeaderboard(){
   const list = document.getElementById('lbList');
   list.innerHTML = '<div class="lbrow"><span class="nm">Loading...</span></div>';
