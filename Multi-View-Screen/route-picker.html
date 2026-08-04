@@ -185,7 +185,10 @@
     font-size: 15px; font-family: inherit; background: #fff; color: #000; box-sizing: border-box; }
   .entryForm input:focus { outline: none; border-color: #019147; }
   .efCheck { display: flex; align-items: flex-start; gap: 9px; font-size: 13px; line-height: 1.4; text-align: left; color: #000; cursor: pointer; }
-  .efCheck input { margin: 2px 0 0; width: 18px; height: 18px; flex: none; accent-color: #019147; }
+  .efCheck input { margin: 2px 0 0; width: 20px; height: 20px; flex: none; appearance: none; -webkit-appearance: none;
+    background: #fff; border: none; border-radius: 50%; cursor: pointer; display: grid; place-items: center; }
+  .efCheck input:checked::after { content: ""; width: 11px; height: 11px; border-radius: 50%; background: #0b0b0b; }
+  .efCheck a, .efCheck a:visited { color: #000 !important; font-weight: 700; text-decoration-color: #000; }
   .efCheck a { color: #019147; font-weight: 700; }
   .efError { color: #c30; font-size: 13px; min-height: 16px; font-weight: 700; text-align: center; }
   #overError { color: #fff; background: rgba(0,0,0,.22); border-radius: 10px; font-size: 13px; font-weight: 700;
@@ -319,8 +322,8 @@
   <div class="overlay hidden" id="entry">
     <img class="entryLogo" src="sq-logo.png?v=5" alt="Uber Eats Side Quest">
     <h1 class="delivered">You're on the leaderboard!</h1>
-    <p>Add your details to get your name onto the leaderboard! Hold your spot and your side quest delivery skills could make you a winner!</p>
-    <p class="efNote" style="font-size: clamp(11px, 3vw, 13px); opacity: 0.72; margin: 4px 0 0;">Note your first name and last initial will be used for the leaderboard.</p>
+    <p>Your side quest delivery skills could make you a winner!</p>
+    <p class="efNote" style="font-size: clamp(11px, 3vw, 13px); opacity: 0.72; margin: 4px 0 0;">Your first name and last initial will be used for the leaderboard.</p>
     <form id="entryForm" class="entryForm" novalidate>
       <input id="efFirst" type="text" placeholder="First name" autocomplete="given-name" required>
       <input id="efLast" type="text" placeholder="Last name" autocomplete="family-name" required>
@@ -331,8 +334,10 @@
       <label class="efCheck"><input id="efAge" type="checkbox"><span>I'm 18 years or older *</span></label>
       <label class="efCheck"><input id="efMktg" type="checkbox"><span>I agree to receive more info from Uber Eats</span></label>
       <div class="efError" id="efError"></div>
-      <button class="btn btn2" id="efSubmit" type="submit">Submit &amp; enter</button>
-      <button class="btn ghost" id="efCancel" type="button">Back</button>
+      <button class="btn" id="efSubmit" type="submit"
+              style="background:#0b0b0b;color:#fff;width:min(88vw,340px);">Submit &amp; enter</button>
+      <button type="button" id="efCancel"
+              style="position:absolute;top:max(10px,env(safe-area-inset-top));left:12px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:999px;padding:8px 16px;font-weight:800;font-size:13px;cursor:pointer;">&lsaquo; Back</button>
     </form>
   </div>
 
