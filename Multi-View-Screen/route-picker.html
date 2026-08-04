@@ -179,7 +179,14 @@
   .overbtns { display: flex; flex-direction: column; gap: 9px; align-items: stretch; margin-top: 4px; width: 100%; max-width: 320px; }
   .overlay .btn2 { background: #F2F51B; color: #000; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
   /* Prize-draw entry form */
-  .entryForm { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 340px; margin-top: 0; }
+  .entryForm { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 340px; margin-top: 0; flex: 1; }
+  /* top-anchor the entry page like the Figma (logo ~5% from top) and pin submit to the bottom */
+  #entry { justify-content: flex-start; padding-top: max(4svh, env(safe-area-inset-top)); gap: 13px; }
+  #entry h1.delivered { margin: 6px 0 0; }
+  #entry .entryForm { gap: 11px; margin-top: 6px; }
+  #entry .entryForm input[type=text], #entry .entryForm input[type=email], #entry .entryForm input[type=tel] {
+    padding: 14px 20px; font-size: 16px; }
+  #entry #efSubmit { margin-top: auto; align-self: center; margin-bottom: max(10px, env(safe-area-inset-bottom)); }
   .entryForm input[type=text], .entryForm input[type=email], .entryForm input[type=tel] {
     width: 100%; padding: 10px 16px; border-radius: 999px; border: 1px solid rgba(0,0,0,.2);
     font-size: 15px; font-family: inherit; background: #fff; color: #000; box-sizing: border-box; }
