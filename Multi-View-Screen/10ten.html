@@ -550,20 +550,22 @@ const CONFIG = {
   target: 6,              // level that wins (Uber Delivery Box)
   startTiles: 2,
   spawn: [ { value: 1, weight: 100 } ], // every spawn is a 1 (Coffee) - start tiles and every swipe
-  maxScore: 150,          // best possible score (also clamps a stored best)
+  maxScore: 60,           // best possible score (also clamps a stored best)
   // efficiency tiers: win within `maxSwipes` -> that score. Fewer swipes = higher.
   // Maths: winning needs 32 units of value-1; you start with 2 and gain exactly 1 per swipe
   // (spawn after the swipe), so the theoretical minimum win is 31 swipes. Tiers start at 34
   // so 150 is reachable with near-perfect play (the old 25/29 tiers were impossible).
+  // Rebalanced 2026-08-04: 0-60 so the wallet (cap 90, set by the approved beat costs) can
+  // actually hold a full game's earnings and "Up to 60" is honest. Min possible win is 31 swipes.
   scoreTiers: [
-    { maxSwipes: 34,       score: 150 },
-    { maxSwipes: 38,       score: 140 },
-    { maxSwipes: 43,       score: 120 },
-    { maxSwipes: 48,       score: 100 },
-    { maxSwipes: 54,       score: 80 },
-    { maxSwipes: 60,       score: 60 },
-    { maxSwipes: 67,       score: 40 },
-    { maxSwipes: Infinity, score: 20 }
+    { maxSwipes: 34,       score: 60 },
+    { maxSwipes: 38,       score: 52 },
+    { maxSwipes: 43,       score: 44 },
+    { maxSwipes: 48,       score: 36 },
+    { maxSwipes: 54,       score: 28 },
+    { maxSwipes: 60,       score: 22 },
+    { maxSwipes: 67,       score: 16 },
+    { maxSwipes: Infinity, score: 10 }
   ],
   animMs: 130,
   autoRestartMs: 4000,    // after finishing, auto-start a fresh game this many ms later

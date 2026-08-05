@@ -535,7 +535,7 @@
   // how much is actually food. A no-skill spike wastes most of the width → ~0%.
   // A solidly packed bag with no gaps → ~100%. PACK_FLOOR maps the worst real
   // dumps to 0 so the 0-100 range tracks skill, not just raw fill.
-  const PACK_FLOOR = 0.25;
+  const PACK_FLOOR = 0.20;
   function efficiency() {
     const top = stackTopRow();
     const band = (ROWS - top) * COLS;     // width × height of the occupied region
@@ -546,14 +546,23 @@
         if (grid[y][x]) filled++;
     const density = filled / band;        // 1.0 = packed solid, low = wasted space
     const norm = (density - PACK_FLOOR) / (1 - PACK_FLOOR);  // 0..1 over the skill band
-    // saturate: a 90% pack already counts as a perfect 100% (norm 0.9 -> 100, clamped)
-    return Math.max(0, Math.min(100, Math.round(norm / 0.9 * 100)));
+    // saturate at 0.8 (was 0.9): a good-but-not-perfect pack still grades well, so the stacker
+    // isn't harsher than the combo for the same effort (Ant 2026-08-04).
+    return Math.max(0, Math.min(100, Math.round(norm / 0.8 * 100)));
   }
-  // Score is the delivery grade: pack efficiency (0-100) x 1.5, so 0-150. A perfect pack = 150,
-  // a no-skill spam-drop tower = ~0 (Ant 2026-08-03: the old +50 floor paid people for mashing
-  // drop, which killed the incentive to pack well - every point must be earned now).
-  const SCORE_MAX = 150;
-  function computeScore() { return Math.min(SCORE_MAX, Math.round(efficiency() * 1.5)); }
+  // Score = VOLUME + QUALITY, which is what the approved splash copy actually promises
+  // ("the more items you stack, the more points you earn", "each full line gives you points",
+  // "fill it up = more points"). Density alone (the old formula) meant a tidy 2-row stack scored
+  // the same as a full bag, and you could hit the ceiling in the first few drops with nothing
+  // left to play for (Ant 2026-08-04).
+  //   3 pts per full row packed  +  up to 30 pts for how tightly the bag is packed.
+  // Rows never clear, so ~10 full rows means the bag is nearly full and the round is about to
+  // end anyway - the 60 clamp is a safety rail, not a ceiling players sit against.
+  const SCORE_MAX = 60;
+  const ROW_POINTS = 3;
+  function computeScore() {
+    return Math.min(SCORE_MAX, Math.round(bags * ROW_POINTS + efficiency() * 0.3));
+  }
   function updateLevel() {
     const lv = 1 + Math.floor(placed.length / 8);   // +1 level every 8 pieces
     if (lv !== level) { level = lv; fallMs = Math.max(110, Math.round(FALL_BASE * Math.pow(0.86, level - 1))); }
