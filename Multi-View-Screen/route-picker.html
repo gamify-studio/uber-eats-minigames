@@ -72,7 +72,8 @@
        of the play area (under the prompt) where there is room, and it is bigger. layout() sets
        its `top` and then starts the map below it. */
     top: 0; text-align: center; white-space: nowrap; pointer-events: none;
-    font-size: clamp(14px, 4vw, 17px); font-weight: 900; letter-spacing: .3px;
+    /* Half again bigger at Ant's request (2026-08-06): 17 -> 25, floor 14 -> 21. */
+    font-size: clamp(21px, 6vw, 25px); font-weight: 900; letter-spacing: .3px;
     color: #06351f; text-shadow: 0 1px 6px rgba(255,255,255,.55);
   }
   /* hide the playfield HUD while a full-screen overlay (start / game over) is up */
@@ -177,9 +178,9 @@
     background: #377E22; box-shadow: none;   /* slide 16: drop shadows were inconsistent */
   }
   .overlay .btn:active { transform: scale(.96); }
-  .overlay .btn.ghost { background: #6B9456; border: none; box-shadow: 0 6px 20px rgba(0,0,0,.25); }
+  .overlay .btn.ghost { background: #6B9456; border: none; }
   .overbtns { display: flex; flex-direction: column; gap: 9px; align-items: stretch; margin-top: 4px; width: 100%; max-width: 320px; }
-  .overlay .btn2 { background: #F2F51B; color: #000; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+  .overlay .btn2 { background: #F2F51B; color: #000; }
   /* Prize-draw entry form */
   .entryForm { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 340px; margin-top: 0; flex: 1; }
   /* top-anchor the entry page like the Figma (logo ~5% from top) and pin submit to the bottom */
@@ -241,10 +242,11 @@
   #htChoose { display: flex; gap: 10px; width: 100%; max-width: 228px; margin-top: 1px; }
   .htBtn { flex: 1; position: relative; border-radius: 11px; padding: 6px 0 5px; text-align: center;
     font-size: 21px; font-weight: 900; line-height: 1; border: 2px solid; background: rgba(12,16,24,.82); }
-  #htBtnA { color: #7ec2ff; border-color: #3da5ff; box-shadow: 0 0 24px rgba(61,165,255,.45); }
-  #htBtnB { color: #ff85bf; border-color: #ff3d9a; box-shadow: 0 0 24px rgba(255,61,154,.45); }
+  /* No glow on the instruction pills: the route colour is carried by the text and border. */
+  #htBtnA { color: #7ec2ff; border-color: #3da5ff; }
+  #htBtnB { color: #ff85bf; border-color: #ff3d9a; }
   .htBtn small { display: block; font-size: 9px; letter-spacing: 2px; font-weight: 800; opacity: .85; color: #fff; margin-top: 4px; }
-  .htBtn.correct { border-color: #019147; box-shadow: 0 0 16px rgba(1,145,71,.4); animation: htPulse 1.3s ease-in-out infinite; }
+  .htBtn.correct { border-color: #019147; animation: htPulse 1.3s ease-in-out infinite; }
   .htBtn.correct::after { content: '✓ TAP'; position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
     background: #019147; color: #fff; font-size: 10px; font-weight: 900; letter-spacing: .5px; padding: 2px 8px; border-radius: 9px; }
   .htBtn.wrong { opacity: .5; border-color: rgba(255,77,77,.45); }
@@ -265,7 +267,7 @@
   .sA { color: #7ec2ff; border-color: #3da5ff; }
   .sB { color: #ff85bf; border-color: #ff3ea5; }
   #howtoPlay { margin-top: 4px; color: #fff;
-    background: #0b0b0b; box-shadow: 0 8px 26px rgba(0,0,0,.3);
+    background: #0b0b0b;
     width: min(88vw, 340px); padding: 16px 0; font-size: 18px; }
   /* approved end-screen palette - placed last so it beats the legacy overlay rules */
   #over .ovHead, #entryDone .ovHead, #lbOv .ovHead, #entryDone #edMsg { color: #0b0b0b; }
