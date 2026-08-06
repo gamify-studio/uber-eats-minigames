@@ -49,9 +49,12 @@
        row, pill 169x50 with its top at y117. The pill was previously 154x39 sitting at y27 with
        no logo above it, and NEXT was on the wrong side. (Ant, 2026-08-06.) */
     display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-    gap: 10px; padding: 27px 14px 8px;
+    gap: 12px; padding: 26px 14px 8px;
   }
-  .hudLogo { width: 106px; height: auto; display: block; }
+  /* 124px, not 106: sq-logo.png carries transparent padding, so its ink is only 86% of the
+     file width. At 124 the visible lockup measures 107x64, which is the approved size on all
+     three gameplay screens (07 Combo, 12 Stacker, 15 Path Picker all show 107x65 at y27). */
+  .hudLogo { width: 124px; height: auto; display: block; }
   .brand { display: flex; align-items: center; gap: 7px; }
   .brand { flex-direction: column; align-items: flex-start; gap: 1px; flex-shrink: 0; }
   .brand .logo { font-weight: 800; font-size: 19px; letter-spacing: -.4px; line-height: 1; }
@@ -130,9 +133,10 @@
   }
   .btn:active { background: #000; color: #fff; transform: scale(.95); }
   .btn svg { width: 26px; height: 26px; display: block; pointer-events: none; }
-  /* Drop button: also black (was green-on-green and hard to see); kept prominent with a stronger shadow. */
-  .btn.drop { background: #000; border-color: #000; color: #fff; box-shadow: 0 4px 16px rgba(0,0,0,.45); }
-  .btn.drop:active { background: #000; color: #fff; box-shadow: 0 6px 20px rgba(0,0,0,.6); }
+  /* Fast drop: identical to the other controls. It used to be solid #000 against their
+     rgba(0,0,0,.82), which read as a crisper black next to them. (Ant, 2026-08-06.) */
+  .btn.drop { background: rgba(0,0,0,.82); border-color: rgba(0,0,0,.9); color: #fff; }
+  .btn.drop:active { background: #000; color: #fff; transform: scale(.95); }
 
   /* ---------- Overlays ---------- */
   .overlay {
@@ -172,7 +176,8 @@
   .overlay .cta.ghost { background: rgba(255,255,255,.18); color: #000; border: 1px solid rgba(0,0,0,.18); box-shadow: none; }
   .keys { font-size: 12px; opacity: .55; line-height: 1.8; }
   .keys b { color: #fff; opacity: .9; }
-  #stars { font-size: 46px; letter-spacing: 6px; }
+  /* padding-left cancels the trailing letter-space so the stars sit dead centre. */
+  #stars { font-size: 46px; letter-spacing: 6px; padding-left: 6px; }
   .grade { font-size: 16px; font-weight: 800; }
   .winrows { display: flex; gap: 0; background: rgba(255,255,255,.85); border: 1px solid rgba(0,0,0,.12); border-radius: 14px; width: max-content; margin: 0 auto; }
   .winrows .col { padding: 10px 22px; }
@@ -254,7 +259,7 @@
   <div id="hud">
     <img class="hudLogo" src="sq-logo.png" alt="Uber Eats Side Quest">
     <div class="stats">
-      <div id="nextWrap"><div class="k">Next</div><canvas id="next" width="60" height="60"></canvas></div>
+      <div id="nextWrap"><div class="k">Next</div><canvas id="next" width="60" height="50"></canvas></div>
       <div class="statbox">
         <div class="stat"><div class="k">Score</div><div class="v" id="score">000000</div></div>
         <div class="stat"><div class="k">Lvl</div><div class="v green" id="level">1</div></div>
@@ -871,18 +876,21 @@
   // next preview
   const nextCv = document.getElementById("next");
   const nctx = nextCv.getContext("2d");
+  // Sized from the canvas rather than hard-coded 60s, so the swatch can match the pill's
+  // height (approved Figma has both at 50) without squashing the piece art.
+  const NW = nextCv.width, NH = nextCv.height;
   function drawNext() {
-    nctx.clearRect(0, 0, 60, 60);
+    nctx.clearRect(0, 0, NW, NH);
     if (!nextKey || !SPRITES[PIECES[nextKey].sprite]) return;
     const def = PIECES[nextKey];
     const cells = def.cells, cols = cells[0].length, rows = cells.length;
     const hfn = HANDLE_FRAC[def.sprite];
     if (hfn) {   // bag: whole sprite (handle+body) contain-fit into the box
-      const im = SPRITES[def.sprite].rots[0]; const s2 = Math.min(52 / im.width, 56 / im.height);
-      const dw = im.width * s2, dh = im.height * s2; nctx.drawImage(im, (60 - dw) / 2, (60 - dh) / 2, dw, dh); return;
+      const im = SPRITES[def.sprite].rots[0]; const s2 = Math.min((NW - 8) / im.width, (NH - 4) / im.height);
+      const dw = im.width * s2, dh = im.height * s2; nctx.drawImage(im, (NW - dw) / 2, (NH - dh) / 2, dw, dh); return;
     }
-    const box = 52, s = Math.min(box / cols, box / rows);
-    const w = cols * s, h = rows * s, ox = (60 - w) / 2, oy = (60 - h) / 2;
+    const box = Math.min(NW - 8, NH - 4), s = Math.min(box / cols, box / rows);
+    const w = cols * s, h = rows * s, ox = (NW - w) / 2, oy = (NH - h) / 2;
     const img = SPRITES[def.sprite].rots[0], sw = img.width / cols, sh = img.height / rows;
     const bg = def._bg && def._bg[0];
     for (let yy = 0; yy < rows; yy++) for (let xx = 0; xx < cols; xx++) {
