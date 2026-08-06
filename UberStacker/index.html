@@ -145,11 +145,12 @@
   /* Start screen: reserve the bottom-left corner for the rider so the numbered steps + Play
      button always sit clear of him (the long step-1 text used to overlap him on iPhone 16 Pro).
      safe center keeps the content from clipping at the top on short viewports. */
-  /* Play now sits at the bottom (uniform with the other screens), which frees the space that
-     was under it to breathe between the preview and the instructions. */
-  #howOv { justify-content: flex-start; padding-bottom: max(18px, env(safe-area-inset-bottom)); }
-  #howOv .htSteps { margin-top: 18px !important; }
-  #howOv .htActions { margin-top: auto; width: 100%; display: flex; justify-content: center; }
+  /* The whole splash block is vertically centred, matching Combo and Path Picker: balanced space
+     above the logo and below Play, rather than Play pinned to the bottom of the screen.
+     (Bottom-anchoring it left a big dead gap on tall phones. Ant, 2026-08-06.) */
+  #howOv { justify-content: safe center; padding-bottom: max(18px, env(safe-area-inset-bottom)); }
+  #howOv .htSteps { margin-top: 16px !important; }
+  #howOv .htActions { margin-top: 18px !important; width: 100%; display: flex; justify-content: center; }
   .overlay h1 { font-size: 30px; font-weight: 900; line-height: 1.1; }
   .overlay h1 .e { color: var(--green); }
   .overlay p { font-size: 14px; opacity: .8; line-height: 1.55; max-width: 320px; }
