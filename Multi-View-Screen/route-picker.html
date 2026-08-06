@@ -1109,7 +1109,7 @@ if (_entryForm) _entryForm.addEventListener('submit', async (e) => {
     const gr = await post('/signup', { playerId: s.playerId, firstName: first, lastName: last, email, phone, postcode,
       agreeTerms: true, confirmAge: true, marketingOptIn: chk('efMktg') });
     if (!gr.ok) throw new Error('signup ' + gr.status);
-    ga('prize_signup', {});
+    ga('prize_signup', { marketing_opt_in: chk('efMktg') ? 1 : 0 });
 
     // Remember on this device that this player has completed + entered the draw (so a returning
     // player can be offered a straight replay to beat their best). Best score lives in localStorage too.
