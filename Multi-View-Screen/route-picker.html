@@ -68,9 +68,11 @@
      overlap the start-screen logo. */
   .sq-tagline {
     position: absolute; left: 50%; transform: translateX(-50%); z-index: 10;
-    bottom: calc(max(14px, env(safe-area-inset-bottom)) + clamp(36px, 5vh, 48px) + 10px);
-    text-align: center; white-space: nowrap; pointer-events: none;
-    font-size: clamp(12px, 3.4vw, 15px); font-weight: 900; letter-spacing: .3px;
+    /* slide 17: was tiny and wedged between the map and the A/B buttons. Now it sits at the TOP
+       of the play area (under the prompt) where there is room, and it is bigger. layout() sets
+       its `top` and then starts the map below it. */
+    top: 0; text-align: center; white-space: nowrap; pointer-events: none;
+    font-size: clamp(14px, 4vw, 17px); font-weight: 900; letter-spacing: .3px;
     color: #06351f; text-shadow: 0 1px 6px rgba(255,255,255,.55);
   }
   /* hide the playfield HUD while a full-screen overlay (start / game over) is up */
@@ -172,7 +174,7 @@
   .overlay .btn {
     margin-top: 6px; font-size: 19px; font-weight: 800; padding: 15px 44px; border: none;
     border-radius: 999px; cursor: pointer; color: #000;
-    background: #377E22; box-shadow: 0 8px 26px rgba(0,0,0,.3);
+    background: #377E22; box-shadow: none;   /* slide 16: drop shadows were inconsistent */
   }
   .overlay .btn:active { transform: scale(.96); }
   .overlay .btn.ghost { background: #6B9456; border: none; box-shadow: 0 6px 20px rgba(0,0,0,.25); }
@@ -299,10 +301,10 @@
       <div class="htBtn" id="htBtnB">B</div>
     </div>
     <ol id="htSteps">
-      <li><b>1</b><span>Choose the <span class="sgood">shortest</span> route of <span class="sA">A</span> or <span class="sB">B</span></span></li>
-      <li><b>2</b><span>Lose a bag each time you choose the longest way</span></li>
-      <li><b>3</b><span>Stages get harder the more you complete. Aim to get the highest score!</span></li>
-      <li><b>4</b><span>Submit your score and see if you make the leaderboard. The leaderboard can change until 21 July 2026. Prizes will be given to the top 160 players on the leaderboard on that date.</span></li>
+      <li><b>1</b><span>Choose the shortest route <span class="sA">A</span> or <span class="sB">B</span></span></li>
+      <li><b>2</b><span>Lose a bag if you get it wrong</span></li>
+      <li><b>3</b><span>Top scores make the leaderboard</span></li>
+      <li><b>4</b><span>Final 160 players on the leaderboard at 21 July 2026 win prizes!</span></li>
     </ol>
     <button class="btn" id="howtoPlay">Play</button>
     <img class="rider" src="rider.png?v=2" alt="" aria-hidden="true">
@@ -320,7 +322,7 @@
       </div>
     </div>
     <div class="ovBottom">
-      <button class="pillbtn dark" id="enterBtn">Save &amp; enter competition</button>
+      <button class="pillbtn dark" id="enterBtn">Enter competition</button>
       <button class="pillbtn outline" id="overAgain" style="margin-top:12px;">Play again</button>
       <div id="overError" role="alert"></div>
     </div>
@@ -374,6 +376,8 @@
     <h1 class="ovHead">Leaderboard</h1>
     <div id="lbList"></div>
     <p id="lbPrize" style="font-weight:800;font-size:16px;max-width:360px;margin:14px 0 0;color:#0b0b0b;"></p>
+    <a id="lbTcs" href="../../index.html?goto=tandc" target="_blank" rel="noopener"
+       style="display:none;font-size:13px;font-weight:700;color:#0b0b0b;text-underline-offset:3px;margin-top:6px;">See full T&amp;Cs</a>
     <div class="edBtns" style="margin-top:auto;">
       <button class="pillbtn gold" id="lbPrizes">See the prizes</button>
       <button class="pillbtn dark" id="lbBack">Back</button>
@@ -517,15 +521,27 @@ function layout(){
   canvas.style.width = cssW + 'px'; canvas.style.height = cssH + 'px';
   canvas.width = Math.round(cssW * dpr); canvas.height = Math.round(cssH * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  // Anchor everything to the PROMPT (a stable element). Deriving the tagline position from
+  // HUD_TOP and then feeding its bottom back into HUD_TOP compounded on every layout() call,
+  // which squashed the map down the screen.
+  let base = 120;
   const pr = document.getElementById('prompt');
-  if (pr){ const r = pr.getBoundingClientRect(); if (r.height > 0) HUD_TOP = Math.max(120, Math.round(r.bottom) + 10); }
+  if (pr){ const r = pr.getBoundingClientRect(); if (r.height > 0) base = Math.max(120, Math.round(r.bottom) + 8); }
+  const tag = document.querySelector('.sq-tagline');   // slide 17: tagline sits at the top now
+  if (tag){
+    tag.style.top = base + 'px';
+    const th = Math.round(tag.getBoundingClientRect().height);
+    HUD_TOP = base + (th > 0 ? th + 10 : 0);
+  } else {
+    HUD_TOP = base;
+  }
   const btnH = Math.min(59, Math.max(41, 0.06 * cssH));
   const availW = cssW - PAD * 2;
   // measure the REAL top of the bottom UI (tagline + A/B buttons incl safe-area insets) so the
   // map window can never overlap them; fall back to the estimate when they are display:none
   let bottomTop = cssH - (btnH + 42);
-  const tagEl = document.querySelector('.sq-tagline');
-  if (tagEl){ const tr = tagEl.getBoundingClientRect(); if (tr.height > 0) bottomTop = Math.min(bottomTop, tr.top); }
+  // NB: the tagline used to sit down here and was measured as bottom UI. It now lives at the TOP
+  // (slide 17), so including it would collapse the map to its minimum height. Buttons only.
   const baEl = document.getElementById('btnA');
   if (baEl){ const br = baEl.getBoundingClientRect(); if (br.height > 0) bottomTop = Math.min(bottomTop, br.top); }
   const availH = bottomTop - HUD_TOP - 12;
@@ -736,7 +752,15 @@ function gameOver(){
   document.body.classList.remove('playing');
   setButtons(false); showPrompt(false);
   const isBest = score > 0 && score >= best;
+  const prevBest = best;
   if (score > best){ best = score; localStorage.setItem('routerush_best_v2', best); }
+  // Slide 22: if they are already on the board, say what the button will actually do.
+  try {
+    const entered = localStorage.getItem('pathpicker_entered') === '1';
+    const btn = document.getElementById('enterBtn');
+    if (btn) btn.textContent = !entered ? 'Enter competition'
+      : (score > prevBest ? 'Update leaderboard' : 'Enter competition');
+  } catch (e) {}
   try { window.parent.postMessage({ type: 'gigScore', score: score }, '*'); } catch (e) {}
   ga('pathpicker_complete', { score: score });
   const acc = stats.answers ? Math.round(stats.correct / stats.answers * 100) : 0;
@@ -985,6 +1009,9 @@ async function submitScoreOnly(){
 function showOnlyOverlay(id){
   document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
   const el = document.getElementById(id); if (el) el.classList.remove('hidden');
+  // Slides 2/19/20/21 (too many exit/back buttons): an overlay has its own navigation, so ask
+  // the shell to hide its Exit pill while one is showing. Gameplay keeps it.
+  try { window.parent.postMessage({ type: 'chrome', exit: !id }, '*'); } catch (e) {}
 }
 
 // Tailor the entry-confirmation copy to the player's leaderboard standing. The /score response
@@ -1011,18 +1038,20 @@ function fillEntryDone(resp){
   const sc = (resp && Number.isFinite(resp.score)) ? resp.score : score; // server best, else this run
   _shareScoreVal = sc;
   if (msg){
+    // Slide 20: simplified. The "best still stands" case keeps its explanation because it
+    // otherwise looks like we submitted a score they did not just achieve.
     if (sc > score){
-      // this run scored lower than the stored best: the best still stands as the entry
-      msg.innerHTML = 'This run: <b>' + score + '</b>. Your best score of <b>' + sc + '</b> still stands as your competition entry!';
+      msg.innerHTML = 'This run: <b>' + score + '</b>. Your best score of <b>' + sc + '</b> is on the leaderboard.';
     } else {
-      msg.innerHTML = 'Your score of <b>' + sc + '</b> has been submitted as your competition entry. Good luck!';
+      msg.innerHTML = 'Your score of <b>' + sc + '</b> is on the leaderboard. Good luck!';
     }
   }
   const pl = document.getElementById('edPrize');
   if (pl){
     const prize = (resp && resp.madeLeaderboard === true && Number.isFinite(resp.rank)) ? prizeForRank(resp.rank) : null;
     if (prize){
-      pl.innerHTML = "You're currently on track to win a <b>" + prize + "</b>!";
+      pl.innerHTML = "You're currently on track to win a <b>" + prize + "</b>!" +
+        ' <a href="../../index.html?goto=tandc" target="_blank" rel="noopener" style="color:#0b0b0b;font-weight:700;">See T&amp;Cs</a>';
     } else {
       // outside the top 160 (or rank unavailable): the generic prize message
       pl.innerHTML = 'Win <b>Nintendo Switch 2 Consoles</b>, HOYTS movie vouchers, gaming gift cards + more';
@@ -1166,6 +1195,8 @@ async function showLeaderboard(){
   } catch (e) {}
   const pl = document.getElementById('lbPrize');
   if (pl) pl.innerHTML = prizeHtml;
+  const lt = document.getElementById('lbTcs');
+  if (lt) lt.style.display = prizeHtml.indexOf('on track') > -1 ? 'inline-block' : 'none';
   list.innerHTML = rows || '<div class="lbrow"><span class="nm">Leaderboard unavailable - try again shortly.</span></div>';
 }
 var _lbPrizes = document.getElementById('lbPrizes');

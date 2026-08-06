@@ -56,7 +56,9 @@
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   button, input, textarea, select { font-family: inherit; }   /* force Uber Move on form controls too */
 
-  html, body { margin: 0; height: 100%; overscroll-behavior: none; }
+  html, body { margin: 0; height: 100%; overscroll-behavior: none;
+    /* slide 2: a left swipe was firing the browser back gesture and exiting the game */
+    overscroll-behavior-x: contain; touch-action: pan-y; }
 
   body {
     min-height: 100dvh;
