@@ -547,6 +547,7 @@
     }
     score = computeScore();
     updateHud();
+    postLiveScore();   // slide 13: keeps the shell's running-balance pill in step
 
     // win: food reaches the top of the bag
     let topReached = false;
@@ -587,6 +588,12 @@
   const ROW_POINTS = 3;
   function computeScore() {
     return Math.min(SCORE_MAX, Math.round(bags * ROW_POINTS + efficiency() * 0.3));
+  }
+  /* Slide 13: the shell shows a running balance during a side quest, so it needs the grade as it
+     changes rather than only at game over. The shell treats the latest value as what an early
+     exit would bank. Harmless standalone (no parent listening). */
+  function postLiveScore() {
+    try { window.parent.postMessage({ type: 'gigScore', score: score, live: true }, '*'); } catch (e) {}
   }
   function updateLevel() {
     const lv = 1 + Math.floor(placed.length / 8);   // +1 level every 8 pieces
