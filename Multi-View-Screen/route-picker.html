@@ -761,8 +761,17 @@ function gameOver(){
   try {
     const entered = localStorage.getItem('pathpicker_entered') === '1';
     const btn = document.getElementById('enterBtn');
-    if (btn) btn.textContent = !entered ? 'Enter competition'
-      : (score > prevBest ? 'Update leaderboard' : 'Enter competition');
+    // Slide 22, three states:
+    //   not entered yet          -> Enter competition   (opens the form)
+    //   entered, new best        -> Update leaderboard  (submits the better score)
+    //   entered, NOT a new best  -> See the leaderboard (submits nothing; a lower run cannot
+    //                               replace their best, so offering "Enter" would be a lie)
+    if (btn) {
+      const beatsBest = score > prevBest;
+      btn.dataset.mode = !entered ? 'enter' : (beatsBest ? 'update' : 'view');
+      btn.textContent = !entered ? 'Enter competition'
+        : (beatsBest ? 'Update leaderboard' : 'See the leaderboard');
+    }
   } catch (e) {}
   try { window.parent.postMessage({ type: 'gigScore', score: score }, '*'); } catch (e) {}
   ga('pathpicker_complete', { score: score });
@@ -1065,6 +1074,8 @@ function fillEntryDone(resp){
 
 var _enterBtn = document.getElementById('enterBtn');
 if (_enterBtn) _enterBtn.addEventListener('click', () => {
+  // 'view' = already entered and this run did not beat their best, so there is nothing to submit.
+  if (_enterBtn.dataset.mode === 'view') { showLeaderboard(); return; }
   let entered = false; try { entered = localStorage.getItem('pathpicker_entered') === '1'; } catch (e) {}
   if (entered) { submitScoreOnly(); return; }   // returning entrant: update score only, skip the form + /signup
   document.getElementById('efError').textContent = ''; showOnlyOverlay('entry');
