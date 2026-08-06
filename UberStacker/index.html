@@ -271,7 +271,7 @@
   </div>
 
   <div id="playfield">
-    <img id="bagBg" src="assets/bagfield.png?v=4" alt="">
+    <img id="bagBg" src="assets/bagfield.png?v=5" alt="">
     <canvas id="board"></canvas>
     <div class="toast" id="toast">Bag packed!</div>
   </div>
@@ -405,7 +405,7 @@
       const img = await loadImage(SPRITE_SRC[key]);
       SPRITES[key] = { rots: makeRotations(img) };
     }
-    try { bagImg = await loadImage("assets/bagfield.png?v=4"); } catch (e) { bagImg = null; }
+    try { bagImg = await loadImage("assets/bagfield.png?v=5"); } catch (e) { bagImg = null; }
   }
 
   function rotateMatrix(m) { // 90° clockwise
@@ -1166,7 +1166,7 @@
   const DOX = (demoCv.width - DCOLS * DCELL) / 2;
   const DOY = demoCv.height - DROWS * DCELL;       // bottom-anchored
   let demoBagImg = null;
-  loadImage("assets/bagfield.png?v=4").then(im => { demoBagImg = im; }).catch(() => {});
+  loadImage("assets/bagfield.png?v=5").then(im => { demoBagImg = im; }).catch(() => {});
   // scripted tidy pack (lowest pieces first) - fills the bottom 4 rows with no gaps
   // scripted tidy pack (lowest pieces first) using a VARIETY of items - fills a tight block
   const DEMO_SCRIPT = [
