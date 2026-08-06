@@ -44,27 +44,35 @@
     flex: 0 0 auto;
     /* centre the readout: .brand is an empty div, and with space-between that empty box was
        shoving SCORE/LVL/LINES + NEXT to the right (Ant, 2026-08-06) */
-    display: flex; align-items: center; justify-content: center;
-    gap: 10px; padding: 10px 14px 8px;
+    /* Geometry read off the approved Figma screen "12 - Food Stacker Gameplay", measured at a
+       390 viewport: logo 106x64 at y27, then the NEXT swatch and the SCORE/LVL/LINES pill on one
+       row, pill 169x50 with its top at y117. The pill was previously 154x39 sitting at y27 with
+       no logo above it, and NEXT was on the wrong side. (Ant, 2026-08-06.) */
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    gap: 10px; padding: 27px 14px 8px;
   }
+  .hudLogo { width: 106px; height: auto; display: block; }
   .brand { display: flex; align-items: center; gap: 7px; }
   .brand { flex-direction: column; align-items: flex-start; gap: 1px; flex-shrink: 0; }
   .brand .logo { font-weight: 800; font-size: 19px; letter-spacing: -.4px; line-height: 1; }
   .brand .logo .u { color: #fff; }
   .brand .logo .e { color: var(--green); }
   .brand .sub { font-size: 10px; opacity: .55; font-weight: 600; letter-spacing: .6px; text-transform: uppercase; white-space: nowrap; }
-  .stats { display: flex; gap: 9px; align-items: center; }
-  .statbox { display: flex; gap: 0; align-items: center; background: rgba(255,255,255,.85); border: 1px solid rgba(0,0,0,.12); border-radius: 12px; }
-  .stat { text-align: center; line-height: 1.05; padding: 5px 12px; color: #000; }
-  .stat .k { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; opacity: .55; font-weight: 700; }
-  .stat .v { font-size: 17px; font-weight: 800; }
+  .stats { display: flex; gap: 24px; align-items: flex-end; }
+  .statbox { display: flex; gap: 0; align-items: center; justify-content: center;
+    height: 50px; min-width: 169px; background: rgba(255,255,255,.85);
+    border: 1px solid rgba(0,0,0,.12); border-radius: 14px; }
+  .stat { text-align: center; line-height: 1.05; padding: 0 13px; color: #000; }
+  .stat .k { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; opacity: .55; font-weight: 700; }
+  .stat .v { font-size: 21px; font-weight: 800; }
   .stat .v.green { color: #000; }
   #nextWrap { display: flex; flex-direction: column; align-items: center; gap: 2px; }
   #nextWrap .k { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; opacity: .55; font-weight: 700; }
   #next { background: rgba(255,255,255,.05); border-radius: 8px; }
-  /* slide 8: pinned top-left and out of the flex flow, so the stats + NEXT stay centred
-     (they are the game's readout) and nothing sits under the shell's Exit pill top-right. */
-  #muteBtn { position: absolute; left: 10px; top: 10px; z-index: 6; }
+  /* The sound toggle is gone at Ant's request (2026-08-06): the approved gameplay screen has no
+     such control. The effects themselves still play; the elements stay in the DOM purely so the
+     existing audio wiring keeps working. */
+  #muteBtn { display: none !important; }
   #muteBtn, #musicBtn {
     background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.18);
     color: #fff; border-radius: 9px; width: 38px; height: 38px; font-size: 17px; cursor: pointer;
@@ -244,16 +252,16 @@
 <body>
 <div id="app">
   <div id="hud">
-    <div class="brand"></div>
+    <img class="hudLogo" src="sq-logo.png" alt="Uber Eats Side Quest">
     <div class="stats">
+      <div id="nextWrap"><div class="k">Next</div><canvas id="next" width="60" height="60"></canvas></div>
       <div class="statbox">
         <div class="stat"><div class="k">Score</div><div class="v" id="score">000000</div></div>
         <div class="stat"><div class="k">Lvl</div><div class="v green" id="level">1</div></div>
         <div class="stat"><div class="k">Lines</div><div class="v" id="lines">0</div></div>
       </div>
-      <div id="nextWrap"><div class="k">Next</div><canvas id="next" width="60" height="60"></canvas></div>
-      <button id="musicBtn" title="Music on/off" style="display:none;">🎵</button>
-      <button id="muteBtn" title="Sound effects">🔊</button>
+      <button id="musicBtn" title="Music on/off" style="display:none;"></button>
+      <button id="muteBtn" title="Sound effects" style="display:none;"></button>
     </div>
   </div>
 
