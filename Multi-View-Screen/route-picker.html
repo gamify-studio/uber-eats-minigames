@@ -1033,6 +1033,9 @@ function showOnlyOverlay(id){
 // returns { rank, madeLeaderboard, score(best) }. If an older API doesn't send those, fall back
 // to the neutral "submitted as an entry" line so nothing breaks.
 // rank -> prize per the approved ladder on the prizes screen
+/* 'win a $100 Fortnite V-Bucks' is broken English (client flagged the V-Bucks grammar on
+   slide 20): dollar-amount prizes take no article. */
+function prizePhrase(p){ return (/^[$0-9]/.test(p) ? '' : 'a ') + p; }
 function prizeForRank(r){
   if (r === 1) return 'Platinum Gaming Pack';
   if (r <= 3) return 'Premium Gaming Pack';
@@ -1065,8 +1068,9 @@ function fillEntryDone(resp){
   if (pl){
     const prize = (resp && resp.madeLeaderboard === true && Number.isFinite(resp.rank)) ? prizeForRank(resp.rank) : null;
     if (prize){
-      pl.innerHTML = "You're currently on track to win a <b>" + prize + "</b>!" +
-        ' <a href="../../index.html?goto=tandc" target="_blank" rel="noopener" style="color:#0b0b0b;font-weight:700;">See T&amp;Cs</a>' +
+      pl.innerHTML = "You're currently on track to win <b>" + prizePhrase(prize) + "</b>!" +
+        '<a href="../../index.html?goto=tandc" target="_blank" rel="noopener"' +
+        ' style="display:block;margin-top:6px;color:#0b0b0b;font-weight:700;">See T&amp;Cs</a>' +
         '<span style="display:block;margin-top:6px;font-size:12px;font-weight:600;opacity:.75;">' + LB_CAVEAT + '</span>';
     } else {
       // outside the top 160 (or rank unavailable): the generic prize message
@@ -1180,7 +1184,11 @@ if (typeof window.__rp === 'object') window.__rp.buildShareTile = buildShareTile
   var sh = new URLSearchParams(location.search).get('show');
   if (sh === 'entry') showOnlyOverlay('entry');
   else if (sh === 'leaderboard') showLeaderboard();
-  else if (sh === 'done') showOnlyOverlay('entryDone');
+  else if (sh === 'done'){
+    // sample data through the REAL renderer, so the link shows the true layout
+    fillEntryDone({ ok: true, score: 532, rank: 8, madeLeaderboard: true });
+    showOnlyOverlay('entryDone');
+  }
 })();
 
 var _edAgain = document.getElementById('edAgain');
@@ -1216,7 +1224,7 @@ async function showLeaderboard(){
       }
       if (d2.onBoard && d2.madeLeaderboard){
         const pz = prizeForRank(d2.rank);
-        if (pz) prizeHtml = "You're currently on track to win a <b>" + pz + "</b>!" +
+        if (pz) prizeHtml = "You're currently on track to win <b>" + prizePhrase(pz) + "</b>!" +
           '<span style="display:block;margin-top:6px;font-size:12px;font-weight:600;opacity:.75;">' + LB_CAVEAT + '</span>';
       }
     }
