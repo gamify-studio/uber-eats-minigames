@@ -413,7 +413,7 @@
   }
 
   /* tutorial: animated swipe-merge demo */
-  .demo-grid { position: relative; width: min(62vw, 224px); aspect-ratio: 1 / 1; margin: 10px auto 4px; }
+  .demo-grid { position: relative; width: min(74vw, 290px); aspect-ratio: 1 / 1; margin: 22px auto 0; }
   .demo-cells { position: absolute; inset: 0; padding: var(--gap); display: grid; gap: var(--gap); }
   .demo-cells .dc { border-radius: 11px; background: rgba(255,255,255,0.03); border: 1px solid rgba(6, 193, 103,0.14); }
   .demo-tiles { position: absolute; inset: 0; }
@@ -429,9 +429,9 @@
   .demo-eq { text-align: center; font-weight: 800; color: var(--muted); font-size: 15px; min-height: 18px; }
   .demo-eq b { color: var(--green); font-size: 1.15em; }
   /* tutorial lines */
-  .tut-lines { text-align: left; margin: 12px 0 16px; display: flex; flex-direction: column; gap: 10px; }
-  .tut-lines p { margin: 0; display: flex; gap: 11px; align-items: flex-start; font-weight: 600; color: var(--muted); font-size: 14.5px; line-height: 1.3; }
-  .tut-lines .n { flex: none; width: 22px; height: 22px; border-radius: 50%; background: rgba(6, 193, 103,0.18); color: var(--green); font-weight: 900; font-size: 13px; display: grid; place-items: center; }
+  .tut-lines { text-align: left; margin: 26px 0 0; display: flex; flex-direction: column; gap: 10px; }
+  .tut-lines p { margin: 0; display: flex; gap: 11px; align-items: flex-start; font-weight: 600; color: var(--muted); font-size: 15px; line-height: 1.35; }
+  .tut-lines .n { flex: none; width: 30px; height: 30px; border-radius: 50%; background: rgba(6, 193, 103,0.18); color: var(--green); font-weight: 900; font-size: 13px; display: grid; place-items: center; }
   /* let the instruction text wrap inside the flex row instead of overflowing on narrow phones */
   .tut-lines p > span:last-child { flex: 1; min-width: 0; }
   .tut-lines b { color: #fff; font-weight: 800; }
@@ -445,7 +445,7 @@
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
-  #tutorial h2.green { color: #000; font-size: clamp(29px, 9vw, 41px); margin-top: 2px; }
+  #tutorial h2.green { color: #000; font-size: 28px; margin-top: 6px; }
   /* Uber Eats Side Quest logo above the game name on the start screen */
   /* Shared SideQuest logo size across all 3 minigames (Combo / Stacker / Path Picker). */
   .sqLogo { width: clamp(140px, 44vw, 205px); height: auto; display: block; margin: 0 auto 4px; }
@@ -455,7 +455,7 @@
   #tutorial { align-items: start; overflow-y: auto; padding-top: clamp(20px, 6vh, 72px); padding-bottom: 22px; }
   #tutorial .tut-lines p { color: #000; }
   #tutorial .tut-lines b { color: #000; }
-  #tutorial .tut-lines .n { background: rgba(255, 255, 255, 0.85); color: #000; }
+  #tutorial .tut-lines .n { background: #fff; color: #000; font-size: 15px; }
   #tutorial .demo-eq { color: rgba(255, 255, 255, 0.88); }
   #tutorial .demo-eq b { color: #fff; }
   #tutorial .demo-cells .dc { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.14); }
@@ -483,6 +483,9 @@
   /* end-screen buttons hug their text + centered, matched to the other games' length */
   #overlay .btn-row { align-items: center; }
   #overlay .btn { width: auto; min-width: 200px; font-size: 18px; padding: 15px 40px; color: #000; }
+  /* Mockup: Play sits low, full-width, just above the pinned T&Cs. */
+  #tutorial #tut-got { position: fixed; left: 24px; right: 24px; width: auto;
+    bottom: calc(52px + env(safe-area-inset-bottom)); height: 54px; }
 </style>
 </head>
 <body>
@@ -521,9 +524,9 @@
             </div>
             <div class="demo-eq" id="demoEq"></div>
             <div class="tut-lines">
-              <p><span class="n">1</span><span><b>Swipe</b> any direction - all items slide that way.</span></p>
+              <p><span class="n">1</span><span><b>Swipe</b> any direction, all items slide that way.</span></p>
               <p><span class="n">2</span><span>Two of the <b>same item merge</b> into the next one.</span></p>
-              <p><span class="n">3</span><span>Reach the <b>Uber Eats bag</b> to <b>finish</b> - in as few swipes as you can!</span></p>
+              <p><span class="n">3</span><span>Reach the <b>Uber Eats bag</b> to <b>finish</b>, in as few swipes as you can!</span></p>
             </div>
             <div class="btn-row"><button class="btn" id="tut-got" style="background:#0b0b0b;color:#fff;border:none;border-radius:999px;font-weight:800;width:100%;max-width:340px;padding:16px 0;font-size:18px;">Play</button></div>
           </div>
