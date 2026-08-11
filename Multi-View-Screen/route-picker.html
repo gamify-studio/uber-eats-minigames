@@ -1174,6 +1174,15 @@ var _edShare = document.getElementById('edShare');
 if (_edShare) _edShare.addEventListener('click', shareScoreTile);
 if (typeof window.__rp === 'object') window.__rp.buildShareTile = buildShareTile;
 
+/* Dev deep link (testing only): ?show=entry opens the "You're on the leaderboard!" form,
+   ?show=leaderboard opens the leaderboard overlay, ?show=done opens the You're in screen. */
+(function(){
+  var sh = new URLSearchParams(location.search).get('show');
+  if (sh === 'entry') showOnlyOverlay('entry');
+  else if (sh === 'leaderboard') showLeaderboard();
+  else if (sh === 'done') showOnlyOverlay('entryDone');
+})();
+
 var _edAgain = document.getElementById('edAgain');
 if (_edAgain) _edAgain.addEventListener('click', function(){
   // consistent with the Orders-delivered Play again: return to the splash, not straight into a run
