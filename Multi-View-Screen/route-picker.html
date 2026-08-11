@@ -19,22 +19,15 @@
     font-family: 'Uber Move', 'Uber Move Text', 'Inter', -apple-system, system-ui, "Segoe UI", Roboto, sans-serif; color: #fff; }
   /* one centered game column; black letterbox lives on body */
   .app { position: fixed; inset: 0; width: 100%; max-width: 480px; margin: 0 auto;
-    background: #06C167; overflow: hidden; box-shadow: 0 0 40px rgba(0,0,0,.45); }
+    background: #06C167; overflow: hidden; }
   #game { position: absolute; inset: 0; display: block; touch-action: none; }
 
   /* ---- HUD (top bar) ---- */
-  #hud {
-    position: absolute; top: 0; left: 0; right: 0; z-index: 10;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: calc(10px + env(safe-area-inset-top)) 14px 6px; gap: 10px; pointer-events: none;
-    text-shadow: 0 2px 8px rgba(0,0,0,.7);
-  }
-  #lives { font-size: 26px; letter-spacing: 2px; min-width: 96px; }
-  /* Lives shown as Uber Eats delivery bags (client branding). The bag PNG keeps the same soft
-     shadow the heart emoji had via drop-shadow (the #hud isn't an overflow box, so no iOS clip). */
-  #lives .life-bag { height: 32px; width: auto; vertical-align: middle; margin: 0 1px;
-    filter: drop-shadow(0 2px 8px rgba(0,0,0,.7)); }
-  #lives .dead { opacity: .22; filter: grayscale(1); }
+  #hud { position: absolute; top: 108px; left: 22px; right: 22px; height: 50px; display: flex; gap: 9px; z-index: 10; }
+  #lives { flex: 1; background: #009E55; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; gap: 9px; }
+  #lives img { height: 34px; width: auto; display: block; }
+  #lives .dead { opacity: .25; }
   #scorebox { text-align: center; flex: 1; }
   #score { font-size: 36px; font-weight: 900; line-height: 1; letter-spacing: .5px; }
   #subline { font-size: 11px; opacity: .8; margin-top: 3px; letter-spacing: .3px; white-space: nowrap; }
@@ -47,12 +40,8 @@
   #muteBtn:active, #bgBtn:active { transform: scale(.95); }
 
   /* ---- timer bar ---- */
-  #timerwrap {
-    position: absolute; top: calc(84px + env(safe-area-inset-top)); left: 14px; right: 14px; height: 7px; z-index: 10;
-    background: rgba(255,255,255,.10); border-radius: 99px; overflow: hidden; pointer-events: none;
-  }
-  #timerfill { height: 100%; width: 100%; border-radius: 99px;
-    background: #019147; transition: background .15s linear; }
+  #timerwrap { position: absolute; top: 170px; left: 22px; right: 22px; height: 7px; border-radius: 99px; background: #009B53; overflow: hidden; z-index: 10; }
+  #timerfill { height: 100%; width: 100%; border-radius: 99px; background: #F5A623; }
 
   /* ---- prompt ---- */
   #prompt {
@@ -66,18 +55,9 @@
   /* Brand line on the gameplay screen (client wants "side quest when you want stuff" across all 3
      games). Sits in the band above the A/B buttons; only shows while playing so it can never
      overlap the start-screen logo. */
-  .sq-tagline {
-    position: absolute; left: 50%; transform: translateX(-50%); z-index: 10;
-    /* slide 17: was tiny and wedged between the map and the A/B buttons. Now it sits at the TOP
-       of the play area (under the prompt) where there is room, and it is bigger. layout() sets
-       its `top` and then starts the map below it. */
-    top: 0; text-align: center; white-space: nowrap; pointer-events: none;
-    /* Half again bigger at Ant's request (2026-08-06): 17 -> 25, floor 14 -> 21. */
-    font-size: clamp(21px, 6vw, 25px); font-weight: 900; letter-spacing: .3px;
-    color: #06351f; text-shadow: 0 1px 6px rgba(255,255,255,.55);
-  }
+  .sq-tagline { position: absolute; left: 50%; transform: translateX(-50%); z-index: 10; top: 0; text-align: center; white-space: nowrap; pointer-events: none; font-size: 20px; font-weight: 900; letter-spacing: .2px; color: #0b1a10; }
   /* hide the playfield HUD while a full-screen overlay (start / game over) is up */
-  body:not(.playing) #hud, body:not(.playing) #timerwrap, body:not(.playing) #prompt, body:not(.playing) .sq-tagline { display: none !important; }
+  body:not(.playing) #hud, body:not(.playing) #timerwrap, body:not(.playing) #prompt, body:not(.playing) .sq-tagline, body:not(.playing) .playLogo { display: none !important; }
   /* GET READY countdown */
   #countdown { position: absolute; inset: 0; z-index: 40; display: none; align-items: center; justify-content: center;
     pointer-events: none; font-weight: 900; font-size: clamp(90px, 30vw, 220px); color: #fff;
@@ -86,21 +66,17 @@
   @keyframes cpop { 0%{ transform: scale(.5); opacity: 0 } 40%{ transform: scale(1.15); opacity: 1 } 100%{ transform: scale(1); opacity: 1 } }
 
   /* ---- choice buttons ---- */
-  .choice {
-    position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); z-index: 10;
-    width: calc(44% - 18px);                 /* smaller A/B (ROUTE label removed) while staying a comfy thumb target */
-    height: clamp(36px, 5vh, 48px); border-radius: 999px;
-    border: 3px solid; background: rgba(12,16,24,.82);   /* solid-ish; no backdrop blur (mobile perf) */
-    color: #fff; cursor: pointer; pointer-events: auto;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    font-weight: 900; transition: transform .1s, box-shadow .15s, opacity .15s; user-select: none;
-  }
-  .choice .big { font-size: clamp(22px, 6.5vw, 34px); line-height: 1; }
-  .choice .lbl { font-size: 10px; letter-spacing: 1.5px; opacity: .85; margin-top: 2px; }
-  #btnA { left: 14px;  border-color: #3da5ff; box-shadow: 0 0 30px rgba(61,165,255,.5); }
-  #btnB { right: 14px; border-color: #ff3d9a; box-shadow: 0 0 30px rgba(255,61,154,.5); }
-  #btnA .big { color: #7ec2ff; } #btnB .big { color: #ff85bf; }
-  .choice:active { transform: scale(.93); }
+  .choice { position: absolute; bottom: calc(24px + env(safe-area-inset-bottom));
+    width: calc(50% - 32px); height: 56px; border-radius: 999px;
+    background: #0b0b0b; border: none; box-shadow: none;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+    transition: transform .1s, opacity .15s; z-index: 10; }
+  .choice .big { font-size: 24px; letter-spacing: .02em; }
+  #btnA { left: 24px; color: #7EC2FF; }
+  #btnB { right: 24px; color: #FF85BF; }
+  .choice:disabled { opacity: .55; }
+  .choice:active { transform: scale(.95); }
   .choice.disabled { opacity: .35; pointer-events: none; }
 
   /* ---- overlays ---- */
@@ -273,26 +249,44 @@
   #over .ovHead, #entryDone .ovHead, #lbOv .ovHead, #entryDone #edMsg { color: #0b0b0b; }
   #stars { color: #F6A609; letter-spacing: 10px; padding-left: 10px; font-size: 30px; }
   #stars .dim { color: rgba(11,11,11,.22); }
+  /* Approved gameplay frame: Side Quest logo shown during play (ink 107x65 at y26). 124px box
+     because sq-logo.png is 86% ink. The prompt heading and sound toggle are not on the
+     signed-off screen; elements stay for their wiring. */
+  .playLogo { position: absolute; top: 25px; left: 50%; transform: translateX(-50%);
+    width: 124px; height: auto; z-index: 10; }
+  #scorepill { flex: 1; background: rgb(242,252,247); border-radius: 14px;
+    display: flex; align-items: stretch; }
+  #scorepill .seg { flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 1px; }
+  #scorepill .seg + .seg { border-left: 1px solid rgba(0,0,0,.08); }
+  #scorepill .k { font-size: 10px; font-weight: 700; letter-spacing: .09em;
+    text-transform: uppercase; color: #8a8f8b; }
+  #scorepill .v { font-size: 20px; font-weight: 800; color: #0b0b0b; line-height: 1; }
+  #prompt, #right { display: none !important; }
 </style>
 </head>
 <body>
   <div class="app">
   <canvas id="game"></canvas>
 
+  <img class="playLogo" src="sq-logo.png?v=5" alt="Uber Eats Side Quest">
   <div id="hud">
     <div id="lives"></div>
-    <div id="scorebox">
-      <div id="score">0</div>
-      <div id="subline">Route <b id="round">1</b> · Best <span id="best">0</span> · Streak <span id="streak">0</span></div>
+    <div id="scorepill">
+      <div class="seg"><div class="k">Score</div><div class="v" id="score">0</div></div>
+      <div class="seg"><div class="k">Best</div><div class="v" id="best">0</div></div>
+      <div class="seg"><div class="k">Streak</div><div class="v" id="streak">0</div></div>
     </div>
-    <div id="right"><button id="muteBtn">🔊</button></div>
+    <!-- kept for the JS that writes them; not part of the approved layout -->
+    <span hidden>Route <b id="round">1</b><span id="subline"></span></span>
+    <button id="muteBtn" hidden>🔊</button>
   </div>
   <div id="timerwrap"><div id="timerfill"></div></div>
   <div id="prompt">Pick the shortest delivery route</div>
 
   <button class="choice" id="btnA"><span class="big">A</span></button>
   <button class="choice" id="btnB"><span class="big">B</span></button>
-  <div class="sq-tagline">Side quest when you want stuff</div>
+  <div class="sq-tagline">Side quest when you want stuff.</div>
 
   <div class="overlay" id="howto">
     <img class="sqLogo" src="sq-logo.png?v=5" alt="Uber Eats Side Quest">
@@ -524,30 +518,22 @@ function layout(){
   canvas.style.width = cssW + 'px'; canvas.style.height = cssH + 'px';
   canvas.width = Math.round(cssW * dpr); canvas.height = Math.round(cssH * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  // Anchor everything to the PROMPT (a stable element). Deriving the tagline position from
-  // HUD_TOP and then feeding its bottom back into HUD_TOP compounded on every layout() call,
-  // which squashed the map down the screen.
-  let base = 120;
-  const pr = document.getElementById('prompt');
-  if (pr){ const r = pr.getBoundingClientRect(); if (r.height > 0) base = Math.max(120, Math.round(r.bottom) + 8); }
-  const tag = document.querySelector('.sq-tagline');   // slide 17: tagline sits at the top now
-  if (tag){
-    tag.style.top = base + 'px';
-    const th = Math.round(tag.getBoundingClientRect().height);
-    HUD_TOP = base + (th > 0 ? th + 10 : 0);
-  } else {
-    HUD_TOP = base;
-  }
-  const btnH = Math.min(59, Math.max(41, 0.06 * cssH));
+  // Approved frame: logo 25, pills 108-158, timer bar 170-177; the map starts below the bar.
+  let base = 196;
+  const tw = document.getElementById('timerwrap');
+  if (tw){ const r = tw.getBoundingClientRect(); if (r.height > 0) base = Math.round(r.bottom) + 19; }
+  HUD_TOP = base;
   const availW = cssW - PAD * 2;
-  // measure the REAL top of the bottom UI (tagline + A/B buttons incl safe-area insets) so the
-  // map window can never overlap them; fall back to the estimate when they are display:none
-  let bottomTop = cssH - (btnH + 42);
-  // NB: the tagline used to sit down here and was measured as bottom UI. It now lives at the TOP
-  // (slide 17), so including it would collapse the map to its minimum height. Buttons only.
+  // bottom stack per the approved frame: map, then tagline, then the A/B buttons
+  let btnTop = cssH - (56 + 24);
   const baEl = document.getElementById('btnA');
-  if (baEl){ const br = baEl.getBoundingClientRect(); if (br.height > 0) bottomTop = Math.min(bottomTop, br.top); }
-  const availH = bottomTop - HUD_TOP - 12;
+  if (baEl){ const br = baEl.getBoundingClientRect(); if (br.height > 0) btnTop = br.top; }
+  const tag = document.querySelector('.sq-tagline');
+  let tagH = 24;
+  if (tag){ const th = Math.round(tag.getBoundingClientRect().height); if (th > 0) tagH = th; }
+  const tagTop = btnTop - tagH - 14;
+  if (tag) tag.style.top = tagTop + 'px';
+  const availH = tagTop - 14 - HUD_TOP;
   avail = { y: HUD_TOP, w: availW, h: Math.max(200, availH) };
   win = { x: PAD, y: HUD_TOP, w: availW, h: avail.h };
   if (cur) fitWindowToRound();   // keep the round's window shape on resize

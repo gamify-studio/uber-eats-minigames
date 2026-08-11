@@ -550,7 +550,9 @@
 
     // win: food reaches the top of the bag
     let topReached = false;
-    for (let x = 0; x < COLS; x++) if (grid[0][x] || grid[1][x]) topReached = true;
+    // TRUE top row only (Ant, 11 Aug): row 1 ended the round one row early. A blocked
+    // spawn still ends the round via spawn()'s top-out check, so this cannot hang.
+    for (let x = 0; x < COLS; x++) if (grid[0][x]) topReached = true;
     if (topReached) { endRound(); return; }
 
     spawn();
@@ -635,6 +637,14 @@
     board.style.width = gw + "px"; board.style.height = gh + "px";
     board.style.position = "absolute";
     board.style.left = gx + "px"; board.style.top = gy + "px";
+    // Clip the piece canvas to the bag artwork's inner corner curve, so pieces disappear
+    // exactly where the art rounds instead of protruding at the bottom corners (Shannon's
+    // iPhone catch, 11 Aug). 50px corner radius on the 1258px-wide source art.
+    {
+      const wallPx0 = cell * (GRID_SRC.wall / GRID_SRC.cellPx);
+      const artScale = (gw + 2 * wallPx0) / 1258;
+      board.style.borderRadius = Math.max(0, 50 * artScale - wallPx0).toFixed(1) + "px";
+    }
     bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     bctx.imageSmoothingQuality = "high";
     // position the grid art so its interior aligns EXACTLY with the board canvas; the visible
