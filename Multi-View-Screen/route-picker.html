@@ -334,7 +334,7 @@
   <div class="overlay hidden" id="entry">
     <img class="entryLogo" src="sq-logo.png?v=5" alt="Uber Eats Side Quest">
     <h1 class="delivered">You're on the leaderboard!</h1>
-    <p>Your side quest delivery skills could make you a winner!</p>
+    <p>Final 160 on the leaderboard will win prizes</p>
     <p class="efNote" style="font-size: clamp(11px, 3vw, 13px); opacity: 0.72; margin: 4px 0 0;">Your first name and last initial will be used for the leaderboard.</p>
     <form id="entryForm" class="entryForm" novalidate>
       <input id="efFirst" type="text" placeholder="First name" autocomplete="given-name" required>
@@ -967,6 +967,9 @@ if (_townBtn) _townBtn.addEventListener('click', backToTown);
    API (uber-eats-leaderboard, AWS): POST /session -> {playerId, token, exp};
    POST /score {playerId,token,exp,handle,score}; POST /signup {playerId, details, opt-ins}. */
 const LB_API = 'https://9y63ccaste.execute-api.ap-southeast-2.amazonaws.com';
+/* Legal (slide 21, 07/08): see the shell. PENDING confirmed campaign end date. */
+const CAMPAIGN_END = '21 July 2026';
+const LB_CAVEAT = 'Leaderboard can change up until end ' + CAMPAIGN_END + '.';
 let lbSession = null;
 
 async function ensureSession(){
@@ -1063,7 +1066,8 @@ function fillEntryDone(resp){
     const prize = (resp && resp.madeLeaderboard === true && Number.isFinite(resp.rank)) ? prizeForRank(resp.rank) : null;
     if (prize){
       pl.innerHTML = "You're currently on track to win a <b>" + prize + "</b>!" +
-        ' <a href="../../index.html?goto=tandc" target="_blank" rel="noopener" style="color:#0b0b0b;font-weight:700;">See T&amp;Cs</a>';
+        ' <a href="../../index.html?goto=tandc" target="_blank" rel="noopener" style="color:#0b0b0b;font-weight:700;">See T&amp;Cs</a>' +
+        '<span style="display:block;margin-top:6px;font-size:12px;font-weight:600;opacity:.75;">' + LB_CAVEAT + '</span>';
     } else {
       // outside the top 160 (or rank unavailable): the generic prize message
       pl.innerHTML = 'Win <b>Nintendo Switch 2 Consoles</b>, HOYTS movie vouchers, gaming gift cards + more';
@@ -1203,7 +1207,8 @@ async function showLeaderboard(){
       }
       if (d2.onBoard && d2.madeLeaderboard){
         const pz = prizeForRank(d2.rank);
-        if (pz) prizeHtml = "You're currently on track to win a <b>" + pz + "</b>!";
+        if (pz) prizeHtml = "You're currently on track to win a <b>" + pz + "</b>!" +
+          '<span style="display:block;margin-top:6px;font-size:12px;font-weight:600;opacity:.75;">' + LB_CAVEAT + '</span>';
       }
     }
   } catch (e) {}
