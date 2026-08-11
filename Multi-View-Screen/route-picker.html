@@ -1033,19 +1033,20 @@ function showOnlyOverlay(id){
 // returns { rank, madeLeaderboard, score(best) }. If an older API doesn't send those, fall back
 // to the neutral "submitted as an entry" line so nothing breaks.
 // rank -> prize per the approved ladder on the prizes screen
-/* 'win a $100 Fortnite V-Bucks' is broken English (client flagged the V-Bucks grammar on
-   slide 20): dollar-amount prizes take no article. */
-function prizePhrase(p){ return (/^[$0-9]/.test(p) ? '' : 'a ') + p; }
+/* Client's slide-20 amendment: V-Bucks prizes are '... V-Bucks voucher'. Every prize name is
+   now a countable noun (voucher / Gift Card / Pack), so they all take the article:
+   'a $100 Fortnite V-Bucks voucher', 'a HOYTS Movie Voucher', 'a Platinum Gaming Pack'. */
+function prizePhrase(p){ return 'a ' + p; }
 function prizeForRank(r){
   if (r === 1) return 'Platinum Gaming Pack';
   if (r <= 3) return 'Premium Gaming Pack';
   if (r <= 6) return 'Gold Gaming Pack';
-  if (r <= 10) return '$100 Fortnite V-Bucks';
+  if (r <= 10) return '$100 Fortnite V-Bucks voucher';
   if (r <= 14) return '$100 Steam Gift Card';
-  if (r <= 26) return '$50 Fortnite V-Bucks';
+  if (r <= 26) return '$50 Fortnite V-Bucks voucher';
   if (r <= 38) return '$50 Steam Gift Card';
   if (r <= 120) return 'HOYTS Movie Voucher';
-  if (r <= 140) return '$25 Fortnite V-Bucks';
+  if (r <= 140) return '$25 Fortnite V-Bucks voucher';
   if (r <= 160) return '$25 Steam Gift Card';
   return null;
 }
