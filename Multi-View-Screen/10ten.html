@@ -88,6 +88,9 @@
   }
 
   /* ---------- header ---------- */
+  /* margin-top 9px puts the logo INK top at y27 on a 390 viewport, which is where the
+     approved gameplay screen has it. Measured, not guessed. */
+  .gameLogo { width: 124px; height: auto; display: block; margin: 9px auto 0; }
   .header {
     display: flex;
     align-items: flex-start;
@@ -243,6 +246,9 @@
   }
 
   /* persistent brand line under the board */
+  .tcline { text-align: center; margin-top: 10px; font-size: 12.5px; font-weight: 700;
+            color: rgba(11,26,16,.72); }
+  .tcline a { color: inherit; text-underline-offset: 3px; }
   .tagline {
     text-align: center;
     margin-top: 2px;
@@ -485,23 +491,16 @@
 </head>
 <body>
   <div class="app">
+    <!-- Side Quest logo, matching the approved gameplay screen: ink 107px wide with its top at
+         y27 on a 390 viewport, dead centre. 124px box because sq-logo.png carries transparent
+         padding and is only 86% ink, so a 107px box would render 92px of artwork. -->
+    <img class="gameLogo" src="sq-logo.png?v=5" alt="Uber Eats Side Quest">
     <!-- header: score/best -->
     <div class="header">
       <div class="scorebox">
         <div class="seg"><div class="label">Swipes</div><div class="value" id="score">0</div></div>
         <div class="seg"><div class="label">Best</div><div class="value" id="best">0</div></div>
       </div>
-    </div>
-
-    <!-- toolbar: undo / restart / sound -->
-    <div class="toolbar">
-      <button class="icon-btn" id="undo-btn" title="Undo" aria-label="Undo last move">
-        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20z"/></svg>
-      </button>
-      <button class="icon-btn" id="restart-btn" title="Restart" aria-label="Restart game">
-        <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg>
-      </button>
-      <button class="icon-btn snd" id="sound-btn" title="Sound on/off" aria-label="Toggle sound">🔊</button>
     </div>
 
     <!-- board -->
@@ -536,8 +535,9 @@
       </div>
     </div>
 
-    <div class="tagline">Side quest when you want stuff</div>
-    <div class="hint" id="hint">Swipe to move items · match two to level up your order</div>
+    <div class="tagline">Side quest when you want stuff.</div>
+    <div class="hint" id="hint"></div>
+    <div class="tcline">By playing you agree to the <a href="../../index.html?goto=tandc" target="_blank" rel="noopener">Terms &amp; Conditions</a></div>
   </div>
 
 <script>
@@ -826,7 +826,7 @@ function bumpScore() {
   void el.score.offsetWidth;
   el.score.classList.add("pulse");
 }
-function updateUndoBtn() { el.undo.disabled = state.history.length === 0; }
+function updateUndoBtn() { if (el.undo) el.undo.disabled = state.history.length === 0; }
 
 // haptic feedback (Android; no-op where unsupported, e.g. iOS Safari)
 function haptic(pattern) {
@@ -1325,11 +1325,11 @@ function ensureAudio() {
 /* ============================================================
    BUTTONS
    ============================================================ */
-el.undo.addEventListener("click", undo);
-el.restart.addEventListener("click", newGame);
-el.sound.addEventListener("click", () => {
+if (el.undo) el.undo.addEventListener("click", undo);
+if (el.restart) el.restart.addEventListener("click", newGame);
+if (el.sound) el.sound.addEventListener("click", () => {
   state.muted = !state.muted;
-  el.sound.textContent = state.muted ? "🔇" : "🔊";
+  if (el.sound) el.sound.textContent = state.muted ? "🔇" : "🔊";
   if (!state.muted) ensureAudio();
   save();
 });
@@ -1343,7 +1343,7 @@ function init() {
   const saved = loadSaved();
   state.best = Math.min(saved && saved.best ? saved.best : 0, CONFIG.maxScore);
   state.muted = !!(saved && saved.muted);
-  el.sound.textContent = state.muted ? "🔇" : "🔊";
+  if (el.sound) el.sound.textContent = state.muted ? "🔇" : "🔊";
 
   // The gig always opens on a fresh board (two 1s) - never resume a prior in-progress or finished
   // game, so each attempt is independent. (best score + sound pref loaded above still persist.)
