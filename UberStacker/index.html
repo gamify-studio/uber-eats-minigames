@@ -169,7 +169,7 @@
   #demoWrap { margin-top: 22px; }
   /* Play in the shared fixed slot: left/right 24, bottom 52, h54 (same as Combo + PP) */
   #howOv .htActions { position: fixed; left: 24px; right: 24px; bottom: calc(52px + env(safe-area-inset-bottom)); margin: 0 !important; width: auto; display: flex; justify-content: center; z-index: 45; }
-  #howOv .htActions button { width: 100%; height: 54px; font-size: 18px; }
+  #howOv .htActions button { width: 100%; height: 54px; font-size: 18px; font-family: inherit; }  /* buttons do not inherit fonts by default: was falling back to Arial */
   .overlay h1 { font-size: 30px; font-weight: 900; line-height: 1.1; }
   .overlay h1 .e { color: var(--green); }
   .overlay p { font-size: 14px; opacity: .8; line-height: 1.55; max-width: 320px; }
@@ -379,7 +379,7 @@
     sub: "assets/sub.png?v=11",
     ubereats: "assets/ubereats.png?v=16",
     banana: "assets/banana.png?v=10",
-    eggs: "assets/eggs.png?v=11",
+    eggs: "assets/eggs.png?v=12",
     groceries: "assets/groceries.png?v=10",
     nana: "assets/nana.png?v=2",
     produce: "assets/produce.png?v=10",
