@@ -361,7 +361,7 @@
          busy confirmation. Matches the client note on slide 20. -->
     <img class="edRider" src="rider.png?v=2" alt="" aria-hidden="true">
     <h1 class="ovHead" id="edTitle">You're in!</h1>
-    <p id="edMsg">Your score of <b>0</b> has been submitted as your competition entry. Good luck!</p>
+    <p id="edMsg">Your score of <b>0</b> has been submitted as your competition entry. Good&nbsp;luck!</p>
     <p id="edPrize" style="font-weight:800;font-size:16px;max-width:360px;margin:6px 0 0;color:#0b0b0b;"></p>
     <div class="edBtns">
       <button class="pillbtn outline" id="edShare">Share with a friend
@@ -963,7 +963,7 @@ if (_townBtn) _townBtn.addEventListener('click', backToTown);
 const LB_API = 'https://9y63ccaste.execute-api.ap-southeast-2.amazonaws.com';
 /* Legal (slide 21, 07/08): see the shell. PENDING confirmed campaign end date. */
 const CAMPAIGN_END = '21 July 2026';
-const LB_CAVEAT = 'Leaderboard can change up until end ' + CAMPAIGN_END + '.';
+const LB_CAVEAT = ('Leaderboard can change up until end ' + CAMPAIGN_END + '.').replace(/ (?=\S+$)/, '\u00A0');
 let lbSession = null;
 
 async function ensureSession(){
@@ -1030,7 +1030,8 @@ function showOnlyOverlay(id){
 /* Client's slide-20 amendment: V-Bucks prizes are '... V-Bucks voucher'. Every prize name is
    now a countable noun (voucher / Gift Card / Pack), so they all take the article:
    'a $100 Fortnite V-Bucks voucher', 'a HOYTS Movie Voucher', 'a Platinum Gaming Pack'. */
-function prizePhrase(p){ return 'a ' + p; }
+// join the prize's last two words with a no-break space so the sentence never ends in a one-word line
+function prizePhrase(p){ return ('a ' + p).replace(/ (?=\S+$)/, '\u00A0'); }
 function prizeForRank(r){
   if (r === 1) return 'Platinum Gaming Pack';
   if (r <= 3) return 'Premium Gaming Pack';
@@ -1054,10 +1055,10 @@ function fillEntryDone(resp){
     // Slide 20: simplified. The "best still stands" case keeps its explanation because it
     // otherwise looks like we submitted a score they did not just achieve.
     if (sc > score){
-      msg.innerHTML = 'This run: <b>' + score + '</b>. Your best score of <b>' + sc + '</b> is on the leaderboard.';
+      msg.innerHTML = 'This run: <b>' + score + '</b>. Your best score of <b>' + sc + '</b> is on the\u00A0leaderboard.';
     } else {
       // 'Good luck!' on its own line: it orphaned ('Good' / 'luck!') when the sentence wrapped
-      msg.innerHTML = 'Your score of <b>' + sc + '</b> is on the leaderboard.<br>Good luck!';
+      msg.innerHTML = 'Your score of <b>' + sc + '</b> is on the\u00A0leaderboard.<br>Good luck!';
     }
   }
   const pl = document.getElementById('edPrize');
@@ -1070,7 +1071,7 @@ function fillEntryDone(resp){
         '<span style="display:block;margin-top:6px;font-size:12px;font-weight:600;opacity:.75;">' + LB_CAVEAT + '</span>';
     } else {
       // outside the top 160 (or rank unavailable): the generic prize message
-      pl.innerHTML = 'Win <b>Nintendo Switch 2 Consoles</b>, HOYTS movie vouchers, gaming gift cards + more';
+      pl.innerHTML = 'Win <b>Nintendo Switch 2 Consoles</b>, HOYTS movie vouchers, gaming gift cards +&nbsp;more';
     }
   }
 }
@@ -1206,7 +1207,7 @@ async function showLeaderboard(){
               String(t.handle || 'Player').replace(/[<>&]/g, '') + '</span><span class="sc">' + t.score + '</span></div>';
     });
   } catch (e) {}
-  let prizeHtml = 'Win <b>Nintendo Switch 2 Consoles</b>, HOYTS movie vouchers, gaming gift cards + more';
+  let prizeHtml = 'Win <b>Nintendo Switch 2 Consoles</b>, HOYTS movie vouchers, gaming gift cards +&nbsp;more';
   try {
     let pid = ''; try { pid = localStorage.getItem('pathpicker_pid') || ''; } catch (e) {}
     if (pid){

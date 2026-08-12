@@ -33,7 +33,7 @@
     position: fixed; inset: 0;
     display: flex; flex-direction: column;
     max-width: 480px; margin: 0 auto;
-    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+    padding: env(safe-area-inset-top) 0 calc(34px + env(safe-area-inset-bottom));  /* bottom reserve so the fixed T&Cs line sits clear below the pad */
     /* Gameplay background: Uber Eats green to match the other minigames (was a dark #16110b->#000
        gradient that read as black). Subtle top highlight kept, same treatment as the Combo game. */
     background: radial-gradient(120% 80% at 50% -10%, rgba(255,255,255,0.07), transparent 52%), #06C167;
@@ -90,8 +90,7 @@
   }
   /* The fluoro bag art sits behind a transparent grid canvas; the canvas is positioned over the
      bag's yellow interior in fit(), so pieces only ever land in the yellow. */
-  #bagBg { position: absolute; pointer-events: none; z-index: 0;
-    filter: drop-shadow(0 12px 34px rgba(0,0,0,.55)); }
+  #bagBg { position: absolute; pointer-events: none; z-index: 0; }
   #board { position: absolute; z-index: 1; background: transparent; }
   .toast {
     position: absolute; top: 12%; left: 50%; transform: translateX(-50%) translateY(-6px);
@@ -285,6 +284,7 @@
   </div>
 
   <div class="sq-tagline">Side quest when you want stuff</div>
+  <div class="tcline">By playing you agree to the <a href="../../index.html?goto=tandc" target="_blank" rel="noopener">Terms &amp; Conditions</a></div>
 
   <div id="pad">
     <button class="btn" id="bLeft" aria-label="Left">
@@ -642,7 +642,7 @@
     const gw = COLS * cell, gh = ROWS * cell;
     const gx = yx + (yw - gw) / 2;          // centre horizontally in the yellow
     const gy = yy + (yh - gh);              // anchor the grid bottom to the yellow bottom (stack sits at the base)
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    dpr = Math.min(window.devicePixelRatio || 1, 3);  // cap 3: capping at 2 left the board soft on 3x iPhones
     board.width = gw * dpr; board.height = gh * dpr;
     board.style.width = gw + "px"; board.style.height = gh + "px";
     board.style.position = "absolute";
@@ -898,6 +898,12 @@
   // Sized from the canvas rather than hard-coded 60s, so the swatch can match the pill's
   // height (approved Figma has both at 50) without squashing the piece art.
   const NW = nextCv.width, NH = nextCv.height;
+  // backing store at device resolution (cap 3): a bare 60x50 canvas renders 1x and
+  // gets tripled on 3x iPhones, which is what made the NEXT piece look pixelated
+  const NDPR = Math.min(window.devicePixelRatio || 1, 3);
+  nextCv.style.width = NW + 'px'; nextCv.style.height = NH + 'px';
+  nextCv.width = NW * NDPR; nextCv.height = NH * NDPR;
+  nctx.setTransform(NDPR, 0, 0, NDPR, 0, 0);
   function drawNext() {
     nctx.clearRect(0, 0, NW, NH);
     if (!nextKey || !SPRITES[PIECES[nextKey].sprite]) return;
