@@ -205,15 +205,17 @@
   #newbest.show { opacity: 1; height: auto; animation: pulse 1s ease-in-out infinite; }
   @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
   /* ---- how-to-play (real map preview) ---- */
-  #howto { justify-content: safe center; gap: clamp(7px, 1.5vh, 16px); overflow-y: auto;
-    padding: max(14px, env(safe-area-inset-top)) 20px clamp(20px, 4vh, 40px); }   /* was a tall reserve for the rider; rider now hidden */
+  /* top-anchored so the preview lands at the shared y230 deterministically (safe-center was nonlinear) */
+  #howto { justify-content: flex-start; gap: clamp(7px, 1.5vh, 16px); overflow-y: auto;
+    /* top pad gives way on short viewports (78 at 844 -> 14 by 780) so steps clear the fixed Play */
+    padding: max(clamp(14px, calc(100svh - 766px), 78px), env(safe-area-inset-top)) 20px 180px; }  /* 180 bottom clears the fixed Play */   /* was a tall reserve for the rider; rider now hidden */
   .howBrand { font-family: 'Uber Move', 'Uber Move Text', 'Inter', system-ui, sans-serif;
     font-size: 34px; font-weight: 900; letter-spacing: .3px; margin: 4px 0 0; color: #000; text-align: center; line-height: 1.05; }
   .howTitle { font-family: 'Uber Move', 'Uber Move Text', 'Inter', system-ui, sans-serif;
     font-size: 14px; font-weight: 800; letter-spacing: 1px; margin: 0; color: #000; opacity: .65; }
   /* Match the map image's 2:3 portrait aspect so the frame hugs it (no dark bars either side).
      Height-driven + capped so it stays responsive and doesn't dominate the layout. */
-  #htMap { aspect-ratio: 1024 / 1536; height: min(225px, calc(100svh - 450px)); width: auto; max-width: 100%; display: block; margin: 0 auto; border-radius: 12px; }
+  #htMap { aspect-ratio: 1024 / 1536; height: min(225px, calc(100svh - 490px)); width: auto; max-width: 100%; display: block; margin: 0 auto; border-radius: 12px; }
   #htChoose { display: flex; gap: 8px; width: 100%; max-width: 184px; margin-top: 8px; }
   /* mini versions of the in-game buttons: solid black pills, coloured letters, NO outlines */
   .htBtn { flex: 1; position: relative; border-radius: 999px; padding: 8px 0 7px; text-align: center;
@@ -231,7 +233,7 @@
   /* matched to the Food Stacker step block: x48, 294 wide, 28px white circles, 14px text */
   #htSteps { list-style: none; margin: 0 auto; padding: 0; width: 294px;
     display: flex; flex-direction: column; gap: 11px; text-align: left; }
-  #htSteps li { font-size: 14px; line-height: 1.35; display: flex; align-items: center; gap: 11px; color: #000; }
+  #htSteps li { font-size: 14px; font-weight: 600; line-height: 1.35; display: flex; align-items: center; gap: 11px; color: #000; }
   #htSteps b { flex: none; display: inline-block; width: 28px; height: 28px; line-height: 28px; text-align: center;
     border-radius: 50%; background: #fff; color: #000; font-size: 14px; font-weight: 900; }
   .sgood { color: #000; font-weight: 800; }
@@ -242,9 +244,14 @@
     font-size: 0.92em; vertical-align: baseline; }
   .sA { color: #7ec2ff; border-color: #3da5ff; }
   .sB { color: #ff85bf; border-color: #ff3ea5; }
-  #howtoPlay { margin-top: 4px; color: #fff;
-    background: #0b0b0b;
-    width: min(88vw, 340px); padding: 16px 0; font-size: 18px; }
+  /* Play in the shared fixed slot: left/right 24, bottom 52, h54 (same as Combo + Stacker) */
+  .tcline { position: fixed; left: 0; right: 0; bottom: max(14px, env(safe-area-inset-bottom));
+    text-align: center; font-size: 12.5px; font-weight: 700; color: rgba(11,26,16,.72); z-index: 45; }
+  .tcline a { color: inherit; text-underline-offset: 3px; }
+  #howtoPlay { position: fixed; left: 24px; right: 24px;
+    bottom: calc(52px + env(safe-area-inset-bottom)); z-index: 45;
+    margin: 0; color: #fff; background: #0b0b0b;
+    width: auto; height: 54px; padding: 0; font-size: 18px; }
   /* approved end-screen palette - placed last so it beats the legacy overlay rules */
   #over .ovHead, #entryDone .ovHead, #lbOv .ovHead, #entryDone #edMsg { color: #0b0b0b; }
   #stars { color: #F6A609; letter-spacing: 10px; padding-left: 10px; font-size: 30px; }
@@ -298,12 +305,13 @@
     </div>
     <ol id="htSteps">
       <li><b>1</b><span>Choose the shortest route, A or B.</span></li>
-      <li><b>2</b><span>Lose a bag if you get it wrong</span></li>
-      <li><b>3</b><span>Top scores make the leaderboard</span></li>
-      <li><b>4</b><span>Final 160 on the leaderboard will win prizes</span></li>
+      <li><b>2</b><span>Lose a bag if you get it wrong.</span></li>
+      <li><b>3</b><span>Top scores make the leaderboard.</span></li>
+      <li><b>4</b><span>Final 160 on the leaderboard will win prizes.</span></li>
     </ol>
     <button class="btn" id="howtoPlay">Play</button>
     <img class="rider" src="rider.png?v=2" alt="" aria-hidden="true">
+    <div class="tcline">By playing you agree to the <a href="../../index.html?goto=tandc" target="_blank" rel="noopener">Terms &amp; Conditions</a></div>
   </div>
 
   <div class="overlay hidden" id="over">

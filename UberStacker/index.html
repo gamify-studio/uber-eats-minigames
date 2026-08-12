@@ -163,9 +163,14 @@
   .tcline { position: fixed; left: 0; right: 0; bottom: max(14px, env(safe-area-inset-bottom));
     text-align: center; font-size: 12.5px; font-weight: 700; color: rgba(11,26,16,.72); z-index: 45; }
   .tcline a { color: inherit; text-underline-offset: 3px; }
-  #howOv { justify-content: safe center; padding-bottom: max(18px, env(safe-area-inset-bottom)); }
-  #howOv .htSteps { margin-top: 16px !important; }
-  #howOv .htActions { margin-top: 18px !important; width: 100%; display: flex; justify-content: center; }
+  /* top-anchored so positions are deterministic (safe-center goes nonlinear once content overflows) */
+  #howOv { justify-content: flex-start; padding-bottom: 180px; }  /* 180 clears the fixed Play */
+  #howOv .htSteps { margin-top: 16px !important; width: 294px !important; margin-left: auto !important; margin-right: auto !important; }
+  /* preview top aligned to the shared ~y230 (was 256) */
+  #demoWrap { margin-top: 22px; }
+  /* Play in the shared fixed slot: left/right 24, bottom 52, h54 (same as Combo + PP) */
+  #howOv .htActions { position: fixed; left: 24px; right: 24px; bottom: calc(52px + env(safe-area-inset-bottom)); margin: 0 !important; width: auto; display: flex; justify-content: center; z-index: 45; }
+  #howOv .htActions button { width: 100%; height: 54px; font-size: 18px; }
   .overlay h1 { font-size: 30px; font-weight: 900; line-height: 1.1; }
   .overlay h1 .e { color: var(--green); }
   .overlay p { font-size: 14px; opacity: .8; line-height: 1.55; max-width: 320px; }
@@ -218,7 +223,8 @@
   }
   #howBtn:active { transform: scale(.96); }
   /* How-to-play intro (auto-playing demo) */
-  #howOv { gap: 12px; z-index: 40; padding-top: 22px; }
+  /* top pad reproduces the old centered position at 844 (logo y44), collapses to 14 by ~814svh */
+  #howOv { gap: 12px; z-index: 40; padding-top: max(clamp(14px, calc(100svh - 800px), 44px), env(safe-area-inset-top)); }
   #howOv .htIntro {
     margin: 0; max-width: 320px; font-size: 14px; font-weight: 800; line-height: 1.45; color: #fff;
   }
@@ -229,7 +235,7 @@
   .sqLogo { width: clamp(140px, 44vw, 205px); height: auto; display: block; margin: 0 auto 4px; }  /* shared logo size across all 3 minigames */
   /* slide 7: drop shadow removed (shadows were inconsistent across the build) */
   #demoWrap { position: relative; flex-shrink: 0; border-radius: 14px; overflow: hidden; border: 2px solid rgba(6,193,103,.5); }
-  #demoCv { display: block; width: auto; height: min(276px, 32vh); aspect-ratio: 216 / 324; background: #06C167; }  /* green to match the game (was #111 black) */
+  #demoCv { display: block; width: auto; height: min(270px, calc(100svh - 456px)); aspect-ratio: 216 / 324; background: #06C167; }  /* green to match the game (was #111 black) */
   /* slide 7: the caption sat on a dark gradient over the preview and repeated the instruction
      list below it. Both the scrim and the caption are gone. */
   #demoCap { display: none; }
@@ -245,7 +251,7 @@
   #howOv .htHint { margin: 0; font-size: 13px; opacity: .9; line-height: 1.5; max-width: 300px; }
   #howOv .htHint b { color: var(--green); opacity: 1; }
   #howOv .htSteps { list-style: none; margin: 2px 0 0; padding: 0; max-width: 360px; display: flex; flex-direction: column; gap: 13px; text-align: left; }
-  #howOv .htSteps li { display: flex; gap: 11px; align-items: center; font-size: 14px; font-weight: 800; line-height: 1.42; color: #000; }
+  #howOv .htSteps li { display: flex; gap: 11px; align-items: center; font-size: 14px; font-weight: 600; line-height: 1.42; color: #000; }
   #howOv .htSteps .num { flex: 0 0 28px; width: 28px; height: 28px; border-radius: 50%; background: #fff; color: #000; font-size: 14px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
   #howOv .htSteps b { color: #000; }
   #howOv .htActions { display: flex; gap: 12px; align-items: center; margin-top: auto; }
@@ -320,7 +326,7 @@
       <li><span class="num">3</span><span>Each full line gives you points.</span></li>
     </ol>
     <div class="htActions">
-      <button class="cta" id="howPlay" style="margin-top:0;background:#0b0b0b;color:#fff;border:none;border-radius:999px;font-weight:800;width:min(88vw,340px);padding:16px 0;font-size:18px;">Play</button>
+      <button class="cta" id="howPlay" style="margin-top:0;background:#0b0b0b;color:#fff;border:none;border-radius:999px;font-weight:800;width:100%;padding:0;font-size:18px;">Play</button>
     </div>
     <img class="riderImg" src="assets/rider.png?v=2" alt="Uber Eats delivery rider" />
   </div>
