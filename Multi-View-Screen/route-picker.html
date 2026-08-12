@@ -222,6 +222,11 @@
     font-size: 16px; font-weight: 900; line-height: 1; border: none; background: #0b0b0b; }
   #htBtnA { color: #7EC2FF; }
   #htBtnB { color: #FF85BF; }
+  /* step-1 A/B rendered as miniature in-game buttons (sized to keep the step on one line) */
+  .stepBtn { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 19px;
+    border-radius: 999px; background: #0b0b0b; font-size: 11px; font-weight: 900; line-height: 1; vertical-align: -4px; }
+  .stepBtn.a { color: #7EC2FF; }
+  .stepBtn.b { color: #FF85BF; }
   .htBtn small { display: block; font-size: 9px; letter-spacing: 2px; font-weight: 800; opacity: .85; color: #fff; margin-top: 4px; }
   .htBtn.correct { border-color: #019147; animation: htPulse 1.3s ease-in-out infinite; }
   .htBtn.correct::after { content: '✓ TAP'; position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
@@ -304,7 +309,7 @@
       <div class="htBtn" id="htBtnB">B</div>
     </div>
     <ol id="htSteps">
-      <li><b>1</b><span>Choose the shortest route, A or B.</span></li>
+      <li><b>1</b><span>Choose the shortest route, <span class="stepBtn a">A</span> or <span class="stepBtn b">B</span>.</span></li>
       <li><b>2</b><span>Lose a bag if you get it wrong.</span></li>
       <li><b>3</b><span>Top scores make the leaderboard.</span></li>
       <li><b>4</b><span>Final 160 on the leaderboard will win prizes.</span></li>
