@@ -160,6 +160,9 @@
   /* The whole splash block is vertically centred, matching Combo and Path Picker: balanced space
      above the logo and below Play, rather than Play pinned to the bottom of the screen.
      (Bottom-anchoring it left a big dead gap on tall phones. Ant, 2026-08-06.) */
+  .tcline { position: fixed; left: 0; right: 0; bottom: max(14px, env(safe-area-inset-bottom));
+    text-align: center; font-size: 12.5px; font-weight: 700; color: rgba(11,26,16,.72); z-index: 45; }
+  .tcline a { color: inherit; text-underline-offset: 3px; }
   #howOv { justify-content: safe center; padding-bottom: max(18px, env(safe-area-inset-bottom)); }
   #howOv .htSteps { margin-top: 16px !important; }
   #howOv .htActions { margin-top: 18px !important; width: 100%; display: flex; justify-content: center; }
@@ -243,7 +246,7 @@
   #howOv .htHint b { color: var(--green); opacity: 1; }
   #howOv .htSteps { list-style: none; margin: 2px 0 0; padding: 0; max-width: 360px; display: flex; flex-direction: column; gap: 13px; text-align: left; }
   #howOv .htSteps li { display: flex; gap: 11px; align-items: center; font-size: 14px; font-weight: 800; line-height: 1.42; color: #000; }
-  #howOv .htSteps .num { flex: 0 0 28px; width: 28px; height: 28px; border-radius: 50%; background: #D9DECF; color: #000; font-size: 14px; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px rgba(0,0,0,.10); }
+  #howOv .htSteps .num { flex: 0 0 28px; width: 28px; height: 28px; border-radius: 50%; background: #fff; color: #000; font-size: 14px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
   #howOv .htSteps b { color: #000; }
   #howOv .htActions { display: flex; gap: 12px; align-items: center; margin-top: auto; }
   #howClose {
@@ -304,6 +307,7 @@
 
   <!-- How to play (auto-playing demo) -->
   <div class="overlay hidden" id="howOv">
+  <div class="tcline">By playing you agree to the <a href="../../index.html?goto=tandc" target="_blank" rel="noopener">Terms &amp; Conditions</a></div>
     <img class="sqLogo" src="sq-logo.png?v=5" alt="Uber Eats Side Quest">
     <div class="htTitle">Food Stacker</div>
     <div id="demoWrap">
