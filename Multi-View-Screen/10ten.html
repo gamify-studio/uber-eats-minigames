@@ -416,7 +416,7 @@
   }
 
   /* tutorial: animated swipe-merge demo */
-  .demo-grid { position: relative; width: min(74vw, 290px, calc(100svh - 516px)); aspect-ratio: 1 / 1; margin: 35px auto 0; }
+  .demo-grid { position: relative; width: min(74vw, 290px, calc(100svh - 516px)); aspect-ratio: 1 / 1; margin: 34px auto 0; }
   .demo-cells { position: absolute; inset: 0; padding: var(--gap); display: grid; gap: var(--gap); }
   .demo-cells .dc { border-radius: 11px; background: rgba(255,255,255,0.03); border: 1px solid rgba(6, 193, 103,0.14); }
   .demo-tiles { position: absolute; inset: 0; }
@@ -448,7 +448,8 @@
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
-  #tutorial h2.green { color: #000; font-size: 28px; margin-top: 6px; }
+  #tutorial h2.green { color: #000; font-size: 43px; line-height: 1.05; margin-top: 16px; }  /* shared 43px heading, title lands y151 */
+  #tutorial .sqLogo { margin-top: -20px; }  /* logo lands y44 like the other games */
   /* Uber Eats Side Quest logo above the game name on the start screen */
   /* Shared SideQuest logo size across all 3 minigames (Combo / Stacker / Path Picker). */
   .sqLogo { width: clamp(140px, 44vw, 205px); height: auto; display: block; margin: 0 auto 4px; }
