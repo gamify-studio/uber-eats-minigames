@@ -26,13 +26,13 @@
     font-family: "Uber Move";
     src: local("Uber Move Medium"), local("UberMove-Medium"),
          url("assets/fonts/UberMoveMedium.otf") format("opentype");
-    font-weight: 100 500; font-style: normal; font-display: swap;
+    font-weight: 100 600; font-style: normal; font-display: swap;  /* 600 belongs to Medium, matching Stacker/PP: Bold-mapped 600 made the instructions read bold (Shannon) */
   }
   @font-face {
     font-family: "Uber Move";
     src: local("Uber Move Bold"), local("UberMove-Bold"),
          url("assets/fonts/UberMoveBold.otf") format("opentype");
-    font-weight: 600 900; font-style: normal; font-display: swap;
+    font-weight: 601 900; font-style: normal; font-display: swap;
   }
 
   :root {
@@ -416,7 +416,7 @@
   }
 
   /* tutorial: animated swipe-merge demo */
-  .demo-grid { position: relative; width: min(74vw, 290px, calc(100svh - 516px)); aspect-ratio: 1 / 1; margin: 34px auto 0; }
+  .demo-grid { position: relative; width: min(74vw, 290px, calc(100svh - 490px)); aspect-ratio: 1 / 1; margin: 34px auto 0; }
   .demo-cells { position: absolute; inset: 0; padding: var(--gap); display: grid; gap: var(--gap); }
   .demo-cells .dc { border-radius: 11px; background: rgba(255,255,255,0.03); border: 1px solid rgba(6, 193, 103,0.14); }
   .demo-tiles { position: absolute; inset: 0; }
@@ -432,7 +432,7 @@
   .demo-eq { text-align: center; font-weight: 800; color: var(--muted); font-size: 15px; min-height: 18px; }
   .demo-eq b { color: var(--green); font-size: 1.15em; }
   /* tutorial lines */
-  .tut-lines { text-align: left; margin: 26px auto 0; width: 294px; display: flex; flex-direction: column; gap: 10px; }
+  .tut-lines { text-align: left; margin: clamp(12px, calc(26px - (844px - 100svh) * 0.14), 26px) auto 0; width: 294px;  /* gap gives way below 844svh so the reverted grid clears the fixed Play */ display: flex; flex-direction: column; gap: 10px; }
   .tut-lines p { margin: 0; display: flex; gap: 11px; align-items: flex-start; font-weight: 600; color: var(--muted); font-size: 14px; line-height: 1.35; }
   .tut-lines .n { flex: none; width: 28px; height: 28px; border-radius: 50%; background: rgba(6, 193, 103,0.18); color: var(--green); font-weight: 900; font-size: 13px; display: grid; place-items: center; }
   /* let the instruction text wrap inside the flex row instead of overflowing on narrow phones */
@@ -449,7 +449,7 @@
     -webkit-backdrop-filter: none;
   }
   #tutorial h2.green { color: #000; font-size: min(43px, 12vw);  /* shrinks below 331px wide so Combo Creator never wraps */ line-height: 1.05; margin-top: 16px; }  /* shared 43px heading, title lands y151 */
-  #tutorial .sqLogo { margin-top: -20px; }  /* logo lands y44 like the other games */
+  #tutorial .sqLogo { margin-top: calc(-20px - clamp(0px, (805px - 100svh) * 0.6, 15px)); }  /* y44 at 844; rides up to 12px higher below 780svh for the reverted grid */
   /* Uber Eats Side Quest logo above the game name on the start screen */
   /* Shared SideQuest logo size across all 3 minigames (Combo / Stacker / Path Picker). */
   .sqLogo { width: clamp(140px, 44vw, 205px); height: auto; display: block; margin: 0 auto 4px; }
@@ -528,9 +528,9 @@
             </div>
             <div class="demo-eq" id="demoEq"></div>
             <div class="tut-lines">
-              <p><span class="n">1</span><span><b>Swipe</b> any direction, all items slide that way.</span></p>
-              <p><span class="n">2</span><span>Two of the <b>same item merge</b> into the next one.</span></p>
-              <p><span class="n">3</span><span>Reach the <b>Uber Eats bag</b> to <b>finish</b>, in as few swipes as you can!</span></p>
+              <p><span class="n">1</span><span>Swipe any direction, all items slide that way.</span></p>
+              <p><span class="n">2</span><span>Two of the same item merge into the next one.</span></p>
+              <p><span class="n">3</span><span>Reach the <b>Uber Eats</b> bag to finish, in as few swipes as you can!</span></p>
             </div>
             <div class="btn-row"><button class="btn" id="tut-got" style="background:#0b0b0b;color:#fff;border:none;border-radius:999px;font-weight:800;padding:0;font-size:18px;">Play</button></div>
           </div>
