@@ -215,18 +215,14 @@
     font-size: 14px; font-weight: 800; letter-spacing: 1px; margin: 0; color: #000; opacity: .65; }
   /* Match the map image's 2:3 portrait aspect so the frame hugs it (no dark bars either side).
      Height-driven + capped so it stays responsive and doesn't dominate the layout. */
-  #htMap { aspect-ratio: 1024 / 1536; height: min(276px, calc(100svh - 531px));  /* 276 tall = 184 wide at 2:3, matching the A/B pill row */ width: auto; max-width: 100%; display: block; margin: 23px auto 0; border-radius: 12px; }
-  #htChoose { display: flex; gap: 8px; width: 100%; max-width: 184px; margin-top: 8px; }
+  #htMap { aspect-ratio: 1024 / 1536; height: min(285px, calc(100svh - 516px));  /* 285 tall = 190 wide at 2:3; the A/B row is narrower AND width-tied to the same curve so the map always reads wider than the buttons */ width: auto; max-width: 100%; display: block; margin: 23px auto 0; border-radius: 12px; }
+  #htChoose { display: flex; gap: 8px; width: 100%; max-width: min(156px, calc((100svh - 516px) * 0.6667)); margin-top: 0; }
   /* mini versions of the in-game buttons: solid black pills, coloured letters, NO outlines */
-  .htBtn { flex: 1; position: relative; border-radius: 999px; padding: 8px 0 7px; text-align: center;
+  .htBtn { flex: 1; position: relative; border-radius: 999px; padding: 6px 0 5px; text-align: center;
     font-size: 16px; font-weight: 900; line-height: 1; border: none; background: #0b0b0b; }
   #htBtnA { color: #7EC2FF; }
   #htBtnB { color: #FF85BF; }
-  /* step-1 A/B rendered as miniature in-game buttons (sized to keep the step on one line) */
-  .stepBtn { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 19px;
     border-radius: 999px; background: #0b0b0b; font-size: 11px; font-weight: 900; line-height: 1; vertical-align: middle; position: relative; top: -1.4px; }
-  .stepBtn.a { color: #7EC2FF; }
-  .stepBtn.b { color: #FF85BF; }
   .htBtn small { display: block; font-size: 9px; letter-spacing: 2px; font-weight: 800; opacity: .85; color: #fff; margin-top: 4px; }
   .htBtn.correct { border-color: #019147; animation: htPulse 1.3s ease-in-out infinite; }
   .htBtn.correct::after { content: '✓ TAP'; position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
@@ -310,7 +306,7 @@
       <div class="htBtn" id="htBtnB">B</div>
     </div>
     <ol id="htSteps">
-      <li><b>1</b><span>Choose the shortest route, <span class="stepBtn a">A</span> or <span class="stepBtn b">B</span>.</span></li>
+      <li><b>1</b><span>Choose the shortest route, A or B.</span></li>
       <li><b>2</b><span>Lose a bag if you get it wrong.</span></li>
       <li><b>3</b><span>Top scores make the leaderboard.</span></li>
       <li><b>4</b><span>Final 160 on the leaderboard will win prizes.</span></li>

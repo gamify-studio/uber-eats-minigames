@@ -163,8 +163,11 @@
     text-align: center; font-size: 12.5px; font-weight: 700; color: rgba(11,26,16,.72); z-index: 45; }
   .tcline a { color: inherit; text-underline-offset: 3px; }
   /* top-anchored so positions are deterministic (safe-center goes nonlinear once content overflows) */
-  #howOv { justify-content: flex-start; padding-bottom: 180px; }  /* 180 clears the fixed Play */
-  #howOv .htSteps { margin-top: 16px !important; width: 294px !important; margin-left: auto !important; margin-right: auto !important; }
+  /* content box ends exactly at the Play top (52+54): auto margins then split the free space
+     EQUALLY above and below the steps, so preview-to-steps == steps-to-Play at every height */
+  #howOv { justify-content: flex-start; padding-bottom: 106px; }
+  #howOv .htFlexPad { margin-top: auto; height: 0; }
+  #howOv .htSteps { margin-top: auto !important; width: 294px !important; margin-left: auto !important; margin-right: auto !important; }
   /* preview top aligned to the shared ~y230 (was 256) */
   #demoWrap { margin-top: 22px; }
   /* Play in the shared fixed slot: left/right 24, bottom 52, h54 (same as Combo + PP) */
@@ -325,6 +328,7 @@
       <li><span class="num">2</span><span>Slide, rotate and drop items.</span></li>
       <li><span class="num">3</span><span>Each full line gives you points.</span></li>
     </ol>
+    <div class="htFlexPad" aria-hidden="true"></div>
     <div class="htActions">
       <button class="cta" id="howPlay" style="margin-top:0;background:#0b0b0b;color:#fff;border:none;border-radius:999px;font-weight:800;width:100%;padding:0;font-size:18px;">Play</button>
     </div>
