@@ -231,7 +231,7 @@
     margin: 0; max-width: 320px; font-size: 14px; font-weight: 800; line-height: 1.45; color: #fff;
   }
   #howOv .htIntro b { color: var(--green); }
-  #howOv .htTitle { font-size: min(43px, 12vw);  /* shrinks below 331px wide so long titles never wrap */ font-weight: 900; line-height: 1.05; }
+  #howOv .htTitle { font-size: min(43px, 12vw, calc(8px + 4.15svh));  /* shrinks below 331px wide so long titles never wrap */ font-weight: 900; line-height: 1.05; }
   #howOv .htTitle .e { color: var(--green); }
   /* Uber Eats Side Quest logo above the game name on the start screen */
   .sqLogo { width: clamp(140px, 44vw, 205px); height: auto; display: block; margin: 0 auto 4px; }  /* shared logo size across all 3 minigames */
@@ -262,6 +262,9 @@
     border-radius: 12px; padding: 14px 22px; font-size: 15px; font-weight: 800; cursor: pointer;
   }
   #howClose:active { transform: scale(.97); }
+
+  /* shared template: logo and heading give way below ~810svh in lockstep across all three games */
+  #howOv .sqLogo { height: min(91px, calc(32px + 7.3svh)); width: auto; }
 </style>
 </head>
 <body>

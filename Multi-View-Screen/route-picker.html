@@ -210,13 +210,13 @@
     /* top pad gives way on short viewports (78 at 844 -> 14 by 780) so steps clear the fixed Play */
     padding: max(clamp(14px, calc(100svh - 800px), 44px), env(safe-area-inset-top)) 20px 180px; }  /* 180 bottom clears the fixed Play */   /* was a tall reserve for the rider; rider now hidden */
   .howBrand { font-family: 'Uber Move', 'Uber Move Text', 'Inter', system-ui, sans-serif;
-    font-size: min(43px, 12vw); font-weight: 900;  /* matches the other games' narrow-screen shrink */ margin: 4px 0 0; color: #000; text-align: center; line-height: 1.05; }  /* shared 43px heading */
+    font-size: min(43px, 12vw, calc(8px + 4.15svh)); font-weight: 900;  /* matches the other games' narrow-screen shrink */ margin: 4px 0 0; color: #000; text-align: center; line-height: 1.05; }  /* shared 43px heading */
   .howTitle { font-family: 'Uber Move', 'Uber Move Text', 'Inter', system-ui, sans-serif;
     font-size: 14px; font-weight: 800; letter-spacing: 1px; margin: 0; color: #000; opacity: .65; }
   /* Match the map image's 2:3 portrait aspect so the frame hugs it (no dark bars either side).
      Height-driven + capped so it stays responsive and doesn't dominate the layout. */
-  #htMap { aspect-ratio: 1024 / 1536; height: min(285px, calc(100svh - 516px));  /* 285 tall = 190 wide at 2:3; the A/B row is narrower AND width-tied to the same curve so the map always reads wider than the buttons */ width: auto; max-width: 100%; display: block; margin: 23px auto 0; border-radius: 12px; }
-  #htChoose { display: flex; gap: 8px; width: 100%; max-width: min(156px, calc((100svh - 516px) * 0.6667)); margin-top: 0; }
+  #htMap { aspect-ratio: 1024 / 1536; height: min(285px, calc(100svh - 496px));  /* 285 tall = 190 wide at 2:3; the A/B row is narrower AND width-tied to the same curve so the map always reads wider than the buttons */ width: auto; max-width: 100%; display: block; margin: 23px auto 0; border-radius: 12px; }
+  #htChoose { display: flex; gap: 8px; width: 100%; max-width: min(156px, calc((100svh - 496px) * 0.6667)); margin-top: 0; }
   /* mini versions of the in-game buttons: solid black pills, coloured letters, NO outlines */
   .htBtn { flex: 1; position: relative; border-radius: 999px; padding: 6px 0 5px; text-align: center;
     font-size: 16px; font-weight: 900; line-height: 1; border: none; background: #0b0b0b; }
@@ -233,8 +233,8 @@
   @keyframes htPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.045); } }
   /* matched to the Food Stacker step block: x48, 294 wide, 28px white circles, 14px text */
   #htSteps { list-style: none; margin: 0 auto; padding: 0; width: 294px;
-    display: flex; flex-direction: column; gap: 11px; text-align: left; }
-  #htSteps li { font-size: 14px; font-weight: 600; line-height: 1.35; display: flex; align-items: center; gap: 11px; color: #000; }
+    display: flex; flex-direction: column; gap: clamp(7px, calc(11px - (844px - 100svh) * 0.09), 11px); text-align: left; }  /* rows tighten slightly on short viewports */
+  #htSteps li { font-size: 14px; font-weight: 600; line-height: 1.3; display: flex; align-items: center; gap: 11px; color: #000; }
   #htSteps b { flex: none; display: inline-block; width: 28px; height: 28px; line-height: 28px; text-align: center;
     border-radius: 50%; background: #fff; color: #000; font-size: 14px; font-weight: 900; }
   .sgood { color: #000; font-weight: 800; }
@@ -272,6 +272,9 @@
     text-transform: uppercase; color: #8a8f8b; }
   #scorepill .v { font-size: 20px; font-weight: 800; color: #0b0b0b; line-height: 1; }
   #prompt, #right { display: none !important; }
+
+  /* shared template: logo and heading give way below ~810svh in lockstep across all three games */
+  #howto .sqLogo { height: min(91px, calc(32px + 7.3svh)); width: auto; }
 </style>
 </head>
 <body>
@@ -309,7 +312,7 @@
       <li><b>1</b><span>Choose the shortest route, A or B.</span></li>
       <li><b>2</b><span>Lose a bag if you get it wrong.</span></li>
       <li><b>3</b><span>Top scores make the leaderboard.</span></li>
-      <li><b>4</b><span>Final 160 on the leaderboard will win prizes.</span></li>
+      <li><b>4</b><span id="step4Text">Final 160 players on the leaderboard win prizes!</span></li>
     </ol>
     <button class="btn" id="howtoPlay">Play</button>
     <img class="rider" src="rider.png?v=2" alt="" aria-hidden="true">
@@ -1033,6 +1036,9 @@ function showOnlyOverlay(id){
    now a countable noun (voucher / Gift Card / Pack), so they all take the article:
    'a $100 Fortnite V-Bucks voucher', 'a HOYTS Movie Voucher', 'a Platinum Gaming Pack'. */
 // join the prize's last two words with a no-break space so the sentence never ends in a one-word line
+// Shannon 17 Aug wording; date comes from CAMPAIGN_END so the perennial date update stays one constant
+(function(){ var el = document.getElementById('step4Text');
+  if (el) el.innerHTML = 'Final 160 players on the leaderboard at ' + CAMPAIGN_END + ' win\u00A0prizes!'; })();
 function prizePhrase(p){ return ('a ' + p).replace(/ (?=\S+$)/, '\u00A0'); }
 function prizeForRank(r){
   if (r === 1) return 'Platinum Gaming Pack';
