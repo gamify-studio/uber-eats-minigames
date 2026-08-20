@@ -66,6 +66,12 @@
   @keyframes cpop { 0%{ transform: scale(.5); opacity: 0 } 40%{ transform: scale(1.15); opacity: 1 } 100%{ transform: scale(1); opacity: 1 } }
 
   /* ---- choice buttons ---- */
+  /* in-app browsers (Slack, Instagram, FB, TikTok) overlay a toolbar on the page bottom;
+     html.inapp raises bottom-anchored UI clear of it (Anna 18/08: A/B ran out of view) */
+  html.inapp .choice { bottom: calc(84px + env(safe-area-inset-bottom)) !important; }
+  html.inapp #howtoPlay { bottom: calc(108px + env(safe-area-inset-bottom)) !important; }
+  html.inapp .tcline { bottom: 66px !important; }
+  html.inapp #entryDone { padding-bottom: 84px; }
   .choice { position: absolute; bottom: calc(24px + env(safe-area-inset-bottom));
     width: calc(50% - 32px); height: 56px; border-radius: 999px;
     background: #0b0b0b; border: none; box-shadow: none;
@@ -109,9 +115,9 @@
   .pillbtn.gold { background: #EBD045; color: #0b0b0b; }
   /* You're in spacing matched to the Figma: logo / rider / heading / copy rhythm, buttons low */
   .edLogo { width: clamp(84px, 22vw, 120px); margin-top: 0; }
-  .edRider { width: clamp(160px, 32vh, 260px); margin-top: clamp(14px, 3.2svh, 34px); }
-  #entryDone { gap: 0; }
-  #entryDone .ovHead { margin-top: clamp(14px, 3svh, 30px); }
+  .edRider { width: clamp(96px, calc(88svh - 480px), 260px); margin-top: clamp(8px, 2svh, 34px); }  /* 260 at 844 unchanged; gives way harder on short/webview viewports (Anna: buttons below the fold) */
+  #entryDone { gap: 0; overflow-y: auto; }  /* scroll fallback so no button is ever unreachable */
+  #entryDone .ovHead { margin-top: clamp(8px, 2svh, 30px); }
   #entryDone #edMsg { color: #0b0b0b; font-size: 16px; font-weight: 600; line-height: 1.45; max-width: 360px;
                       margin: clamp(10px, 2svh, 18px) 0 0; }
   .edBtns { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 420px; margin-top: auto;
@@ -366,7 +372,7 @@
          busy confirmation. Matches the client note on slide 20. -->
     <img class="edRider" src="rider.png?v=2" alt="" aria-hidden="true">
     <h1 class="ovHead" id="edTitle">You're in!</h1>
-    <p id="edMsg">Your score of <b>0</b> has been submitted as your competition entry. Good&nbsp;luck!</p>
+    <p id="edMsg">Your score of <b>0</b> has been submitted as your competition entry.</p>
     <p id="edPrize" style="font-weight:800;font-size:16px;max-width:360px;margin:6px 0 0;color:#0b0b0b;"></p>
     <div class="edBtns">
       <button class="pillbtn outline" id="edShare">Share with a friend
@@ -523,6 +529,8 @@ function fitWindowToRound(){
   const h = Math.max(0.45 * avail.h, Math.min(avail.h, avail.w * (b.h / b.w)));
   win = { x: PAD, y: avail.y + (avail.h - h) / 2, w: avail.w, h: h };
 }
+var INAPP = /Slack|FBAN|FBAV|Instagram|Line|TikTok|GSA/i.test(navigator.userAgent);
+if (INAPP) document.documentElement.classList.add('inapp');
 function layout(){
   dpr = Math.min(window.devicePixelRatio || 1, 3);
   const app = document.querySelector('.app') || document.body;
@@ -538,7 +546,7 @@ function layout(){
   HUD_TOP = base;
   const availW = cssW - PAD * 2;
   // bottom stack per the approved frame: map, then tagline, then the A/B buttons
-  let btnTop = cssH - (56 + 24);
+  let btnTop = cssH - (56 + 24 + (INAPP ? 60 : 0));
   const baEl = document.getElementById('btnA');
   if (baEl){ const br = baEl.getBoundingClientRect(); if (br.height > 0) btnTop = br.top; }
   const tag = document.querySelector('.sq-tagline');
@@ -999,16 +1007,34 @@ async function ensureSession(){
 // Bubble an analytics event up to the host page's gtag (same GA session as the page_view + UTMs).
 function ga(name, params){ try { window.parent.postMessage({ type:'ga', name:name, params:params||{} }, '*'); } catch(e){} }
 
+// Anna 18/08: her board stuck at 737 while she scored 1379. Cause: mode 'view' compared runs
+// against the local PLAYED best (including pre-entry runs never submitted), so higher scores
+// than the SUBMITTED best silently never posted. This heals the gap whenever the board opens.
+async function syncBestQuiet(){
+  try {
+    let sent = 0; try { sent = parseInt(localStorage.getItem('pathpicker_sent_best') || '0', 10) || 0; } catch (e) {}
+    const target = Math.max(score, best);
+    if (target <= sent) return;
+    const s = await ensureSession();
+    let handle = 'Player'; try { handle = localStorage.getItem('pathpicker_handle') || 'Player'; } catch (e) {}
+    const r = await fetch(LB_API + '/score', { method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ playerId: s.playerId, token: s.token, exp: s.exp, handle, score: target }) });
+    if (r.ok) { try { localStorage.setItem('pathpicker_sent_best', String(target)); } catch (e) {} }
+  } catch (e) {}
+}
 async function submitScoreOnly(){
   const btn = document.getElementById('enterBtn');
   const oerr = document.getElementById('overError'); if (oerr) oerr.textContent = '';
   const label = btn.textContent; btn.disabled = true; btn.textContent = 'Submitting...';
+  try { const m = document.getElementById('edMsg');
+    if (m) m.innerHTML = 'Your score of <b>' + score + '</b> has been submitted as your competition entry.'; } catch (e) {}
   try {
     const s = await ensureSession();
     let handle = 'Player'; try { handle = localStorage.getItem('pathpicker_handle') || 'Player'; } catch (e) {}
     const r = await fetch(LB_API + '/score', { method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ playerId: s.playerId, token: s.token, exp: s.exp, handle, score }) });
+      body: JSON.stringify({ playerId: s.playerId, token: s.token, exp: s.exp, handle, score: Math.max(score, best) }) });
     if (!r.ok) throw new Error('score ' + r.status);
+    try { localStorage.setItem('pathpicker_sent_best', String(Math.max(score, best))); } catch (e) {}
     ga('leaderboard_submit', { score: score });
     let sd = {}; try { sd = await r.json(); } catch (e) {}
     fillEntryDone(sd);
@@ -1066,7 +1092,7 @@ function fillEntryDone(resp){
       msg.innerHTML = 'This run: <b>' + score + '</b>. Your best score of <b>' + sc + '</b> is on the\u00A0leaderboard.';
     } else {
       // 'Good luck!' on its own line: it orphaned ('Good' / 'luck!') when the sentence wrapped
-      msg.innerHTML = 'Your score of <b>' + sc + '</b> is on the\u00A0leaderboard.<br>Good luck!';
+      msg.innerHTML = 'Your score of <b>' + sc + '</b> is on the\u00A0leaderboard.';
     }
   }
   const pl = document.getElementById('edPrize');
@@ -1088,7 +1114,7 @@ function fillEntryDone(resp){
 var _enterBtn = document.getElementById('enterBtn');
 if (_enterBtn) _enterBtn.addEventListener('click', () => {
   // 'view' = already entered and this run did not beat their best, so there is nothing to submit.
-  if (_enterBtn.dataset.mode === 'view') { showLeaderboard(); return; }
+  if (_enterBtn.dataset.mode === 'view') { syncBestQuiet(); showLeaderboard(); return; }
   let entered = false; try { entered = localStorage.getItem('pathpicker_entered') === '1'; } catch (e) {}
   if (entered) { submitScoreOnly(); return; }   // returning entrant: update score only, skip the form + /signup
   document.getElementById('efError').textContent = ''; showOnlyOverlay('entry');
@@ -1115,7 +1141,7 @@ if (_entryForm) _entryForm.addEventListener('submit', async (e) => {
     const handle = (first + (last ? ' ' + last[0].toUpperCase() : '')).slice(0, 20); // public leaderboard name
     const post = (path, payload) => fetch(LB_API + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
 
-    const sr = await post('/score', { playerId: s.playerId, token: s.token, exp: s.exp, handle, score });
+    const sr = await post('/score', { playerId: s.playerId, token: s.token, exp: s.exp, handle, score: Math.max(score, best) });
     if (!sr.ok) throw new Error('score ' + sr.status);
     ga('leaderboard_submit', { score: score });
     let sd = {}; try { sd = await sr.json(); } catch (e) {}
@@ -1126,7 +1152,8 @@ if (_entryForm) _entryForm.addEventListener('submit', async (e) => {
 
     // Remember on this device that this player has completed + entered the draw (so a returning
     // player can be offered a straight replay to beat their best). Best score lives in localStorage too.
-    try { localStorage.setItem('pathpicker_entered', '1'); localStorage.setItem('pathpicker_handle', handle); } catch (e) {}
+    try { localStorage.setItem('pathpicker_entered', '1'); localStorage.setItem('pathpicker_handle', handle);
+          localStorage.setItem('pathpicker_sent_best', String(Math.max(score, best))); } catch (e) {}
 
     fillEntryDone(sd);
     showOnlyOverlay('entryDone');
