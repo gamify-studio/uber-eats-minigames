@@ -503,8 +503,11 @@ function newRound(){
   const AR = win.w / win.h;
   let w = x1 - x0, h = y1 - y0;
   if (w / h > AR){ const nh = w / AR; y0 -= (nh - h) / 2; h = nh; } else { const nw = h * AR; x0 -= (nw - w) / 2; w = nw; }
-  if (w > MAPW){ const s = MAPW / w; w = MAPW; h = h * s; }
-  if (h > MAPH){ const s = MAPH / h; h = MAPH; w = w * s; }
+  // If the needed source rect exceeds the map image, shrink the on-screen WINDOW rather than
+  // the coverage: shrinking coverage cut routes off at the map edge on wide-aspect viewports
+  // (Anna 18/08, route A clipped). Scaling win by the same factor keeps the aspect exact.
+  if (w > MAPW){ const s = MAPW / w; w = MAPW; win.w = win.w * s; win.x = PAD + Math.max(0, (avail.w - win.w) / 2); }
+  if (h > MAPH){ const s = MAPH / h; h = MAPH; win.h = win.h * s; win.y = avail.y + Math.max(0, (avail.h - win.h) / 2); }
   x0 = Math.max(0, Math.min(MAPW - w, x0));
   y0 = Math.max(0, Math.min(MAPH - h, y0));
   cur = { A: A, B: B, correct: correct, band: band, view: { sx: x0, sy: y0, sw: w, sh: h },
