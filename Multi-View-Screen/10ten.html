@@ -92,12 +92,12 @@
      approved gameplay screen has it. Measured, not guessed. */
   /* Vertical rhythm from the approved page (12 Aug): roughly 44 / 55 / 75 / 86 gaps at
      390x844, clamped so short phones compress gracefully instead of clipping. */
-  .gameLogo { width: 124px; height: auto; display: block; margin: clamp(20px, 3.4svh, 28px) auto 0; }
+  .gameLogo { height: 66px; width: auto; display: block; margin: 8px auto 0; }  /* Stacker header parity: logo lands y26 h66 */
   .header {
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    margin-top: clamp(26px, 4.9svh, 41px);
+    margin-top: 9px;  /* Anna 18/08 + Ant: panel lands y117, exactly Stacker's pill position */
   }
 
   .scorebox {
@@ -107,16 +107,16 @@
     border-radius: 16px;
     overflow: hidden;
   }
-  .scorebox .seg { padding: 10px 22px 11px; text-align: center; min-width: 76px; }
+  .scorebox .seg { padding: 6px 20px 7px; text-align: center; min-width: 76px; }  /* 50px tall = Stacker's pill */
   .scorebox .seg + .seg { border-left: 1px solid rgba(0, 0, 0, 0.1); }
   .scorebox .seg .label { color: rgba(0, 0, 0, 0.45); }   /* grey labels on the light pill */
   .scorebox .seg .value { color: #0b1a10; }                /* dark numbers (were white) */
   .seg .label {
-    font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    font-size: 10px; font-weight: 800; letter-spacing: 1.5px;
     color: var(--green); text-transform: uppercase;
   }
   .seg .value {
-    font-size: 26px; font-weight: 900; line-height: 1.1; color: #fff;
+    font-size: 21px; font-weight: 900; line-height: 1.1; color: #fff;
     font-variant-numeric: tabular-nums;
   }
   .seg .value.pulse { animation: pulse 0.3s ease; }
@@ -149,7 +149,7 @@
   /* ---------- board ---------- */
   /* min() height term: the board must end above the bottom-anchored tagline (122px) on ANY
      viewport. svh tracks Safari's collapsing bars. Broke on iPhone at ~660px (12 Aug). */
-  .board-wrap { position: relative; width: min(88%, calc(100svh - 360px));  /* was 115svh-553: over-shrunk on iPhones (206px at 660svh); fitBoardToViewport still guards the tagline */
+  .board-wrap { position: relative; width: min(354px, 100%, calc(100svh - 360px));  /* to the same side margins as Stacker's bag (x18-372 at 390) */  /* was 115svh-553: over-shrunk on iPhones (206px at 660svh); fitBoardToViewport still guards the tagline */
     margin: 18px auto 0; }  /* anchored under the score pill (Shannon's mock): the old clamp centered it low, and the height guard grants width from the board TOP, so lower = smaller */
 
   .board {
