@@ -122,10 +122,14 @@
                       margin: clamp(10px, 2svh, 18px) 0 0; }
   .edBtns { display: flex; flex-direction: column; gap: clamp(8px, calc(2.4svh - 6px), 14px); width: 100%; max-width: 420px; margin-top: auto;
             padding-top: clamp(6px, calc(2.6svh - 6px), 16px); padding-bottom: max(16px, env(safe-area-inset-bottom)); }
-  #lbOv { background: #06C167; }
-  #lbList { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 420px; margin-top: 10px; }
+  #lbOv { background: #06C167; gap: clamp(7px, calc(16px - (830px - 100svh) * 0.075), 16px); }
+  #lbOv .edLogo { height: min(86px, calc(28px + 6.9svh)); width: auto; }
+  #lbOv #lbPrize { margin-top: clamp(6px, calc(14px - (830px - 100svh) * 0.06), 14px) !important; }
+  #lbList { display: flex; flex-direction: column; gap: clamp(5px, calc(10px - (830px - 100svh) * 0.05), 10px); width: 100%; max-width: 420px; margin-top: clamp(4px, calc(10px - (830px - 100svh) * 0.05), 10px); }
+  /* rows compress below ~800svh so the whole board + buttons fit without scrolling (Anna slide 5) */
   .lbrow { display: flex; align-items: center; gap: 14px; background: #fff; border-radius: 16px;
-           padding: 14px 18px; font-weight: 800; font-size: 16px; color: #0b0b0b; text-align: left; }
+           padding: clamp(7px, calc(14px - (830px - 100svh) * 0.058), 14px) 18px;
+           font-weight: 800; font-size: 16px; color: #0b0b0b; text-align: left; }
   .lbrow .rk { color: #8a8f8b; min-width: 34px; }
   .lbrow .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .lbrow .sc { margin-left: auto; }
@@ -166,12 +170,17 @@
   /* Prize-draw entry form */
   .entryForm { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 340px; margin-top: 0; flex: 1; }
   /* top-anchor the entry page like the Figma (logo ~5% from top) and pin submit to the bottom */
-  #entry { justify-content: flex-start; padding-top: max(4svh, env(safe-area-inset-top)); gap: clamp(13px, calc(13px + (100svh - 700px) * 0.042), 19px); }  /* breathes only above 700svh (Ant 31/08: form bunched at top) */
+  #entry { justify-content: flex-start; padding-top: max(4svh, env(safe-area-inset-top)); gap: 13px; }
   #entry h1.delivered { margin: 6px 0 0; }
-  #entry .entryForm { gap: clamp(11px, calc(11px + (100svh - 700px) * 0.09), 24px); margin-top: clamp(6px, calc(6px + (100svh - 700px) * 0.055), 14px); }
+  #entry .entryForm { gap: 11px; margin-top: 6px; }
+  /* centre the field block between the header and Submit: free space splits equally above
+     the first field and below the last checkbox (Ant 31/08: was top-anchored) */
+  #entry .entryForm > input:first-of-type { margin-top: auto; }
+  #entry .entryForm label:last-of-type { margin-bottom: auto; }
+  #entry .entryForm #efError:empty { display: none; }  /* empty placeholder was adding phantom flex gaps below the checks */
   #entry .entryForm input[type=text], #entry .entryForm input[type=email], #entry .entryForm input[type=tel] {
     padding: 14px 20px; font-size: 16px; }
-  #entry #efSubmit { margin-top: auto; align-self: center; margin-bottom: max(10px, env(safe-area-inset-bottom)); }
+  #entry #efSubmit { margin-top: 0; align-self: center; margin-bottom: max(10px, env(safe-area-inset-bottom)); }
   .entryForm input[type=text], .entryForm input[type=email], .entryForm input[type=tel] {
     width: 100%; padding: 10px 16px; border-radius: 999px; border: 1px solid rgba(0,0,0,.2);
     font-size: 15px; font-family: inherit; background: #fff; color: #000; box-sizing: border-box; }
