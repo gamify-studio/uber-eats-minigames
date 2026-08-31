@@ -200,7 +200,7 @@
   .entryLogo { width: clamp(96px, 17vh, 172px); height: auto; margin: 0 auto 2px; display: block; }
   /* Entry form is long; tighten the section gaps + copy so it fits the iPhone 16 Pro viewport
      (and safe-center + overflow on .overlay means nothing clips even on the smallest phones). */
-  #entry { gap: 6px; padding-top: 12px; padding-bottom: 14px; }
+  #entry { gap: 6px; padding-top: clamp(12px, calc(12px + (100svh - 700px) * 0.222), 44px); padding-bottom: 14px; }  /* logo lands the shared y44 on tall screens (Ant 31/08: header rode 30px too high); stays tight on small ones */
   #entry .delivered { font-size: clamp(20px, 5vw, 30px) !important; }
   #entry p { font-size: 13px; line-height: 1.35; margin: 0; }
   .btn2sm { margin-top: 12px; background: rgba(255,255,255,.08); color: #fff; border: 1px solid rgba(255,255,255,.22);
