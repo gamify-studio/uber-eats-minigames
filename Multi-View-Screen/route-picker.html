@@ -166,9 +166,9 @@
   /* Prize-draw entry form */
   .entryForm { display: flex; flex-direction: column; gap: 6px; width: 100%; max-width: 340px; margin-top: 0; flex: 1; }
   /* top-anchor the entry page like the Figma (logo ~5% from top) and pin submit to the bottom */
-  #entry { justify-content: flex-start; padding-top: max(4svh, env(safe-area-inset-top)); gap: 13px; }
+  #entry { justify-content: flex-start; padding-top: max(4svh, env(safe-area-inset-top)); gap: clamp(13px, calc(13px + (100svh - 700px) * 0.042), 19px); }  /* breathes only above 700svh (Ant 31/08: form bunched at top) */
   #entry h1.delivered { margin: 6px 0 0; }
-  #entry .entryForm { gap: 11px; margin-top: 6px; }
+  #entry .entryForm { gap: clamp(11px, calc(11px + (100svh - 700px) * 0.09), 24px); margin-top: clamp(6px, calc(6px + (100svh - 700px) * 0.055), 14px); }
   #entry .entryForm input[type=text], #entry .entryForm input[type=email], #entry .entryForm input[type=tel] {
     padding: 14px 20px; font-size: 16px; }
   #entry #efSubmit { margin-top: auto; align-self: center; margin-bottom: max(10px, env(safe-area-inset-bottom)); }
