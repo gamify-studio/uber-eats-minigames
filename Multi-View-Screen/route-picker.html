@@ -381,7 +381,7 @@
          busy confirmation. Matches the client note on slide 20. -->
     <img class="edRider" src="rider.png?v=2" alt="" aria-hidden="true">
     <h1 class="ovHead" id="edTitle">You're in!</h1>
-    <p id="edMsg">Nice try! Play again to set a score - your best score always counts.</p>
+    <p id="edMsg">Play again to set a score - your best score always counts.</p>
     <p id="edPrize" style="font-weight:800;font-size:16px;max-width:360px;margin:6px 0 0;color:#0b0b0b;"></p>
     <div class="edBtns">
       <button class="pillbtn outline" id="edShare">Share with a friend
@@ -1048,7 +1048,7 @@ async function submitScoreOnly(){
     const m = document.getElementById('edMsg');
     if (m) m.innerHTML = (score > 0)
       ? 'Your score of <b>' + score + '</b> has been submitted as your competition\u00A0entry.'
-      : 'Nice try! Play again to set a score - your best score always\u00A0counts.'; } catch (e) {}
+      : 'Play again to set a score - your best score always\u00A0counts.'; } catch (e) {}
   try {
     const s = await ensureSession();
     let handle = 'Player'; try { handle = localStorage.getItem('pathpicker_handle') || 'Player'; } catch (e) {}
@@ -1119,9 +1119,9 @@ function fillEntryDone(resp){
     if (sc > score){
       msg.innerHTML = 'This run: <b>' + score + '</b>. Your best score of <b>' + sc + '</b> still\u00A0stands.';
     } else if (sc <= 0){
-      msg.innerHTML = 'Nice try! Play again to set a score - your best score always\u00A0counts.';
+      msg.innerHTML = 'Play again to set a score - your best score always\u00A0counts.';
     } else if (notTop160){
-      msg.innerHTML = 'Nice try! You\'ve entered and your best score always counts. Play again to see if you can make it into the top\u00A0160.';
+      msg.innerHTML = 'You\'ve entered and your best score always counts. Play again to see if you can make it into the top\u00A0160.';
     } else {
       msg.innerHTML = 'Your score of <b>' + sc + '</b> is now on the\u00A0leaderboard.';
     }
