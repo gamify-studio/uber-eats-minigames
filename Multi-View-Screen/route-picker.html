@@ -1247,9 +1247,11 @@ if (typeof window.__rp === 'object') window.__rp.buildShareTile = buildShareTile
   var sh = new URLSearchParams(location.search).get('show');
   if (sh === 'entry') showOnlyOverlay('entry');
   else if (sh === 'leaderboard') showLeaderboard();
-  else if (sh === 'done'){
-    // sample data through the REAL renderer, so the link shows the true layout
-    fillEntryDone({ ok: true, score: 532, rank: 8, madeLeaderboard: true });
+  else if (sh === 'done' || sh === 'nicetry'){
+    // sample data through the REAL renderer, so the link shows the true layout.
+    // ?show=nicetry previews the shared no-score / outside-160 message.
+    if (sh === 'nicetry') fillEntryDone({ ok: true, score: 0, rank: 900, madeLeaderboard: false });
+    else fillEntryDone({ ok: true, score: 532, rank: 8, madeLeaderboard: true });
     showOnlyOverlay('entryDone');
   }
 })();
