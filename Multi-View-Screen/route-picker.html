@@ -806,6 +806,25 @@ function gameOver(){
   document.getElementById('ovScore').textContent = score;
   document.getElementById('ovOrders').textContent = stats.correct;
   document.getElementById('ovAcc').textContent = acc + '%';
+  // Client decision 18/09 via Shannon: a player who has NEVER scored is not offered the entry
+  // form at all, and lands straight on the Nice try screen. Uber does not want to capture
+  // personal details from someone who cannot be on the leaderboard for that score. Before this,
+  // a brand new player could score 0, tap Enter competition and submit name, email, phone and
+  // postcode; that was verified on the live build before the change, not assumed.
+  //
+  // The gate is on BEST, not on this run. A player whose best is 300 and who then scores 0 on a
+  // replay must still be able to enter, and `best` is already updated above for this run.
+  // Someone who has already entered keeps their existing path (Update leaderboard / See the
+  // leaderboard), because their details are in and a 0 is never submitted for them.
+  var _neverScored = false;
+  try { _neverScored = best <= 0 && localStorage.getItem('pathpicker_entered') !== '1'; }
+  catch (e) { _neverScored = best <= 0; }
+  if (_neverScored){
+    // no /score post and no /signup: there is nothing about this run worth recording
+    fillEntryDone({ ok: true, score: 0, madeLeaderboard: false });
+    showOnlyOverlay('entryDone');
+    return;
+  }
   showOnlyOverlay('over');
 }
 
@@ -1118,8 +1137,14 @@ function fillEntryDone(resp){
     if (ttl) ttl.textContent = (sc <= 0 || notTop160) ? 'Nice try!' : "You're in!";
     if (sc > score){
       msg.innerHTML = 'This run: <b>' + score + '</b>. Your best score of <b>' + sc + '</b> still\u00A0stands.';
-    } else if (sc <= 0 || notTop160){
+    } else if (sc <= 0){
+      // never scored: they were never offered the form, so do NOT tell them they entered
       msg.innerHTML = 'Play again to see if you can make it into the top\u00A0160.';
+    } else if (notTop160){
+      // scored, entered, but outside the top 160. Client copy 18/09. The two tiers were
+      // merged on 14/09 when they read the same; they diverged again once zero-scorers
+      // stopped entering, because only this tier has actually given their details.
+      msg.innerHTML = "You've entered and your best score always counts. Play again to see if you can make it into the top\u00A0160.";
     } else {
       msg.innerHTML = 'Your score of <b>' + sc + '</b> is now on the\u00A0leaderboard.';
     }
