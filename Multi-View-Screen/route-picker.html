@@ -1291,26 +1291,40 @@ async function showLeaderboard(){
   const list = document.getElementById('lbList');
   list.innerHTML = '<div class="lbrow"><span class="nm">Loading...</span></div>';
   showOnlyOverlay('lbOv');
-  let rows = '';
+  // Read our own id FIRST so it can go up with the board request. The server marks which row
+  // is ours; we no longer try to work it out down here. The old code matched the rank NUMBER
+  // into the rendered HTML, so as soon as two players tied it highlighted somebody else's row
+  // (Anna, 23/09). Ranks are now distinct per the tiebreak rule, but identity is still the only
+  // safe thing to match on, so this does not depend on that.
+  let pid = ''; try { pid = localStorage.getItem('pathpicker_pid') || ''; } catch (e) {}
+  const LB_ROWS = 5;
+  // serverMarks: does this API build mark our row at all? A row carries `you` (true or false)
+  // only when the server understood the playerId we sent. If the front end ever ships ahead of
+  // the backend we would otherwise think we were never in the top five and append a SECOND row
+  // for a player already listed above. Detecting it keeps either deploy order safe.
+  let rows = '', meInTop = false, serverMarks = false;
   try {
-    const r = await fetch(LB_API + '/top?n=5', { cache: 'no-store' });
+    const r = await fetch(LB_API + '/top?n=' + LB_ROWS + (pid ? '&playerId=' + encodeURIComponent(pid) : ''),
+                          { cache: 'no-store' });
     const d = await r.json();
     (d.top || []).forEach(function(t){
-      rows += '<div class="lbrow"><span class="rk">' + t.rank + '</span><span class="nm">' +
+      if (typeof t.you !== 'undefined') serverMarks = true;
+      if (t.you) meInTop = true;
+      rows += '<div class="lbrow' + (t.you ? ' you' : '') + '"><span class="rk">' + t.rank + '</span><span class="nm">' +
               String(t.handle || 'Player').replace(/[<>&]/g, '') + '</span><span class="sc">' + t.score + '</span></div>';
     });
   } catch (e) {}
   let prizeHtml = 'Win <b>Nintendo Switch 2 Consoles</b>, HOYTS movie vouchers, gaming gift cards +&nbsp;more';
   try {
-    let pid = ''; try { pid = localStorage.getItem('pathpicker_pid') || ''; } catch (e) {}
     if (pid){
       const r2 = await fetch(LB_API + '/rank?playerId=' + encodeURIComponent(pid), { cache: 'no-store' });
       const d2 = await r2.json();
-      if (d2.onBoard && d2.rank > 5){
+      // Append a YOU row only when we are not already shown above. With a server that marks
+      // rows we trust its flag; with an older one we fall back to the previous rule so we still
+      // cannot double up. Either way this is never decided by matching a rank number.
+      const alreadyShown = serverMarks ? meInTop : (Number(d2.rank) <= LB_ROWS);
+      if (d2.onBoard && !alreadyShown){
         rows += '<div class="lbrow you"><span class="rk">' + d2.rank + '</span><span class="nm">YOU</span><span class="sc">' + d2.score + '</span></div>';
-      } else if (d2.onBoard) {
-        rows = rows.replace('<div class="lbrow"><span class="rk">' + d2.rank + '</span>',
-                            '<div class="lbrow you"><span class="rk">' + d2.rank + '</span>');
       }
       if (d2.onBoard && d2.madeLeaderboard && Number(d2.score) > 0){
         const pz = prizeForRank(d2.rank);
