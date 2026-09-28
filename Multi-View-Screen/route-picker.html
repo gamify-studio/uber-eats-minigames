@@ -122,6 +122,10 @@
                       margin: clamp(10px, 2svh, 18px) 0 0; }
   .edBtns { display: flex; flex-direction: column; gap: clamp(8px, calc(2.4svh - 6px), 14px); width: 100%; max-width: 420px; margin-top: auto;
             padding-top: clamp(6px, calc(2.6svh - 6px), 16px); padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+  /* Only when the footer is actually showing: its .tcline is position:fixed, so the buttons need
+     their own clearance or it sits on top of "Start delivering IRL". Gated on .hasTcs so the
+     "You're in!" state, which carries its link beside the prize claim instead, is untouched. */
+  #entryDone.hasTcs .edBtns { padding-bottom: max(42px, calc(26px + env(safe-area-inset-bottom))); }
   #lbOv { background: #06C167; gap: clamp(7px, calc(16px - (830px - 100svh) * 0.075), 16px); }
   #lbOv .edLogo { height: min(86px, calc(28px + 6.9svh)); width: auto; }
   #lbOv #lbPrize { margin-top: clamp(6px, calc(14px - (830px - 100svh) * 0.06), 14px) !important; }
@@ -393,6 +397,10 @@
       <button class="pillbtn dark" id="edAgain">Play again</button>
       <button class="pillbtn light" id="edIrl">Start delivering IRL</button>
     </div>
+    <!-- Anna via Shannon 28/09: T&Cs as a footer wherever prizes are mentioned. Same .tcline as
+         the splash and the other two games so there is one footer pattern, not two. Hidden by
+         fillEntryDone when the prize block already carries its own link. -->
+    <div class="tcline" id="edTcs">By playing you agree to the <a href="../../index.html?goto=tandc" target="_blank" rel="noopener">Terms &amp; Conditions</a></div>
   </div>
 
   <!-- in-game leaderboard (works standalone AND inside the shell) -->
@@ -1149,6 +1157,9 @@ function fillEntryDone(resp){
       msg.innerHTML = 'Your score of <b>' + sc + '</b> is now on the\u00A0leaderboard.';
     }
   }
+  // The footer and the prize block must never both show a T&Cs link on the same screen. Keyed
+  // off what the prize block actually rendered rather than re-deriving the prize logic here.
+  const _tcs = document.getElementById('edTcs');
   const pl = document.getElementById('edPrize');
   if (pl){
     // sc > 0 guard: with a sparse board a 0 score still ranks inside the top 160, which
@@ -1164,6 +1175,10 @@ function fillEntryDone(resp){
       pl.innerHTML = 'Win <b>Nintendo Switch 2 Consoles</b>, HOYTS movie vouchers, gaming gift cards +&nbsp;more';
     }
   }
+  const _ownLink = !!(pl && pl.querySelector('a[href*="tandc"]'));
+  if (_tcs) _tcs.style.display = _ownLink ? 'none' : '';
+  const _ed = document.getElementById('entryDone');
+  if (_ed) _ed.classList.toggle('hasTcs', !_ownLink);
 }
 
 
