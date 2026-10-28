@@ -1036,8 +1036,8 @@ if (_townBtn) _townBtn.addEventListener('click', backToTown);
    Anything NOT listed (the test bucket, localhost, a file:// open) gets the test API, so the
    only way to reach the live board is to be served from the campaign domain itself. */
 const LB_APIS = {
-  // 'ubereatssidequest.com.au':     'https://XXXXXXXXXX.execute-api.ap-southeast-2.amazonaws.com',
-  // 'www.ubereatssidequest.com.au': 'https://XXXXXXXXXX.execute-api.ap-southeast-2.amazonaws.com',
+  'ubereatssidequest.com.au':     'https://9q6zgxknvh.execute-api.ap-southeast-2.amazonaws.com',
+  'www.ubereatssidequest.com.au': 'https://9q6zgxknvh.execute-api.ap-southeast-2.amazonaws.com',
 };
 const LB_API = LB_APIS[location.hostname] || 'https://9y63ccaste.execute-api.ap-southeast-2.amazonaws.com';
 /* Legal (slide 21, 07/08): see the shell. PENDING confirmed campaign end date. */
