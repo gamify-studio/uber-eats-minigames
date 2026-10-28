@@ -504,6 +504,9 @@ function pointAtFrac(route, f){
 }
 function newRound(){
   round++;
+  // tell the shell where this run is up to, so that if the player walks away it can say how far
+  // they got. Deliberately not a GA event: one per round would be noise at campaign volume.
+  try { if (window.parent !== window) window.parent.postMessage({ type: 'ppProgress', round: round, score: score }, location.origin); } catch (e) {}
   const band = bandFor(round);
   const rd = drawFrom(band);
   const swap = Math.random() < 0.5;
@@ -801,8 +804,16 @@ function gameOver(){
     }
   } catch (e) {}
   try { window.parent.postMessage({ type: 'gigScore', score: score }, '*'); } catch (e) {}
-  ga('pathpicker_complete', { score: score });
   const acc = stats.answers ? Math.round(stats.correct / stats.answers * 100) : 0;
+  ga('pathpicker_complete', {
+    score: score, run: _runs, seconds: secSince(_runAt), rounds: round,
+    routes_correct: stats.correct, routes_answered: stats.answers, accuracy_pct: acc,
+    routes_timed_out: Math.max(0, stats.answers - stats.picks),
+    // rtSum only accumulates on a real pick: dividing by answers would quietly understate the
+    // average for exactly the players who time out most
+    avg_decision_sec: stats.picks ? Math.round(stats.rtSum / stats.picks / 100) / 10 : 0,
+    personal_best: score > _bestAtStart ? 1 : 0
+  });
   const nStars = acc >= 85 ? 3 : acc >= 60 ? 2 : acc >= 35 ? 1 : 0;
   document.getElementById('stars').innerHTML =
     '\u2605'.repeat(nStars) + '<span class="dim">' + '\u2605'.repeat(3 - nStars) + '</span>';
@@ -983,7 +994,10 @@ function startGame(){
   document.body.classList.add('playing');
   document.querySelectorAll('.overlay').forEach(function(o){ o.classList.add('hidden'); });
   layout();
-  ga('pathpicker_start', {});
+  _runAt = engagedMs(); _runs++; _bestAtStart = best;
+  var _ent = false;
+  try { _ent = localStorage.getItem('pathpicker_entered') === '1'; } catch (e) {}
+  ga('pathpicker_start', { run: _runs, already_entered: _ent ? 1 : 0, previous_best: best });
   newRound();
 }
 document.getElementById('howtoPlay').addEventListener('click', function(){ stopHowtoAnim(); startGame(); });
@@ -1049,7 +1063,26 @@ async function ensureSession(){
 // Returning entrant beating their PB: post the new score under the SAME playerId (backend keeps
 // best) WITHOUT re-collecting details or re-running /signup. One prize entry per person stands.
 // Bubble an analytics event up to the host page's gtag (same GA session as the page_view + UTMs).
-function ga(name, params){ try { window.parent.postMessage({ type:'ga', name:name, params:params||{} }, '*'); } catch(e){} }
+// The shell checks the origin before forwarding anything, so this only ever reaches our own page.
+function ga(name, params){ try { window.parent.postMessage({ type:'ga', name:name, params:params||{} }, location.origin); } catch(e){} }
+
+// Engaged time, matching the shell: the clock stops while the tab is in the background, so a
+// game left open in another tab never reports as time played.
+var _visAcc = 0, _visFrom = (document.visibilityState === 'visible') ? Date.now() : 0;
+document.addEventListener('visibilitychange', function(){
+  if (document.visibilityState === 'visible'){ _visFrom = Date.now(); }
+  else if (_visFrom){ _visAcc += Date.now() - _visFrom; _visFrom = 0; }
+});
+function engagedMs(){ return _visAcc + (_visFrom ? Date.now() - _visFrom : 0); }
+function secSince(mark){ return Math.round(Math.max(0, engagedMs() - (mark || 0)) / 100) / 10; }
+var _runAt = 0, _runs = 0, _formAt = 0, _bestAtStart = 0;
+
+// Every T&Cs link on this page, including ones rendered later, in one listener.
+document.addEventListener('click', function(e){
+  var a = e.target && e.target.closest ? e.target.closest('a[href*="tandc"]') : null;
+  if (a) ga('terms_opened', { from: 'pathpicker' });
+}, true);
+
 
 // Anna 18/08: her board stuck at 737 while she scored 1379. Cause: mode 'view' compared runs
 // against the local PLAYED best (including pre-entry runs never submitted), so higher scores
@@ -1083,12 +1116,15 @@ async function submitScoreOnly(){
       body: JSON.stringify({ playerId: s.playerId, token: s.token, exp: s.exp, handle, score: Math.max(score, best) }) });
     if (!r.ok) throw new Error('score ' + r.status);
     try { localStorage.setItem('pathpicker_sent_best', String(Math.max(score, best))); } catch (e) {}
-    ga('leaderboard_submit', { score: score });
     let sd = {}; try { sd = await r.json(); } catch (e) {}
+    ga('leaderboard_submit', { score: Math.max(score, best), first_entry: 0,
+                               rank: Number(sd.rank) || 0,
+                               made_leaderboard: sd.madeLeaderboard === true ? 1 : 0 });
     fillEntryDone(sd);
     showOnlyOverlay('entryDone');
   } catch (ex) {
     if (oerr) oerr.textContent = 'Sorry, that didn’t go through. Please check your connection and try again.';
+    ga('api_error', { call: 'score', detail: String(ex && ex.message || '').slice(0, 60) });
   } finally {
     btn.disabled = false; btn.textContent = label;
   }
@@ -1188,10 +1224,15 @@ if (_enterBtn) _enterBtn.addEventListener('click', () => {
   if (_enterBtn.dataset.mode === 'view') { syncBestQuiet(); showLeaderboard(); return; }
   let entered = false; try { entered = localStorage.getItem('pathpicker_entered') === '1'; } catch (e) {}
   if (entered) { submitScoreOnly(); return; }   // returning entrant: update score only, skip the form + /signup
+  _formAt = engagedMs();
+  ga('signup_form_open', { score: score });
   document.getElementById('efError').textContent = ''; showOnlyOverlay('entry');
 });
 var _efCancel = document.getElementById('efCancel');
-if (_efCancel) _efCancel.addEventListener('click', () => showOnlyOverlay('over'));
+if (_efCancel) _efCancel.addEventListener('click', () => {
+  ga('signup_form_cancel', { score: score, seconds: secSince(_formAt) });
+  showOnlyOverlay('over');
+});
 
 var _entryForm = document.getElementById('entryForm');
 if (_entryForm) _entryForm.addEventListener('submit', async (e) => {
@@ -1200,10 +1241,20 @@ if (_entryForm) _entryForm.addEventListener('submit', async (e) => {
   const chk = id => document.getElementById(id).checked;
   const err = document.getElementById('efError');
   const first = val('efFirst'), last = val('efLast'), email = val('efEmail'), phone = val('efPhone'), postcode = val('efPostcode');
-  if (!first || !last || !email || !phone || !postcode){ err.textContent = 'Please fill in all your details.'; return; }
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ err.textContent = 'Please enter a valid email address.'; return; }
-  if (!chk('efTerms')){ err.textContent = 'Please agree to the terms & conditions.'; return; }
-  if (!chk('efAge')){ err.textContent = 'You must be 18 years or older to enter.'; return; }
+  // Which field stops people is the difference between a form that loses entries and one that
+  // does not. No field VALUES are ever sent, only which field was at fault.
+  if (!first || !last || !email || !phone || !postcode){
+    err.textContent = 'Please fill in all your details.';
+    ga('signup_error', { reason: 'missing_fields', seconds: secSince(_formAt) }); return; }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){
+    err.textContent = 'Please enter a valid email address.';
+    ga('signup_error', { reason: 'bad_email', seconds: secSince(_formAt) }); return; }
+  if (!chk('efTerms')){
+    err.textContent = 'Please agree to the terms & conditions.';
+    ga('signup_error', { reason: 'terms_unticked', seconds: secSince(_formAt) }); return; }
+  if (!chk('efAge')){
+    err.textContent = 'You must be 18 years or older to enter.';
+    ga('signup_error', { reason: 'age_unticked', seconds: secSince(_formAt) }); return; }
 
   const btn = document.getElementById('efSubmit');
   const label = btn.textContent; btn.disabled = true; btn.textContent = 'Submitting...';
@@ -1214,12 +1265,17 @@ if (_entryForm) _entryForm.addEventListener('submit', async (e) => {
 
     const sr = await post('/score', { playerId: s.playerId, token: s.token, exp: s.exp, handle, score: Math.max(score, best) });
     if (!sr.ok) throw new Error('score ' + sr.status);
-    ga('leaderboard_submit', { score: score });
     let sd = {}; try { sd = await sr.json(); } catch (e) {}
+    ga('leaderboard_submit', { score: Math.max(score, best), first_entry: 1,
+                               rank: Number(sd.rank) || 0,
+                               made_leaderboard: sd.madeLeaderboard === true ? 1 : 0 });
     const gr = await post('/signup', { playerId: s.playerId, firstName: first, lastName: last, email, phone, postcode,
       agreeTerms: true, confirmAge: true, marketingOptIn: chk('efMktg') });
     if (!gr.ok) throw new Error('signup ' + gr.status);
-    ga('prize_signup', { marketing_opt_in: chk('efMktg') ? 1 : 0 });
+    ga('prize_signup', { marketing_opt_in: chk('efMktg') ? 1 : 0,
+                         score: Math.max(score, best), rank: Number(sd.rank) || 0,
+                         made_leaderboard: sd.madeLeaderboard === true ? 1 : 0,
+                         form_sec: secSince(_formAt) });
 
     // Remember on this device that this player has completed + entered the draw (so a returning
     // player can be offered a straight replay to beat their best). Best score lives in localStorage too.
@@ -1230,6 +1286,8 @@ if (_entryForm) _entryForm.addEventListener('submit', async (e) => {
     showOnlyOverlay('entryDone');
   } catch (ex) {
     err.textContent = 'Sorry, that didn’t go through. Please check your connection and try again.';
+    ga('signup_error', { reason: 'api_failed', detail: String(ex && ex.message || '').slice(0, 60),
+                         seconds: secSince(_formAt) });
   } finally {
     btn.disabled = false; btn.textContent = label;
   }
@@ -1303,6 +1361,7 @@ if (_edAgain) _edAgain.addEventListener('click', function(){
   startHowtoAnim();
 });
 async function showLeaderboard(){
+  ga('leaderboard_view', { score: score });
   const list = document.getElementById('lbList');
   list.innerHTML = '<div class="lbrow"><span class="nm">Loading...</span></div>';
   showOnlyOverlay('lbOv');
@@ -1368,7 +1427,10 @@ var _edLb = document.getElementById('edLb');
 if (_edLb) _edLb.addEventListener('click', showLeaderboard);
 var _edIrl = document.getElementById('edIrl');
 if (_edIrl) _edIrl.addEventListener('click', function(){
-  window.open('http://www.uber.com/au/en/s/c/deliver?utm_source=Gaming&utm_medium=LW&utm_campaign=SideQuest', '_blank');
+  // Uber see the arrival through the UTMs on the link; this is our half of the same click, so
+  // click-through rate can be reported against the players who reached this screen.
+  ga('deliver_irl_click', { score: score });
+  window.open('https://www.uber.com/au/en/s/c/deliver?utm_source=Gaming&utm_medium=LW&utm_campaign=SideQuest', '_blank');
 });
 
 // Warm up a leaderboard session the moment a game starts, so submitting at the end is instant.

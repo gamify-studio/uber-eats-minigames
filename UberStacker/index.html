@@ -1007,6 +1007,9 @@
     state = "won";
     const eff = efficiency();
     score = computeScore();   // final pack grade (max 150)
+    ga('stacker_end', { score: score, seconds: secSince(_gAt), round: _gRound,
+                        bags: bags, efficiency_pct: eff, level: level,
+                        pieces_placed: placed.length, rows_packed: packedRows.size });
     // Credit the gig score to the shell wallet (parent listens for {type:'gigScore'}).
     try { window.parent.postMessage({ type: 'gigScore', score: score }, '*'); } catch (e) {}
     sfx("win");
@@ -1109,6 +1112,29 @@
 
   // ---------- Controls ----------
   let ready = false;
+
+  // Analytics: post up to the shell, which forwards to GA4 after checking the origin. Standalone
+  // (no shell) the post goes nowhere and costs nothing. Engaged time only: the clock stops while
+  // the tab is in the background so an abandoned tab never reports as time played.
+  var _vAcc = 0, _vFrom = (document.visibilityState === 'visible') ? Date.now() : 0;
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState === 'visible'){ _vFrom = Date.now(); }
+    else if (_vFrom){ _vAcc += Date.now() - _vFrom; _vFrom = 0; }
+  });
+  function engagedMs(){ return _vAcc + (_vFrom ? Date.now() - _vFrom : 0); }
+  function secSince(m){ return Math.round(Math.max(0, engagedMs() - (m || 0)) / 100) / 10; }
+  function ga(name, params){
+    try { if (window.parent !== window) window.parent.postMessage({ type: 'ga', name: name, params: params || {} }, location.origin); } catch (e) {}
+  }
+  var _gAt = 0, _gRound = 0;
+
+  // Every T&Cs link on this page, including ones rendered later, in one listener.
+  document.addEventListener('click', function(e){
+    var a = e.target && e.target.closest ? e.target.closest('a[href*="tandc"]') : null;
+    if (a) ga('terms_opened', { from: 'stacker' });
+  }, true);
+
+
   function start() {
     if (!ready) return;
     grid = newGrid(); placed = []; queue = []; packedRows.clear();
@@ -1121,6 +1147,8 @@
     document.getElementById("pauseOv").classList.add("hidden");
     fit();
     state = "playing";
+    _gAt = engagedMs(); _gRound++;
+    ga('stacker_start', { round: _gRound });
     spawn();
     lastFall = perfNow();
     try { audio().resume(); } catch (e) {}

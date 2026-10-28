@@ -956,6 +956,29 @@ function loadSnapshot(snap) {
   state.over = false;
 }
 
+
+// Analytics: post up to the shell, which forwards to GA4 after checking the origin. Standalone
+// (no shell) the post goes nowhere and costs nothing. Engaged time only: the clock stops while
+// the tab is in the background so an abandoned tab never reports as time played.
+var _vAcc = 0, _vFrom = (document.visibilityState === 'visible') ? Date.now() : 0;
+document.addEventListener('visibilitychange', function(){
+  if (document.visibilityState === 'visible'){ _vFrom = Date.now(); }
+  else if (_vFrom){ _vAcc += Date.now() - _vFrom; _vFrom = 0; }
+});
+function engagedMs(){ return _vAcc + (_vFrom ? Date.now() - _vFrom : 0); }
+function secSince(m){ return Math.round(Math.max(0, engagedMs() - (m || 0)) / 100) / 10; }
+function ga(name, params){
+  try { if (window.parent !== window) window.parent.postMessage({ type: 'ga', name: name, params: params || {} }, location.origin); } catch (e) {}
+}
+var _gAt = 0, _gRound = 0, _gDone = false;
+
+// Every T&Cs link on this page, including ones rendered later, in one listener.
+document.addEventListener('click', function(e){
+  var a = e.target && e.target.closest ? e.target.closest('a[href*="tandc"]') : null;
+  if (a) ga('terms_opened', { from: 'combo' });
+}, true);
+
+
 function newGame() {
   state.tiles = new Map();
   state.grid = emptyGrid();
@@ -969,6 +992,8 @@ function newGame() {
   renderAll();
   showHint();
   save();
+  _gAt = engagedMs(); _gRound++; _gDone = false;
+  ga('combo_start', { round: _gRound, best: state.best });
 }
 
 function undo() {
@@ -1036,6 +1061,13 @@ function move(dir) {
     if (!state.won && maxNew >= CONFIG.target) {
       state.won = true;
       state.score = scoreFromMoves(state.moves);     // efficiency score, locked in at the win
+      // undo() restores a snapshot with won=false, so without this guard a player could undo
+      // and re-win the same round and be counted twice
+      if (!_gDone){
+        _gDone = true;
+        ga('combo_win', { score: state.score, swipes: state.moves, seconds: secSince(_gAt),
+                          round: _gRound, personal_best: state.score > state.best ? 1 : 0 });
+      }
       if (state.score > state.best) state.best = state.score;
       // Credit the gig score to the shell wallet (parent listens for {type:'gigScore'}).
       try { window.parent.postMessage({ type: 'gigScore', score: state.score }, '*'); } catch (e) {}
@@ -1052,6 +1084,14 @@ function move(dir) {
       }
     } else if (!anyMovePossible(state.tiles, state.grid)) {
       state.over = true;
+      // a board that jams is the loss case, and how far they got before it is the useful part
+      var _top = 0;
+      try { state.tiles.forEach(function(t){ if (t.value > _top) _top = t.value; }); } catch (e) {}
+      if (!_gDone){
+        _gDone = true;
+        ga('combo_stuck', { swipes: state.moves, seconds: secSince(_gAt), round: _gRound,
+                            highest_item: _top, target: CONFIG.target });
+      }
       playOver();
       showOverlay("over");
     }
