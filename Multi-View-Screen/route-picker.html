@@ -68,11 +68,11 @@
   /* ---- choice buttons ---- */
   /* in-app browsers (Slack, Instagram, FB, TikTok) overlay a toolbar on the page bottom;
      html.inapp raises bottom-anchored UI clear of it (Anna 18/08: A/B ran out of view) */
-  html.inapp .choice { bottom: calc(84px + env(safe-area-inset-bottom)) !important; }
+  html.inapp .choice { bottom: calc(108px + env(safe-area-inset-bottom)) !important; }
   html.inapp #howtoPlay { bottom: calc(108px + env(safe-area-inset-bottom)) !important; }
   html.inapp .tcline { bottom: 66px !important; }
   html.inapp #entryDone { padding-bottom: 84px; }
-  .choice { position: absolute; bottom: calc(24px + env(safe-area-inset-bottom));
+  .choice { position: absolute; bottom: calc(52px + env(safe-area-inset-bottom));
     width: calc(50% - 32px); height: 56px; border-radius: 999px;
     background: #0b0b0b; border: none; box-shadow: none;
     display: flex; align-items: center; justify-content: center;
@@ -318,6 +318,11 @@
   <button class="choice" id="btnA"><span class="big">A</span></button>
   <button class="choice" id="btnB"><span class="big">B</span></button>
   <div class="sq-tagline">Side quest when you want stuff.</div>
+  <!-- Shannon 02/11: the gameplay screen was the one place this line was missing. Same
+       .tcline as the splash, the end screens and the other two games. It is fixed at the
+       bottom and sits under the opaque overlays (z 45 vs 50), so only the playfield
+       shows it. The A/B buttons were lifted to 52px to clear it. -->
+  <div class="tcline">By playing you agree to the <a href="../../index.html?goto=tandc" target="_blank" rel="noopener">Terms &amp; Conditions</a></div>
 
   <div class="overlay" id="howto">
     <img class="sqLogo" src="sq-logo.png?v=5" alt="Uber Eats Side Quest">
@@ -569,7 +574,7 @@ function layout(){
   HUD_TOP = base;
   const availW = cssW - PAD * 2;
   // bottom stack per the approved frame: map, then tagline, then the A/B buttons
-  let btnTop = cssH - (56 + 24 + (INAPP ? 60 : 0));
+  let btnTop = cssH - (56 + 52 + (INAPP ? 56 : 0));
   const baEl = document.getElementById('btnA');
   if (baEl){ const br = baEl.getBoundingClientRect(); if (br.height > 0) btnTop = br.top; }
   const tag = document.querySelector('.sq-tagline');
