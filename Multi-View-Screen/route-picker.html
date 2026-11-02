@@ -789,8 +789,13 @@ function gameOver(){
   state = 'over';
   document.body.classList.remove('playing');
   setButtons(false); showPrompt(false);
-  const isBest = score > 0 && score >= best;
-  const prevBest = best;
+  // `best` is bumped the moment a round is won (the HUD shows it live), so by the time we get
+  // here it ALREADY equals this run's score whenever this run is a personal best. Comparing
+  // against it made beatsBest permanently false, so a returning entrant who beat their best was
+  // offered 'See the leaderboard' instead of 'Update leaderboard' and never saw the agreed
+  // confirmation screen. Shannon 03/11: scored 621, replayed to 838, the board updated silently
+  // via syncBestQuiet and nothing told her. _bestAtStart is the best as it stood when this run
+  // began, set in startGame(), and is the only value that can answer "did this run beat it".
   if (score > best){ best = score; localStorage.setItem('routerush_best_v2', best); }
   // Slide 22: if they are already on the board, say what the button will actually do.
   try {
@@ -802,7 +807,7 @@ function gameOver(){
     //   entered, NOT a new best  -> See the leaderboard (submits nothing; a lower run cannot
     //                               replace their best, so offering "Enter" would be a lie)
     if (btn) {
-      const beatsBest = score > prevBest;
+      const beatsBest = score > _bestAtStart;
       btn.dataset.mode = !entered ? 'enter' : (beatsBest ? 'update' : 'view');
       btn.textContent = !entered ? 'Enter competition'
         : (beatsBest ? 'Update leaderboard' : 'See the leaderboard');
@@ -1393,7 +1398,7 @@ async function showLeaderboard(){
   // only when the server understood the playerId we sent. If the front end ever ships ahead of
   // the backend we would otherwise think we were never in the top five and append a SECOND row
   // for a player already listed above. Detecting it keeps either deploy order safe.
-  let rows = '', meInTop = false, serverMarks = false;
+  let rows = '', meInTop = false, serverMarks = false, _lbRank = null;
   try {
     const r = await fetch(LB_API + '/top?n=' + LB_ROWS + (pid ? '&playerId=' + encodeURIComponent(pid) : ''),
                           { cache: 'no-store' });
@@ -1417,6 +1422,7 @@ async function showLeaderboard(){
       if (d2.onBoard && !alreadyShown){
         rows += '<div class="lbrow you"><span class="rk">' + d2.rank + '</span><span class="nm">YOU</span><span class="sc">' + d2.score + '</span></div>';
       }
+      if (d2.onBoard) _lbRank = d2;
       if (d2.onBoard && d2.madeLeaderboard && Number(d2.score) > 0){
         const pz = prizeForRank(d2.rank);
         if (pz) prizeHtml = "You're currently on track to win <b>" + prizePhrase(pz) + "</b>!" +
@@ -1426,6 +1432,14 @@ async function showLeaderboard(){
       }
     }
   } catch (e) {}
+  // The confirmation screen's copy is written ONLY by fillEntryDone, and the leaderboard's Back
+  // button returns to that screen. A returning entrant whose run did not beat their best goes
+  // straight from the game-over screen to the board (mode 'view'), so fillEntryDone had never
+  // run and Back showed the pristine markup: 'You're in!' over 'Play again to see if you can
+  // make it into the top 160' with no prize line, to a player sitting at rank 4 (Anna via
+  // Shannon 03/11). Fill it from the same /rank response the prize line above is built from, so
+  // the two screens can never disagree.
+  if (_lbRank) fillEntryDone(_lbRank);
   const pl = document.getElementById('lbPrize');
   if (pl) pl.innerHTML = prizeHtml;
   const lt = document.getElementById('lbTcs');
