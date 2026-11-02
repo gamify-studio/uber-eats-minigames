@@ -1348,8 +1348,12 @@ if (_edShare) _edShare.addEventListener('click', shareScoreTile);
 if (typeof window.__rp === 'object') window.__rp.buildShareTile = buildShareTile;
 
 /* Dev deep link (testing only): ?show=entry opens the "You're on the leaderboard!" form,
-   ?show=leaderboard opens the leaderboard overlay, ?show=done opens the You're in screen. */
+   ?show=leaderboard opens the leaderboard overlay, ?show=done opens the You're in screen.
+   OFF on the live campaign domain: ?show=entry hands a player the prize-entry form without
+   a run behind it. Same test as the shell uses, keyed on the LB_APIS hostnames, so localhost
+   and the test bucket keep the shortcuts and smoke.py/visual.py are unaffected. */
 (function(){
+  if (LB_APIS[location.hostname]) return;
   var sh = new URLSearchParams(location.search).get('show');
   if (sh === 'entry') showOnlyOverlay('entry');
   else if (sh === 'leaderboard') showLeaderboard();
