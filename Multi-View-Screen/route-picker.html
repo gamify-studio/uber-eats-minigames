@@ -371,8 +371,8 @@
       <input id="efFirst" type="text" placeholder="First name" autocomplete="given-name" required>
       <input id="efLast" type="text" placeholder="Last name" autocomplete="family-name" required>
       <input id="efEmail" type="email" placeholder="Email" autocomplete="email" required>
-      <input id="efPhone" type="tel" placeholder="Phone" autocomplete="tel" required>
-      <input id="efPostcode" type="text" placeholder="Postcode" autocomplete="postal-code" required>
+      <input id="efPhone" type="tel" inputmode="tel" placeholder="Phone" autocomplete="tel" required>
+      <input id="efPostcode" type="text" inputmode="numeric" maxlength="4" placeholder="Postcode" autocomplete="postal-code" required>
       <label class="efCheck"><input id="efTerms" type="checkbox"><span>I agree to the <a href="../../index.html?goto=tandc" target="_blank" rel="noopener">terms &amp; conditions</a> *</span></label>
       <label class="efCheck"><input id="efAge" type="checkbox"><span>I'm 18 years or older *</span></label>
       <label class="efCheck"><input id="efMktg" type="checkbox"><span>I agree to receive more info from Uber Eats</span></label>
@@ -1267,6 +1267,15 @@ if (_entryForm) _entryForm.addEventListener('submit', async (e) => {
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){
     err.textContent = 'Please enter a valid email address.';
     ga('signup_error', { reason: 'bad_email', seconds: secSince(_formAt) }); return; }
+  // A prize draw has to be able to reach the winner and check their postcode against the
+  // eligibility rules, so these two are validated rather than merely non-empty. 'not a phone'
+  // and 'zzzz' both reached the entries table before this.
+  if (phone.replace(/\D/g, '').length < 8){
+    err.textContent = 'Please enter a valid phone number.';
+    ga('signup_error', { reason: 'bad_phone', seconds: secSince(_formAt) }); return; }
+  if (!/^\d{4}$/.test(postcode)){
+    err.textContent = 'Please enter a valid 4-digit postcode.';
+    ga('signup_error', { reason: 'bad_postcode', seconds: secSince(_formAt) }); return; }
   if (!chk('efTerms')){
     err.textContent = 'Please agree to the terms & conditions.';
     ga('signup_error', { reason: 'terms_unticked', seconds: secSince(_formAt) }); return; }
