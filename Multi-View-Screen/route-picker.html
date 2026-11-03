@@ -460,7 +460,6 @@ const COL = { A:'#2997ff', B:'#ff3ea5', good:'#019147', bad:'#ff4d4d' };
 const DRAW_MS = 520;
 const REVEAL_OK = 1250, REVEAL_BAD = 1650;
 const Q = new URLSearchParams(location.search);
-const DEBUG = Q.get('debug') === '1';
 
 function bandFor(r){ return r <= 3 ? 'E' : r <= 6 ? 'M' : r <= 9 ? 'H' : 'X'; }
 function roundTime(r){ const tier = Math.floor((r - 1) / 3); return Math.max(1700, Math.round(4800 * Math.pow(0.78, tier))); }
@@ -1050,6 +1049,12 @@ const LB_APIS = {
   'www.ubereatssidequest.com.au': 'https://9q6zgxknvh.execute-api.ap-southeast-2.amazonaws.com',
 };
 const LB_API = LB_APIS[location.hostname] || 'https://9y63ccaste.execute-api.ap-southeast-2.amazonaws.com';
+/* ?debug=1 draws cur.correct on the canvas, which is the answer to the round, so it is OFF
+   on the live campaign domain. Declared HERE, not beside Q at the top of the script, because
+   LB_APIS is a const and reading it earlier would hit the temporal dead zone. Its only reader
+   is inside draw(), which runs on a frame, long after this line. localhost and the test
+   bucket keep it. */
+const DEBUG = Q.get('debug') === '1' && !LB_APIS[location.hostname];
 /* Legal (slide 21, 07/08): see the shell. PENDING confirmed campaign end date. */
 const CAMPAIGN_END = '21 November 2026';
 const LB_CAVEAT = ('Leaderboard can change up until end ' + CAMPAIGN_END + '.').replace(/ (?=\S+$)/, '\u00A0');
